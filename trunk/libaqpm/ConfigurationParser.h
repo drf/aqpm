@@ -106,9 +106,8 @@ private:
     void parseMakepkgConfig();
 
 private:
-    PacmanConf pacData;
-    ABSConf absData;
-    MakePkgConf makepkgData;
+    class Private;
+    Private *d;
 };
 
 }
