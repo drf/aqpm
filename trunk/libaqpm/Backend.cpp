@@ -749,7 +749,7 @@ void TrCommitThread::run()
                 return;
             }
 
-            int res = alpm_trans_addtarget(itm->name.toAscii().data());
+            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
 
             if (res == -1) {
                 emit error(Backend::AddTargetError);
@@ -781,7 +781,7 @@ void TrCommitThread::run()
             }
 
             qDebug() << "Adding " << itm->name;
-            int res = alpm_trans_addtarget(itm->name.toAscii().data());
+            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
 
             if (res == -1) {
                 emit error(Backend::AddTargetError);
@@ -835,7 +835,7 @@ void TrCommitThread::run()
                 return;
             }
 
-            int res = alpm_trans_addtarget(itm->name.toAscii().data());
+            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
 
             if (res == -1) {
                 emit error(Backend::AddTargetError);
