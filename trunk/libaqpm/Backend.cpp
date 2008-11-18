@@ -88,6 +88,8 @@ Backend::Backend()
             SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
     connect(CallBacks::instance(), SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
             SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
+
+    initAlpm();
 }
 
 Backend::~Backend()
@@ -619,6 +621,8 @@ bool Backend::updateDatabase()
 
     emit transactionStarted();
 
+    qDebug() << "Starting DB Update";
+
     d->upThread->start();
 }
 
@@ -863,6 +867,7 @@ void UpDbThread::run()
     if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, cb_trans_evt, cb_trans_conv,
                         cb_trans_progress) == -1) {
         emit error(Backend::InitTransactionError);
+        qDebug() << "Error!";
         m_error = true;
         return;
     }
@@ -881,11 +886,14 @@ void UpDbThread::run()
         syncdbs = alpm_list_next(syncdbs);
     }
 
+    qDebug() << "Found " << list;
+
     emit dbQty(list);
 
-    syncdbs = alpm_list_first(syncdbs);
+    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
     while (syncdbs != NULL) {
+        qDebug() << "Updating DB";
         pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(syncdbs);
         QString curdbname((char *)alpm_db_get_name(dbcrnt));
 
