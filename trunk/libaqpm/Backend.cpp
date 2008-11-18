@@ -105,6 +105,33 @@ QWaitCondition *Backend::backendWCond()
     return d->wCond;
 }
 
+bool Backend::testLibrary()
+{
+    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS,
+                        cb_trans_evt,
+                        cb_trans_conv,
+                        cb_trans_progress) == -1) {
+        return false;
+    }
+
+    if (alpm_trans_release() == -1) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Backend::isOnTransaction()
+{
+    // I know, it sucks
+    if (!d->trThread && !d->upThread) {
+        return false;
+    } else {
+        return true;
+    }
+
+}
+
 void Backend::initAlpm()
 {
     PacmanConf pdata;

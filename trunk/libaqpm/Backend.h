@@ -46,6 +46,12 @@ public:
         FullUpgrade = 8
     };
 
+    QueueItem();
+    QueueItem(QString n, Action a)
+     : name(n),
+     action_id(a)
+     {};
+
     typedef QList<QueueItem*> List;
 
     QString name;
@@ -136,6 +142,8 @@ public:
     QWaitCondition *backendWCond();
 
     void initAlpm();
+    bool testLibrary();
+    bool isOnTransaction();
 
     alpm_list_t *getAvailableRepos();
     QStringList getAvailableReposAsStringList();

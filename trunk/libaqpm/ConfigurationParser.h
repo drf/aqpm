@@ -21,6 +21,8 @@
 #ifndef CONFIGURATIONPARSER_H
 #define CONFIGURATIONPARSER_H
 
+#include "Visibility.h"
+
 #include <iostream>
 #include <string>
 #include <alpm.h>
@@ -71,7 +73,7 @@ typedef struct PcCnf PacmanConf;
 typedef struct absCnf ABSConf;
 typedef struct mkpkCnf MakePkgConf;
 
-class ConfigurationParser
+class AQPM_EXPORT ConfigurationParser
 {
     /* This parser will play bad tricks with your guts. It can parse
      * and write on pacman.conf, abs.conf and makepkg.conf. It is tha
