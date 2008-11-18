@@ -44,6 +44,8 @@ public:
 
     QMutex *mutex;
     QWaitCondition *wCond;
+
+    QueueItem::List queue;
 };
 
 class BackendHelper
@@ -573,7 +575,17 @@ pmpkg_t *Backend::getPackageFromName( const QString &name, const QString &repo )
 
 bool Backend::updateDatabase()
 {
+    d->upThread = new UpDbThread(this);
 
+    connect(d->upThread, SIGNAL(dbQty(const QStringList&)), SIGNAL(dbQty(const QStringList&)));
+    connect(d->upThread, SIGNAL(dbStatusChanged(const QString&,int)),
+            SIGNAL(dbStatusChanged(const QString&,int)));
+    connect(d->upThread, SIGNAL(error(int)), SIGNAL(errorOccurred(int)));
+    connect(d->upThread, SIGNAL(finished()), SIGNAL(transactionReleased()));
+
+    emit transactionStarted();
+
+    d->upThread->start();
 }
 
 void Backend::computeTransactionResult()
@@ -588,6 +600,12 @@ void Backend::computeTransactionResult()
             emit operationSuccessful();
         }
     }
+}
+
+void Backend::clearQueue()
+{
+    qDeleteAll(d->queue);
+    d->queue.clear();
 }
 
 /////////////////////////////////////////////////////////////
@@ -658,9 +676,8 @@ void TrCommitThread::run()
 
 //
 
-UpDbThread::UpDbThread(pmdb_t *db, QObject *parent)
+UpDbThread::UpDbThread(QObject *parent)
         : QThread(parent),
-        m_db(db),
         m_error(false)
 {
     connect(this, SIGNAL(finished()), SLOT(deleteLater()));

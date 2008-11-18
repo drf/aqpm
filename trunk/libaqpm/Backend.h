@@ -35,6 +35,20 @@
 
 namespace Aqpm {
 
+class AQPM_EXPORT QueueItem {
+    public:
+        enum Action {
+            Sync = 1,
+            Remove = 2,
+            FromFile = 4,
+            FullUpgrade = 8
+        };
+
+        typedef QList<QueueItem*> List;
+
+        QString name;
+};
+
 class TrCommitThread : public QThread
 {
     Q_OBJECT
@@ -61,7 +75,7 @@ class UpDbThread : public QThread
     Q_OBJECT
 
 public:
-    explicit UpDbThread(pmdb_t *db, QObject *parent = 0);
+    explicit UpDbThread(QObject *parent = 0);
     void run();
 
     bool isError() {
@@ -74,7 +88,6 @@ signals:
     void dbQty(const QStringList &db);
 
 private:
-    pmdb_t *m_db;
     bool m_error;
 };
 
@@ -168,9 +181,14 @@ public:
 
     QString getAlpmVersion();
 
+    void clearQueue();
+    void addItemToQueue(QueueItem *itm);
+    void processQueue();
+
 Q_SIGNALS:
-    void dbStatusChanged( const QString &repo, DatabaseState action );
+    void dbStatusChanged( const QString &repo, int action );
     void dbQty( const QStringList &db );
+
     void transactionStarted();
     void transactionReleased();
 
@@ -182,7 +200,7 @@ Q_SIGNALS:
 
     void streamTransEvent(pmtransevt_t event, void *data1, void *data2);
 
-    void errorOccurred(ErrorCode code);
+    void errorOccurred(int code);
 
     void operationSuccessful();
     void operationFailed();
