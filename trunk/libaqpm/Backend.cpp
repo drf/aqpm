@@ -24,6 +24,7 @@
 #include "ConfigurationParser.h"
 
 #include <QMetaType>
+#include <QDebug>
 
 #include "misc/Singleton.h"
 
@@ -123,12 +124,12 @@ void Backend::initAlpm()
     /* Register our sync databases, kindly taken from pacdata */
 
     if (!pdata.loaded) {
-        kDebug() << "Error Parsing Pacman Configuration!!";
+        qDebug() << "Error Parsing Pacman Configuration!!";
     }
 
     for (int i = 0; i < pdata.syncdbs.size(); ++i) {
         if (pdata.serverAssoc.size() <= i) {
-            kDebug() << "Could not find a matching repo for" << pdata.syncdbs.at(i);
+            qDebug() << "Could not find a matching repo for" << pdata.syncdbs.at(i);
             continue;
         }
 
@@ -157,13 +158,13 @@ QStringList Backend::getUpgradeablePackages()
     if (!syncpkgs) {
         return retlist;
     } else {
-        kDebug() << "Upgradeable packages:";
+        qDebug() << "Upgradeable packages:";
         while (syncpkgs != NULL) {
             /* To Alpm Devs : LOL. Call three functions to get a fucking
              * name of a package? Please.
              */
             QString tmp(alpm_pkg_get_name(alpm_sync_get_pkg((pmsyncpkg_t *) alpm_list_getdata(syncpkgs))));
-            kDebug() << tmp;
+            qDebug() << tmp;
             retlist.append(tmp);
             syncpkgs = alpm_list_next(syncpkgs);
         }
@@ -359,7 +360,7 @@ void TrCommitThread::run()
         int res = alpm_trans_addtarget(package.toAscii().data());
 
         if (res == -1) {
-            emit error(tr("Could not add %1 to transaction", package));
+            emit error(tr("Could not add %1 to transaction").arg(package));
             m_error = true;
             return;
         }
@@ -419,4 +420,3 @@ void UpDbThread::run()
     }
 }
 
-#include "Backend.moc"

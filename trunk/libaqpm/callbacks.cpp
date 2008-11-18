@@ -353,5 +353,3 @@ int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list 
     return(ret);
 }
 
-#include "callbacks.moc"
-

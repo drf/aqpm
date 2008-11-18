@@ -1,6 +1,22 @@
 #include <QtCore/QAtomicPointer>
 #include <sys/types.h>
 
+typedef void (*KdeCleanUpFunction)();
+
+/**
+ * @internal
+ *
+ * Helper class for K_GLOBAL_STATIC to clean up the object on library unload or application
+ * shutdown.
+ */
+class KCleanUpGlobalStatic
+{
+    public:
+        KdeCleanUpFunction func;
+
+        inline ~KCleanUpGlobalStatic() { func(); }
+};
+
 #define AQPM_GLOBAL_STATIC_STRUCT_NAME(NAME)
 
 #define AQPM_GLOBAL_STATIC(TYPE, NAME) AQPM_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ())
