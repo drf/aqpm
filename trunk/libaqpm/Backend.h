@@ -33,21 +33,23 @@
 #include <QWaitCondition>
 #include <QStringList>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-class AQPM_EXPORT QueueItem {
-    public:
-        enum Action {
-            Sync = 1,
-            Remove = 2,
-            FromFile = 4,
-            FullUpgrade = 8
-        };
+class AQPM_EXPORT QueueItem
+{
+public:
+    enum Action {
+        Sync = 1,
+        Remove = 2,
+        FromFile = 4,
+        FullUpgrade = 8
+    };
 
-        typedef QList<QueueItem*> List;
+    typedef QList<QueueItem*> List;
 
-        QString name;
-        Action action_id;
+    QString name;
+    Action action_id;
 };
 
 class TrCommitThread : public QThread
@@ -88,7 +90,7 @@ public:
 
 signals:
     void error(int code);
-    void dbStatusChanged( const QString &repo, int action );
+    void dbStatusChanged(const QString &repo, int action);
     void dbQty(const QStringList &db);
 
 private:
@@ -141,8 +143,8 @@ public:
     alpm_list_t *getAvailableGroups();
     QStringList getAvailableGroupsAsStringList();
 
-    alpm_list_t *getPackagesFromRepo( const QString &reponame );
-    QStringList getPackagesFromRepoAsStringList( const QString &reponame );
+    alpm_list_t *getPackagesFromRepo(const QString &reponame);
+    QStringList getPackagesFromRepoAsStringList(const QString &reponame);
 
     alpm_list_t *getUpgradeablePackages();
     QStringList getUpgradeablePackagesAsStringList();
@@ -150,40 +152,40 @@ public:
     alpm_list_t *getInstalledPackages();
     QStringList getInstalledPackagesAsStringList();
 
-    QStringList getPackageDependencies( pmpkg_t *package );
-    QStringList getPackageDependencies( const QString &name, const QString &repo );
+    QStringList getPackageDependencies(pmpkg_t *package);
+    QStringList getPackageDependencies(const QString &name, const QString &repo);
 
-    QStringList getDependenciesOnPackage( pmpkg_t *package );
-    QStringList getDependenciesOnPackage( const QString &name, const QString &repo );
+    QStringList getDependenciesOnPackage(pmpkg_t *package);
+    QStringList getDependenciesOnPackage(const QString &name, const QString &repo);
 
-    QStringList getPackageFiles( pmpkg_t *package );
-    QStringList getPackageFiles( const QString &name );
+    QStringList getPackageFiles(pmpkg_t *package);
+    QStringList getPackageFiles(const QString &name);
 
-    int countPackages( PackageStatus status );
+    int countPackages(PackageStatus status);
 
-    QStringList getProviders( const QString &name, const QString &repo );
-    QStringList getProviders( pmpkg_t *pkg );
-    bool isProviderInstalled( const QString &provider );
+    QStringList getProviders(const QString &name, const QString &repo);
+    QStringList getProviders(pmpkg_t *pkg);
+    bool isProviderInstalled(const QString &provider);
 
-    unsigned long getPackageSize( const QString &name, const QString &repo );
-    unsigned long getPackageSize( pmpkg_t *package );
+    unsigned long getPackageSize(const QString &name, const QString &repo);
+    unsigned long getPackageSize(pmpkg_t *package);
 
-    QString getPackageVersion( const QString &name, const QString &repo );
-    QString getPackageVersion( pmpkg_t *package );
+    QString getPackageVersion(const QString &name, const QString &repo);
+    QString getPackageVersion(pmpkg_t *package);
 
-    QString getPackageRepo( const QString &name, bool checkver = false );
+    QString getPackageRepo(const QString &name, bool checkver = false);
 
-    bool isInstalled( pmpkg_t *pkg );
-    bool isInstalled( const QString &pkg );
+    bool isInstalled(pmpkg_t *pkg);
+    bool isInstalled(const QString &pkg);
 
     bool updateDatabase();
     bool fullSystemUpgrade();
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 
-    pmpkg_t *getPackageFromName( const QString &name, const QString &repo );
+    pmpkg_t *getPackageFromName(const QString &name, const QString &repo);
 
-    QStringList alpmListToStringList( alpm_list_t *list );
+    QStringList alpmListToStringList(alpm_list_t *list);
 
     QString getAlpmVersion();
 
@@ -193,8 +195,8 @@ public:
     QueueItem::List queue();
 
 Q_SIGNALS:
-    void dbStatusChanged( const QString &repo, int action );
-    void dbQty( const QStringList &db );
+    void dbStatusChanged(const QString &repo, int action);
+    void dbQty(const QStringList &db);
 
     void transactionStarted();
     void transactionReleased();

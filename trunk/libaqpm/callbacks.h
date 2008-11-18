@@ -27,7 +27,8 @@
 
 #include <QObject>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class CallBacks : public QObject
 {

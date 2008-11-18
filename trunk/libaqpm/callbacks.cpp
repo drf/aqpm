@@ -36,7 +36,8 @@
 
 #define UPDATE_SPEED_SEC 0.2f
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class CallBacksHelper
 {

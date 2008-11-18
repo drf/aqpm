@@ -33,7 +33,8 @@
 
 using namespace std;
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 struct PcCnf {
     QStringList syncdbs;

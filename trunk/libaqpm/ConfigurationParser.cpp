@@ -38,7 +38,8 @@
 
 #include "misc/Singleton.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class ConfigurationParserHelper
 {
