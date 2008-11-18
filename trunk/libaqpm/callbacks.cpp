@@ -267,7 +267,7 @@ void CallBacks::cb_dl_progress(const char *filename, off_t file_xfered, off_t fi
     last_file_xfered = file_xfered;
 
     qDebug() << "Emitting progress" << file_xfered << file_total;
-    emit streamTransDlProg((char *)filename, (float)file_xfered, (float)file_total, (int)rate,
+    emit streamTransDlProg((char *)filename, (int)file_xfered, (int)file_total, (int)rate,
                            list_xfered, list_total, (int)rate);
 }
 

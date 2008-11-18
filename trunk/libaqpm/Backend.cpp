@@ -642,6 +642,7 @@ bool Backend::fullSystemUpgrade()
 void Backend::computeTransactionResult()
 {
     if (d->trThread) {
+        clearQueue();
         bool error = d->trThread->isError();
         d->trThread->deleteLater();
 
