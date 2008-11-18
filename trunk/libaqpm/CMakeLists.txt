@@ -10,6 +10,11 @@ SET(aqpm_MOC_HDRS
     callbacks.h
 )
 
+SET(aqpm_HEADERS
+	Backend.h
+	ConfigurationParser.h
+)
+
 QT4_WRAP_CPP(aqpm_MOC_SRCS ${aqpm_MOC_HDRS})
 QT4_AUTOMOC(${aqpm_SRCS})
                       
@@ -29,4 +34,7 @@ TARGET_LINK_LIBRARIES(aqpm
 )
 
 INSTALL(CODE "MESSAGE(\"Installing Aqpm...\")")
-INSTALL(TARGETS aqpm DESTINATION lib)
+install(TARGETS aqpm RUNTIME DESTINATION bin
+                     LIBRARY DESTINATION lib
+                     ARCHIVE DESTINATION lib)
+INSTALL(FILES ${aqpm_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/aqpm)
