@@ -184,6 +184,7 @@ public:
     void clearQueue();
     void addItemToQueue(QueueItem *itm);
     void processQueue();
+    QueueItem::List queue();
 
 Q_SIGNALS:
     void dbStatusChanged( const QString &repo, int action );

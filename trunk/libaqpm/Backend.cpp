@@ -608,6 +608,21 @@ void Backend::clearQueue()
     d->queue.clear();
 }
 
+void Backend::addItemToQueue(QueueItem *itm)
+{
+    d->queue.append(itm);
+}
+
+QueueItem::List Backend::queue()
+{
+    return d->queue;
+}
+
+void Backend::processQueue()
+{
+
+}
+
 /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
 
