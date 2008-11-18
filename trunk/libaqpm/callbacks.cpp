@@ -39,6 +39,23 @@
 namespace Aqpm
 {
 
+class CallBacks::Private
+{
+    public:
+        Private() : onDl(1)
+        {};
+
+        float rate_last;
+        int xfered_last;
+        float rate_total;
+        int xfered_total;
+        float list_total;
+        float list_xfered;
+        float last_file_xfered;
+        int onDl;
+        struct timeval initial_time;
+};
+
 class CallBacksHelper
 {
 public:
@@ -61,18 +78,18 @@ CallBacks *CallBacks::instance()
 }
 
 CallBacks::CallBacks(QObject *parent)
-        : QObject(parent)
+        : QObject(parent),
+        d(new Private())
 {
     Q_ASSERT(!s_globalCallbacks->q);
     s_globalCallbacks->q = this;
     qDebug() << "Constructing callbacks";
     answer = -1;
-    onDl = 1;
 }
 
 CallBacks::~CallBacks()
 {
-
+    delete d;
 }
 
 float CallBacks::get_update_timediff(int first_call)
@@ -183,7 +200,7 @@ void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int 
     float timediff = 0.0;
 
     if (percent == 0) {
-        gettimeofday(&initial_time, NULL);
+        gettimeofday(&d->initial_time, NULL);
         timediff = get_update_timediff(1);
     } else {
         timediff = get_update_timediff(0);
@@ -200,12 +217,12 @@ void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int 
 
 void CallBacks::cb_dl_total(off_t total)
 {
-    list_total = total;
+    d->list_total = total;
     qDebug() << "total called, offset" << total;
     /* if we get a 0 value, it means this list has finished downloading,
      * so clear out our list_xfered as well */
     if (total == 0) {
-        list_xfered = 0;
+        d->list_xfered = 0;
     }
 }
 
@@ -216,9 +233,9 @@ void CallBacks::cb_dl_progress(const char *filename, off_t file_xfered, off_t fi
     float rate = 0.0, timediff = 0.0;
 
     /* only use TotalDownload if enabled and we have a callback value */
-    if (list_total) {
-        xfered = list_xfered + file_xfered;
-        total = list_total;
+    if (d->list_total) {
+        xfered = d->list_xfered + file_xfered;
+        total = d->list_total;
     } else {
         xfered = file_xfered;
         total = file_total;
@@ -229,10 +246,10 @@ void CallBacks::cb_dl_progress(const char *filename, off_t file_xfered, off_t fi
     if (file_xfered == 0) {
         /* set default starting values, ensure we only call this once
          * if TotalDownload is enabled */
-        if (list_xfered == 0) {
-            gettimeofday(&initial_time, NULL);
-            xfered_last = (off_t)0;
-            rate_last = 0.0;
+        if (d->list_xfered == 0) {
+            gettimeofday(&d->initial_time, NULL);
+            d->xfered_last = (off_t)0;
+            d->rate_last = 0.0;
             timediff = get_update_timediff(1);
         }
     } else if (file_xfered == file_total) {
@@ -241,8 +258,8 @@ void CallBacks::cb_dl_progress(const char *filename, off_t file_xfered, off_t fi
         float diff_sec, diff_usec;
 
         gettimeofday(&current_time, NULL);
-        diff_sec = current_time.tv_sec - initial_time.tv_sec;
-        diff_usec = current_time.tv_usec - initial_time.tv_usec;
+        diff_sec = current_time.tv_sec - d->initial_time.tv_sec;
+        diff_usec = current_time.tv_usec - d->initial_time.tv_usec;
         timediff = diff_sec + (diff_usec / 1000000.0);
         rate = xfered / (timediff * 1024.0);
     } else {
@@ -253,22 +270,23 @@ void CallBacks::cb_dl_progress(const char *filename, off_t file_xfered, off_t fi
             /* return if the calling interval was too short */
             return;
         }
-        rate = (xfered - xfered_last) / (timediff * 1024.0);
+        rate = (xfered - d->xfered_last) / (timediff * 1024.0);
         /* average rate to reduce jumpiness */
-        rate = (rate + 2 * rate_last) / 3;
-        rate_last = rate;
-        xfered_last = xfered;
+        rate = (rate + 2 * d->rate_last) / 3;
+        d->rate_last = rate;
+        d->xfered_last = xfered;
     }
 
-    if (last_file_xfered > file_xfered)
-        last_file_xfered = 0;
+    if (d->last_file_xfered > file_xfered) {
+        d->last_file_xfered = 0;
+    }
 
-    list_xfered += file_xfered - last_file_xfered;
-    last_file_xfered = file_xfered;
+    d->list_xfered += file_xfered - d->last_file_xfered;
+    d->last_file_xfered = file_xfered;
 
     qDebug() << "Emitting progress" << file_xfered << file_total;
     emit streamTransDlProg((char *)filename, (int)file_xfered, (int)file_total, (int)rate,
-                           list_xfered, list_total, (int)rate);
+                           d->list_xfered, d->list_total, (int)rate);
 }
 
 void CallBacks::cb_log(pmloglevel_t level, char *fmt, va_list args)

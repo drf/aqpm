@@ -73,15 +73,8 @@ public:
     int answer;
 
 private:
-    float rate_last;
-    int xfered_last;
-    float rate_total;
-    int xfered_total;
-    float list_total;
-    float list_xfered;
-    float last_file_xfered;
-    int onDl;
-    struct timeval initial_time;
+    class Private;
+    Private *d;
 };
 
 void cb_trans_evt(pmtransevt_t event, void *data1, void *data2);
