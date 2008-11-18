@@ -47,6 +47,7 @@ class AQPM_EXPORT QueueItem {
         typedef QList<QueueItem*> List;
 
         QString name;
+        Action action_id;
 };
 
 class TrCommitThread : public QThread
@@ -54,20 +55,23 @@ class TrCommitThread : public QThread
     Q_OBJECT
 
 public:
-    TrCommitThread(pmtranstype_t type, const QStringList &packages, QObject *parent = 0);
+    TrCommitThread(QueueItem::List item, pmtransflag_t flags, QObject *parent = 0);
     void run();
 
     bool isError() {
         return m_error;
     }
 
+private:
+    bool performCurrentTransaction();
+
 signals:
-    void error(const QString &errorString);
+    void error(int code);
 
 private:
     bool m_error;
-    pmtranstype_t m_type;
-    QStringList m_packages;
+    pmtransflag_t m_flags;
+    QueueItem::List m_packages;
 };
 
 class UpDbThread : public QThread
@@ -101,7 +105,9 @@ public:
         PrepareError = 1,
         CommitError = 2,
         InitTransactionError = 4,
-        ReleaseTransactionError = 8
+        ReleaseTransactionError = 8,
+        AddTargetError = 16,
+        CreateSysUpgradeError = 32
     };
 
     enum DatabaseState {
@@ -183,7 +189,7 @@ public:
 
     void clearQueue();
     void addItemToQueue(QueueItem *itm);
-    void processQueue();
+    void processQueue(QList<pmtransflag_t> flags);
     QueueItem::List queue();
 
 Q_SIGNALS:
