@@ -186,6 +186,36 @@ void Backend::initAlpm()
             qDebug() << "Failed to add" << pdata.syncdbs.at(i) << "!!";
         }
     }
+
+    if ( !pdata.xferCommand.isEmpty() ) {
+        qDebug() << "XFerCommand is:" << pdata.xferCommand;
+        alpm_option_set_xfercommand( pdata.xferCommand.toAscii().data() );
+    }
+
+    alpm_option_set_nopassiveftp( pdata.noPassiveFTP );
+
+    foreach( const QString &str, pdata.HoldPkg ) {
+        alpm_option_add_holdpkg( str.toAscii().data() );
+    }
+
+    foreach( const QString &str, pdata.IgnorePkg ) {
+        alpm_option_add_ignorepkg( str.toAscii().data() );
+    }
+
+    foreach( const QString &str, pdata.IgnoreGrp ) {
+        alpm_option_add_ignoregrp( str.toAscii().data() );
+    }
+
+    foreach( const QString &str, pdata.NoExtract ) {
+        alpm_option_add_noextract( str.toAscii().data() );
+    }
+
+    foreach( const QString &str, pdata.NoUpgrade ) {
+        alpm_option_add_noupgrade( str.toAscii().data() );
+    }
+
+    //alpm_option_set_usedelta(pdata.useDelta); Until a proper implementation is there
+    alpm_option_set_usesyslog( pdata.useSysLog );
 }
 
 alpm_list_t *Backend::getAvailableRepos()
