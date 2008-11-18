@@ -7,4 +7,5 @@ ui_*
 *.moc
 *.orig
 *~
+.svn/
 
