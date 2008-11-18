@@ -77,10 +77,14 @@ Backend::Backend()
     Q_ASSERT(!s_globalBackend->q);
     s_globalBackend->q = this;
 
+    qDebug() << "Construction Backend singleton";
+
     alpm_initialize();
 
     qRegisterMetaType<pmtransevt_t>("pmtransevt_t");
     qRegisterMetaType<pmtransprog_t>("pmtransprog_t");
+
+    CallBacks::instance();
 
     connect(CallBacks::instance(), SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)),
             SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)));
@@ -154,12 +158,13 @@ void Backend::initAlpm()
 
     alpm_option_set_dlcb(cb_dl_progress);
     alpm_option_set_totaldlcb(cb_dl_total);
+    alpm_option_set_logcb(cb_log);
 
-    if (pdata.logFile.isEmpty())
+    if (pdata.logFile.isEmpty()) {
         alpm_option_set_logfile("/var/log/pacman.log");
-    else
+    } else {
         alpm_option_set_logfile(pdata.logFile.toAscii().data());
-
+    }
 
     /* Register our sync databases, kindly taken from pacdata */
 
@@ -666,7 +671,25 @@ QueueItem::List Backend::queue()
 
 void Backend::processQueue(QList<pmtransflag_t> flags)
 {
+    pmtransflag_t alpmflags;
 
+    if (flags.isEmpty()) {
+        alpmflags = PM_TRANS_FLAG_ALLDEPS;
+    } else {
+        alpmflags = flags.at(0);
+
+        for (int i=1; i<flags.count(); ++i) {
+            alpmflags = ( pmtransflag_t )(( pmtransflag_t )alpmflags | ( pmtransflag_t )flags.at(i) );
+        }
+    }
+
+    qDebug() << alpmflags;
+
+    d->trThread = new TrCommitThread(d->queue, alpmflags, this);
+
+    connect(d->trThread, SIGNAL(finished()), SLOT(computeTransactionResult()));
+
+    d->trThread->start();
 }
 
 /////////////////////////////////////////////////////////////
@@ -690,15 +713,19 @@ void TrCommitThread::run()
     foreach(QueueItem *itm, m_packages) {
         switch (itm->action_id) {
         case QueueItem::Sync:
+            qDebug() << "Sync action";
             sync = true;
             break;
         case QueueItem::FromFile:
+            qDebug() << "From File action";
             file = true;
             break;
         case QueueItem::Remove:
+            qDebug() << "Remove action";
             remove = true;
             break;
         case QueueItem::FullUpgrade:
+            qDebug() << "Upgrade action";
             sysupgrade = true;
             break;
         }
@@ -752,6 +779,7 @@ void TrCommitThread::run()
                 return;
             }
 
+            qDebug() << "Adding " << itm->name;
             int res = alpm_trans_addtarget(itm->name.toAscii().data());
 
             if (res == -1) {
@@ -825,9 +853,9 @@ bool TrCommitThread::performCurrentTransaction()
 {
     alpm_list_t *data = NULL;
 
+    qDebug() << "Preparing...";
     if (alpm_trans_prepare(&data) == -1) {
         qDebug() << "Could not prepare transaction";
-        alpm_trans_release();
         emit error(Backend::PrepareError);
         m_error = true;
         alpm_trans_release();
@@ -835,14 +863,15 @@ bool TrCommitThread::performCurrentTransaction()
 
     }
 
+    qDebug() << "Committing...";
     if (alpm_trans_commit(&data) == -1) {
         qDebug() << "Could not commit transaction";
-        alpm_trans_release();
         emit error(Backend::CommitError);
         m_error = true;
         alpm_trans_release();
         return false;
     }
+    qDebug() << "Done";
 
     if (data) {
         FREELIST(data);

@@ -65,6 +65,7 @@ CallBacks::CallBacks(QObject *parent)
 {
     Q_ASSERT(!s_globalCallbacks->q);
     s_globalCallbacks->q = this;
+    qDebug() << "Constructing callbacks";
     answer = -1;
     onDl = 1;
 }
@@ -265,6 +266,7 @@ void CallBacks::cb_dl_progress(const char *filename, off_t file_xfered, off_t fi
     list_xfered += file_xfered - last_file_xfered;
     last_file_xfered = file_xfered;
 
+    qDebug() << "Emitting progress" << file_xfered << file_total;
     emit streamTransDlProg((char *)filename, (float)file_xfered, (float)file_total, (int)rate,
                            list_xfered, list_total, (int)rate);
 }
