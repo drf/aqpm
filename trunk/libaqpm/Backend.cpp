@@ -132,6 +132,12 @@ bool Backend::isOnTransaction()
 
 }
 
+bool Backend::reloadPacmanConfiguration()
+{
+    //TODO
+    return false;
+}
+
 void Backend::initAlpm()
 {
     PacmanConf pdata;
@@ -614,6 +620,14 @@ bool Backend::updateDatabase()
     emit transactionStarted();
 
     d->upThread->start();
+}
+
+bool Backend::fullSystemUpgrade()
+{
+    clearQueue();
+    addItemToQueue(new QueueItem(QString(), QueueItem::FullUpgrade));
+
+    return true;
 }
 
 void Backend::computeTransactionResult()
