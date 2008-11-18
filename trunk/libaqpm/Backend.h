@@ -80,11 +80,17 @@ class AQPM_EXPORT Backend : public QObject
 
 public:
 
-    enum InstallMode {
-        KeepPackages = 1,
-        InstallBase = 2,
-        InstallComplete = 4,
-        NewPackages = 8
+    enum ErrorCode {
+        PrepareError = 1,
+        CommitError = 2
+    };
+
+    enum DatabaseState {
+        Checking = 1,
+        Downloading = 2,
+        Upgrading = 4,
+        Upgraded = 8,
+        Unchanged = 16
     };
 
     static Backend *instance();
@@ -97,17 +103,13 @@ public:
 
     void initAlpm();
 
-    void updateKdemodDatabase();
     QStringList getUpgradeablePackages();
 
-    void removeAllKdemodPackages();
-    void installKdemod(InstallMode mode, const QStringList &packages = QStringList());
-
-    QStringList getInstalledKdemodPackages();
-    QStringList getAvailableKdemodPackages();
-
 Q_SIGNALS:
-    void dbUpdated();
+    void dbStatusChanged( const QString &repo, DatabaseState action );
+    void dbQty( const QStringList &db );
+    void transactionStarted();
+    void transactionReleased();
 
     void streamTransDlProg(char *c, int bytedone, int bytetotal, int speed,
                            int listdone, int listtotal, int speedtotal);
@@ -117,7 +119,7 @@ Q_SIGNALS:
 
     void streamTransEvent(pmtransevt_t event, void *data1, void *data2);
 
-    void errorOccurred(const QString &errorString);
+    void errorOccurred(ErrorCode code);
 
     void operationSuccessful();
     void operationFailed();
