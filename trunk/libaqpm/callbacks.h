@@ -27,6 +27,8 @@
 
 #include <QObject>
 
+namespace Aqpm {
+
 class CallBacks : public QObject
 {
     /* I know this sucks, but it seems the only way. We have to declare
@@ -91,6 +93,8 @@ void cb_dl_total(off_t total);
 void cb_dl_progress(const char *filename, off_t file_xfered, off_t file_total);
 void cb_log(pmloglevel_t level, char *fmt, va_list args);
 int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list args);
+
+}
 
 
 #endif /*CALLBACKS_H*/

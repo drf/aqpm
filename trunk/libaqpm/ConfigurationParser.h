@@ -33,6 +33,8 @@
 
 using namespace std;
 
+namespace Aqpm {
+
 struct PcCnf {
     QStringList syncdbs;
     QStringList NoUpgrade;
@@ -106,5 +108,7 @@ private:
     ABSConf absData;
     MakePkgConf makepkgData;
 };
+
+}
 
 #endif /*CONFIGURATIONPARSER_H*/

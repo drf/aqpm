@@ -33,6 +33,8 @@
 #include <QWaitCondition>
 #include <QStringList>
 
+namespace Aqpm {
+
 class TrCommitThread : public QThread
 {
     Q_OBJECT
@@ -67,7 +69,9 @@ public:
     }
 
 signals:
-    void error(const QString &errorString);
+    void error(int code);
+    void dbStatusChanged( const QString &repo, int action );
+    void dbQty(const QStringList &db);
 
 private:
     pmdb_t *m_db;
@@ -82,15 +86,18 @@ public:
 
     enum ErrorCode {
         PrepareError = 1,
-        CommitError = 2
+        CommitError = 2,
+        InitTransactionError = 4,
+        ReleaseTransactionError = 8
     };
 
     enum DatabaseState {
         Checking = 1,
         Downloading = 2,
-        Upgrading = 4,
-        Upgraded = 8,
-        Unchanged = 16
+        Updating = 4,
+        Updated = 8,
+        Unchanged = 16,
+        DatabaseError = 32
     };
 
     enum PackageStatus {
@@ -147,6 +154,20 @@ public:
 
     QString getPackageRepo( const QString &name, bool checkver = false );
 
+    bool isInstalled( pmpkg_t *pkg );
+    bool isInstalled( const QString &pkg );
+
+    bool updateDatabase();
+    bool fullSystemUpgrade();
+
+    bool reloadPacmanConfiguration(); // In case the user modifies it.
+
+    pmpkg_t *getPackageFromName( const QString &name, const QString &repo );
+
+    QStringList alpmListToStringList( alpm_list_t *list );
+
+    QString getAlpmVersion();
+
 Q_SIGNALS:
     void dbStatusChanged( const QString &repo, DatabaseState action );
     void dbQty( const QStringList &db );
@@ -173,5 +194,7 @@ private:
     class Private;
     Private *d;
 };
+
+}
 
 #endif /* BACKEND_H */

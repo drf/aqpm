@@ -38,6 +38,8 @@
 
 #include "misc/Singleton.h"
 
+namespace Aqpm {
+
 class ConfigurationParserHelper
 {
 public:
@@ -1072,4 +1074,6 @@ MakePkgConf ConfigurationParser::getMakepkgConf(bool forcereload)
     parseMakepkgConfig();
 
     return makepkgData;
+}
+
 }

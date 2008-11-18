@@ -25,7 +25,6 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
-#include <QMessageBox>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QWaitCondition>
@@ -36,6 +35,8 @@
 #include "alpm.h"
 
 #define UPDATE_SPEED_SEC 0.2f
+
+namespace Aqpm {
 
 class CallBacksHelper
 {
@@ -353,3 +354,4 @@ int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list 
     return(ret);
 }
 
+}
