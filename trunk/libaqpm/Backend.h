@@ -23,7 +23,7 @@
 
 #include <alpm.h>
 
-#include "misc/Visibility.h"
+#include "Visibility.h"
 
 #include <QThread>
 #include <QPointer>
