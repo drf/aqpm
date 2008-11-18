@@ -141,7 +141,7 @@ public:
     QMutex *backendMutex();
     QWaitCondition *backendWCond();
 
-    void initAlpm();
+    void setUpAlpm();
     bool testLibrary();
     bool isOnTransaction();
 

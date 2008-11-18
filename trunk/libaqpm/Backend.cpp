@@ -92,8 +92,6 @@ Backend::Backend()
             SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
     connect(CallBacks::instance(), SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
             SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
-
-    initAlpm();
 }
 
 Backend::~Backend()
@@ -140,11 +138,11 @@ bool Backend::isOnTransaction()
 
 bool Backend::reloadPacmanConfiguration()
 {
-    //TODO
-    return false;
+    alpm_db_unregister( d->db_local );
+    alpm_db_unregister_all();
 }
 
-void Backend::initAlpm()
+void Backend::setUpAlpm()
 {
     PacmanConf pdata;
 
