@@ -143,7 +143,46 @@ void Backend::initAlpm()
     }
 }
 
-QStringList Backend::getUpgradeablePackages()
+alpm_list_t *Backend::getAvailableRepos()
+{
+    return alpm_option_get_syncdbs();
+}
+
+QStringList Backend::getAvailableReposAsStringList()
+{
+    alpm_list_t *dbs = alpm_option_get_syncdbs();
+    QStringList retlist;
+
+    retlist.clear();
+    dbs = alpm_list_first( dbs );
+
+    while ( dbs != NULL ) {
+        retlist.append( alpm_db_get_name(( pmdb_t * ) alpm_list_getdata( dbs ) ) );
+        dbs = alpm_list_next( dbs );
+    }
+
+    return retlist;
+}
+
+alpm_list_t *Backend::getInstalledPackages()
+{
+    return alpm_db_getpkgcache( d->db_local );
+}
+
+alpm_list_t *Backend::getUpgradeablePackages()
+{
+    alpm_list_t *syncpkgs = NULL;
+    QStringList retlist;
+    retlist.clear();
+
+    if (alpm_sync_sysupgrade(d->db_local, alpm_option_get_syncdbs(), &syncpkgs) == -1) {
+        return NULL;
+    }
+
+    return syncpkgs;
+}
+
+QStringList Backend::getUpgradeablePackagesAsStringList()
 {
     alpm_list_t *syncpkgs = NULL;
     QStringList retlist;

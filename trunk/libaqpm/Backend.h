@@ -93,6 +93,12 @@ public:
         Unchanged = 16
     };
 
+    enum PackageStatus {
+        AllPackages,
+        InstalledPackages,
+        UpgradeablePackages
+    };
+
     static Backend *instance();
 
     Backend();
@@ -103,7 +109,43 @@ public:
 
     void initAlpm();
 
-    QStringList getUpgradeablePackages();
+    alpm_list_t *getAvailableRepos();
+    QStringList getAvailableReposAsStringList();
+
+    alpm_list_t *getAvailableGroups();
+    QStringList getAvailableGroupsAsStringList();
+
+    alpm_list_t *getPackagesFromRepo( const QString &reponame );
+    QStringList getPackagesFromRepoAsStringList( const QString &reponame );
+
+    alpm_list_t *getUpgradeablePackages();
+    QStringList getUpgradeablePackagesAsStringList();
+
+    alpm_list_t *getInstalledPackages();
+    QStringList getInstalledPackagesAsStringList();
+
+    QStringList getPackageDependencies( pmpkg_t *package );
+    QStringList getPackageDependencies( const QString &name, const QString &repo );
+
+    QStringList getDependenciesOnPackage( pmpkg_t *package );
+    QStringList getDependenciesOnPackage( const QString &name, const QString &repo );
+
+    QStringList getPackageFiles( pmpkg_t *package );
+    QStringList getPackageFiles( const QString &name );
+
+    int countPackages( PackageStatus status );
+
+    QStringList getProviders( const QString &name, const QString &repo );
+    QStringList getProviders( pmpkg_t *pkg );
+    bool isProviderInstalled( const QString &provider );
+
+    unsigned long getPackageSize( const QString &name, const QString &repo );
+    unsigned long getPackageSize( pmpkg_t *package );
+
+    QString getPackageVersion( const QString &name, const QString &repo );
+    QString getPackageVersion( pmpkg_t *package );
+
+    QString getPackageRepo( const QString &name, bool checkver = false );
 
 Q_SIGNALS:
     void dbStatusChanged( const QString &repo, DatabaseState action );
