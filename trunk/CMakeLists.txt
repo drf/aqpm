@@ -6,7 +6,13 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 include(FindQt4)
 include(FindSharedMimeInfo)
 
-#configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h )
+set(MAJOR_AQPM_VERSION "0")
+set(MINOR_AQPM_VERSION "2")
+set(PATCH_AQPM_VERSION "0")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
+               @ONLY )
 
 MACRO (MACRO_OPTIONAL_FIND_PACKAGE _name )
    OPTION(WITH_${_name} "Search for ${_name} package" ON)
@@ -50,6 +56,10 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/c
 
 add_subdirectory(libaqpm)
 add_subdirectory(misc)
+
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
+         COMPONENT Devel )
 
 # verbose - on
 # SET(CMAKE_VERBOSE_MAKEFILE ON)

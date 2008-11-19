@@ -23,8 +23,8 @@ add_library(aqpm SHARED
     ${aqpm_MOC_SRCS}
 )
 
-set_target_properties(aqpm PROPERTIES VERSION 0.1.0
-                                     SOVERSION 1
+set_target_properties(aqpm PROPERTIES VERSION ${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQPM_VERSION}
+                                      SOVERSION ${MAJOR_AQPM_VERSION}
                       )
 
 TARGET_LINK_LIBRARIES(aqpm
