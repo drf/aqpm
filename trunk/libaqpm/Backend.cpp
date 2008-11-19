@@ -280,6 +280,19 @@ alpm_list_t *Backend::getInstalledPackages()
     return alpm_db_get_pkgcache(d->db_local);
 }
 
+QStringList Backend::getInstalledPackagesAsStringList()
+{
+    QStringList retlist;
+    alpm_list_t *pkgs = alpm_list_first(getInstalledPackages());
+
+    while (pkgs) {
+        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
+        pkgs = alpm_list_next(pkgs);
+    }
+
+    return retlist;
+}
+
 alpm_list_t *Backend::getUpgradeablePackages()
 {
     alpm_list_t *syncpkgs = NULL;
