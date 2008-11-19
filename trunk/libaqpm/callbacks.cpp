@@ -41,19 +41,18 @@ namespace Aqpm
 
 class CallBacks::Private
 {
-    public:
-        Private() : onDl(1)
-        {};
+public:
+    Private() : onDl(1) {};
 
-        float rate_last;
-        int xfered_last;
-        float rate_total;
-        int xfered_total;
-        float list_total;
-        float list_xfered;
-        float last_file_xfered;
-        int onDl;
-        struct timeval initial_time;
+    float rate_last;
+    int xfered_last;
+    float rate_total;
+    int xfered_total;
+    float list_total;
+    float list_xfered;
+    float last_file_xfered;
+    int onDl;
+    struct timeval initial_time;
 };
 
 class CallBacksHelper

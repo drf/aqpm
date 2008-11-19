@@ -25,23 +25,23 @@ namespace Aqpm
 
 class ConfigurationParser::Private
 {
-    public:
-        Private() {};
+public:
+    Private() {};
 
-        void initPacData();
-        void initMakepkgData();
-        void initABSData();
+    void initPacData();
+    void initMakepkgData();
+    void initABSData();
 
-        QStringList setrepeatingoption(const QString &ptr);
+    QStringList setrepeatingoption(const QString &ptr);
 
-        void parsePacmanConfig(const QString &file, const QString &givensection,
-                const QString &givendb);
-        void parseABSConfig();
-        void parseMakepkgConfig();
+    void parsePacmanConfig(const QString &file, const QString &givensection,
+                           const QString &givendb);
+    void parseABSConfig();
+    void parseMakepkgConfig();
 
-        PacmanConf pacData;
-        ABSConf absData;
-        MakePkgConf makepkgData;
+    PacmanConf pacData;
+    ABSConf absData;
+    MakePkgConf makepkgData;
 };
 
 void ConfigurationParser::Private::initPacData()

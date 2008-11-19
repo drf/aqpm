@@ -38,38 +38,41 @@ using namespace std;
 namespace Aqpm
 {
 
-class PacmanConf {
-    public:
-        QStringList syncdbs;
-        QStringList NoUpgrade;
-        QStringList NoExtract;
-        QStringList IgnorePkg;
-        QStringList IgnoreGrp;
-        QStringList HoldPkg;
-        int noPassiveFTP;
-        int useDelta;
-        int useSysLog;
-        QString xferCommand;
-        QString logFile;
-        QStringList serverAssoc;
-        bool loaded;
+class PacmanConf
+{
+public:
+    QStringList syncdbs;
+    QStringList NoUpgrade;
+    QStringList NoExtract;
+    QStringList IgnorePkg;
+    QStringList IgnoreGrp;
+    QStringList HoldPkg;
+    int noPassiveFTP;
+    int useDelta;
+    int useSysLog;
+    QString xferCommand;
+    QString logFile;
+    QStringList serverAssoc;
+    bool loaded;
 };
 
-class ABSConf {
-    public:
-        QString supfiles;
-        QString rsyncsrv;
-        bool loaded;
+class ABSConf
+{
+public:
+    QString supfiles;
+    QString rsyncsrv;
+    bool loaded;
 };
 
-class MakePkgConf {
-    public:
-        QString cflags;
-        QString cxxflags;
-        QString buildenv;
-        QString options;
-        QString docdirs;
-        bool loaded;
+class MakePkgConf
+{
+public:
+    QString cflags;
+    QString cxxflags;
+    QString buildenv;
+    QString options;
+    QString docdirs;
+    bool loaded;
 };
 
 class AQPM_EXPORT ConfigurationParser

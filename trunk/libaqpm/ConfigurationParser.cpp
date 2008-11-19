@@ -1009,7 +1009,7 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 }
 
 ConfigurationParser::ConfigurationParser()
- : d(new Private())
+        : d(new Private())
 {
     Q_ASSERT(!s_globalParser->q);
     s_globalParser->q = this;

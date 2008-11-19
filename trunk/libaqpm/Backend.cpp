@@ -138,7 +138,7 @@ bool Backend::isOnTransaction()
 
 bool Backend::reloadPacmanConfiguration()
 {
-    alpm_db_unregister( d->db_local );
+    alpm_db_unregister(d->db_local);
     alpm_db_unregister_all();
 }
 
@@ -185,35 +185,35 @@ void Backend::setUpAlpm()
         }
     }
 
-    if ( !pdata.xferCommand.isEmpty() ) {
+    if (!pdata.xferCommand.isEmpty()) {
         qDebug() << "XFerCommand is:" << pdata.xferCommand;
-        alpm_option_set_xfercommand( pdata.xferCommand.toAscii().data() );
+        alpm_option_set_xfercommand(pdata.xferCommand.toAscii().data());
     }
 
-    alpm_option_set_nopassiveftp( pdata.noPassiveFTP );
+    alpm_option_set_nopassiveftp(pdata.noPassiveFTP);
 
-    foreach( const QString &str, pdata.HoldPkg ) {
-        alpm_option_add_holdpkg( str.toAscii().data() );
+    foreach(const QString &str, pdata.HoldPkg) {
+        alpm_option_add_holdpkg(str.toAscii().data());
     }
 
-    foreach( const QString &str, pdata.IgnorePkg ) {
-        alpm_option_add_ignorepkg( str.toAscii().data() );
+    foreach(const QString &str, pdata.IgnorePkg) {
+        alpm_option_add_ignorepkg(str.toAscii().data());
     }
 
-    foreach( const QString &str, pdata.IgnoreGrp ) {
-        alpm_option_add_ignoregrp( str.toAscii().data() );
+    foreach(const QString &str, pdata.IgnoreGrp) {
+        alpm_option_add_ignoregrp(str.toAscii().data());
     }
 
-    foreach( const QString &str, pdata.NoExtract ) {
-        alpm_option_add_noextract( str.toAscii().data() );
+    foreach(const QString &str, pdata.NoExtract) {
+        alpm_option_add_noextract(str.toAscii().data());
     }
 
-    foreach( const QString &str, pdata.NoUpgrade ) {
-        alpm_option_add_noupgrade( str.toAscii().data() );
+    foreach(const QString &str, pdata.NoUpgrade) {
+        alpm_option_add_noupgrade(str.toAscii().data());
     }
 
     //alpm_option_set_usedelta(pdata.useDelta); Until a proper implementation is there
-    alpm_option_set_usesyslog( pdata.useSysLog );
+    alpm_option_set_usesyslog(pdata.useSysLog);
 }
 
 alpm_list_t *Backend::getAvailableRepos()
@@ -707,8 +707,8 @@ void Backend::processQueue(QList<pmtransflag_t> flags)
     } else {
         alpmflags = flags.at(0);
 
-        for (int i=1; i<flags.count(); ++i) {
-            alpmflags = ( pmtransflag_t )(( pmtransflag_t )alpmflags | ( pmtransflag_t )flags.at(i) );
+        for (int i = 1; i < flags.count(); ++i) {
+            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)flags.at(i));
         }
     }
 

@@ -48,9 +48,8 @@ public:
 
     QueueItem();
     QueueItem(QString n, Action a)
-     : name(n),
-     action_id(a)
-     {};
+            : name(n),
+            action_id(a) {};
 
     typedef QList<QueueItem*> List;
 
