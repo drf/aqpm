@@ -96,15 +96,6 @@ public:
     bool editABSSection(const QString &section, const QString &value);
     bool editMakepkgSection(const QString &section, const QString &value);
 
-protected:
-    QStringList setrepeatingoption(const QString &ptr);
-
-private:
-    void parsePacmanConfig(const QString &file, const QString &givensection,
-                           const QString &givendb);
-    void parseABSConfig();
-    void parseMakepkgConfig();
-
 private:
     class Private;
     Private *d;

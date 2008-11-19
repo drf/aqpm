@@ -63,7 +63,7 @@ ConfigurationParser *ConfigurationParser::instance()
     return s_globalParser->q;
 }
 
-QStringList ConfigurationParser::setrepeatingoption(const QString &ptr)
+QStringList ConfigurationParser::Private::setrepeatingoption(const QString &ptr)
 {
     QStringList strlist;
     QStringList list;
@@ -79,22 +79,22 @@ QStringList ConfigurationParser::setrepeatingoption(const QString &ptr)
     return list;
 }
 
-void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &givensection,
+void ConfigurationParser::Private::parsePacmanConfig(const QString &file, const QString &givensection,
         const QString &givendb)
 {
     QFile fp(file);
     QString db(NULL), section(NULL);
     int linenum = 0, serverparsed = 0;
 
-    if (!d->pacData.loaded) {
-        d->pacData.syncdbs.clear();
-        d->pacData.serverAssoc.clear();
+    if (!pacData.loaded) {
+        pacData.syncdbs.clear();
+        pacData.serverAssoc.clear();
     }
 
-    d->pacData.loaded = true;
+    pacData.loaded = true;
 
     if (!fp.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        d->pacData.loaded = false;
+        pacData.loaded = false;
         return;
     }
 
@@ -138,8 +138,8 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
 
             if (section.operator != ("options")) {
                 QString toAdd(section);
-                if (!d->pacData.syncdbs.contains(toAdd)) {
-                    d->pacData.syncdbs.append(toAdd);
+                if (!pacData.syncdbs.contains(toAdd)) {
+                    pacData.syncdbs.append(toAdd);
                     serverparsed = 0;
                 }
 
@@ -155,7 +155,7 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
             if (line.contains(QChar('='))) {
                 templst = line.split(QChar('='));
                 if (templst.size() != 2) {
-                    d->pacData.loaded = false;
+                    pacData.loaded = false;
                     qDebug() << "= error";
                     return;
                 }
@@ -167,13 +167,13 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
             }
 
             if (key == NULL) {
-                d->pacData.loaded = false;
+                pacData.loaded = false;
                 qDebug() << "Key not found error";
                 return;
             }
 
             if (section == NULL) {
-                d->pacData.loaded = false;
+                pacData.loaded = false;
                 qDebug() << "Section not found error";
                 return;
             }
@@ -184,11 +184,11 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
             if (line.isEmpty() && section.compare("options", Qt::CaseInsensitive) == 0) {
                 /* directives without settings, all in [options] */
                 if (key.compare("NoPassiveFTP", Qt::CaseInsensitive) == 0)
-                    d->pacData.noPassiveFTP = 1;
+                    pacData.noPassiveFTP = 1;
                 else if (key.compare("UseSyslog", Qt::CaseInsensitive) == 0)
-                    d->pacData.useSysLog = 1;
+                    pacData.useSysLog = 1;
                 else if (key.compare("UseDelta", Qt::CaseInsensitive) == 0)
-                    d->pacData.useDelta = 1;
+                    pacData.useDelta = 1;
                 else if (key.compare("UseDelta", Qt::CaseInsensitive) == 0 ||
                          key.compare("ILoveCandy", Qt::CaseInsensitive) == 0)
                     continue;
@@ -202,52 +202,52 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
 
                         if (QFile::exists(line)) {
                             parsePacmanConfig(line, section, db);
-                            if (!d->pacData.loaded) {
-                                d->pacData.loaded = false;
+                            if (!pacData.loaded) {
+                                pacData.loaded = false;
                                 qDebug() << "Include error";
                                 return;
                             }
                         } else if (serverparsed != 1)
-                            d->pacData.syncdbs.removeLast();
+                            pacData.syncdbs.removeLast();
                     }
                 }
                 /* Ignore include failures... assume non-critical */
                 else if (section.compare("options", Qt::CaseInsensitive) == 0) {
                     if (key.compare("NoUpgrade", Qt::CaseInsensitive) == 0)
-                        if (!d->pacData.NoUpgrade.isEmpty())
-                            d->pacData.NoUpgrade = d->pacData.NoUpgrade + setrepeatingoption(line);
+                        if (!pacData.NoUpgrade.isEmpty())
+                            pacData.NoUpgrade = pacData.NoUpgrade + setrepeatingoption(line);
                         else
-                            d->pacData.NoUpgrade = setrepeatingoption(line);
+                            pacData.NoUpgrade = setrepeatingoption(line);
 
                     else if (key.compare("NoExtract", Qt::CaseInsensitive) == 0)
-                        if (!d->pacData.NoExtract.isEmpty())
-                            d->pacData.NoExtract = d->pacData.NoExtract + setrepeatingoption(line);
+                        if (!pacData.NoExtract.isEmpty())
+                            pacData.NoExtract = pacData.NoExtract + setrepeatingoption(line);
                         else
-                            d->pacData.NoExtract = setrepeatingoption(line);
+                            pacData.NoExtract = setrepeatingoption(line);
 
                     else if (key.compare("IgnorePkg", Qt::CaseInsensitive) == 0)
-                        if (!d->pacData.IgnorePkg.isEmpty())
-                            d->pacData.IgnorePkg = d->pacData.IgnorePkg + setrepeatingoption(line);
+                        if (!pacData.IgnorePkg.isEmpty())
+                            pacData.IgnorePkg = pacData.IgnorePkg + setrepeatingoption(line);
                         else
-                            d->pacData.IgnorePkg = setrepeatingoption(line);
+                            pacData.IgnorePkg = setrepeatingoption(line);
 
                     else if (key.compare("IgnoreGroup", Qt::CaseInsensitive) == 0)
-                        if (!d->pacData.IgnoreGrp.isEmpty())
-                            d->pacData.IgnoreGrp = d->pacData.IgnoreGrp + setrepeatingoption(line);
+                        if (!pacData.IgnoreGrp.isEmpty())
+                            pacData.IgnoreGrp = pacData.IgnoreGrp + setrepeatingoption(line);
                         else
-                            d->pacData.IgnoreGrp = setrepeatingoption(line);
+                            pacData.IgnoreGrp = setrepeatingoption(line);
 
                     else if (key.compare("HoldPkg", Qt::CaseInsensitive) == 0)
-                        if (!d->pacData.HoldPkg.isEmpty())
-                            d->pacData.HoldPkg = d->pacData.HoldPkg + setrepeatingoption(line);
+                        if (!pacData.HoldPkg.isEmpty())
+                            pacData.HoldPkg = pacData.HoldPkg + setrepeatingoption(line);
                         else
-                            d->pacData.HoldPkg = setrepeatingoption(line);
+                            pacData.HoldPkg = setrepeatingoption(line);
 
                     else if (key.compare("LogFile", Qt::CaseInsensitive) == 0) {
                         while (line.startsWith(QChar(' ')))
                             line.remove(0, 1);
 
-                        d->pacData.logFile = line;
+                        pacData.logFile = line;
 
                         qDebug() << "Log File will be:" << line;
                     }
@@ -256,7 +256,7 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
                         while (line.startsWith(QChar(' ')))
                             line.remove(0, 1);
 
-                        d->pacData.xferCommand = line;
+                        pacData.xferCommand = line;
                     }
 
                 } else if (key.compare("Server", Qt::CaseInsensitive) == 0) {
@@ -277,13 +277,13 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
                         toAdd.append(section);
                         toAdd.append(tmplst.at(1));
 
-                        d->pacData.serverAssoc.append(toAdd);
+                        pacData.serverAssoc.append(toAdd);
                     } else {
-                        d->pacData.serverAssoc.append(line);
+                        pacData.serverAssoc.append(line);
                     }
                 } else {
                     qDebug() << "Unknown error:" << key << line;
-                    d->pacData.loaded = false;
+                    pacData.loaded = false;
                     return;
                 }
             }
@@ -294,14 +294,14 @@ void ConfigurationParser::parsePacmanConfig(const QString &file, const QString &
     qDebug() << "Parser exited";
 }
 
-void ConfigurationParser::parseABSConfig()
+void ConfigurationParser::Private::parseABSConfig()
 {
     QFile fp("/etc/abs.conf");
 
-    d->absData.loaded = true;
+    absData.loaded = true;
 
     if (!fp.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        d->absData.loaded = false;
+        absData.loaded = false;
         return;
     }
 
@@ -315,26 +315,26 @@ void ConfigurationParser::parseABSConfig()
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
-            d->absData.supfiles = line;
+            absData.supfiles = line;
         } else if (line.startsWith("SYNCSERVER")) {
             line = line.remove(0, line.indexOf(QChar('"')) + 1);
             line.truncate(line.indexOf(QChar('"')));
 
-            d->absData.rsyncsrv = line;
+            absData.rsyncsrv = line;
         }
     }
 
     fp.close();
 }
 
-void ConfigurationParser::parseMakepkgConfig()
+void ConfigurationParser::Private::parseMakepkgConfig()
 {
     QFile fp("/etc/makepkg.conf");
 
-    d->makepkgData.loaded = true;
+    makepkgData.loaded = true;
 
     if (!fp.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        d->makepkgData.loaded = false;
+        makepkgData.loaded = false;
         return;
     }
 
@@ -347,27 +347,27 @@ void ConfigurationParser::parseMakepkgConfig()
             line = line.remove(0, line.indexOf(QChar('"')) + 1);
             line.truncate(line.indexOf(QChar('"')));
 
-            d->makepkgData.cflags = line;
+            makepkgData.cflags = line;
         } else if (line.startsWith("CXXFLAGS")) {
             line = line.remove(0, line.indexOf(QChar('"')) + 1);
             line.truncate(line.indexOf(QChar('"')));
 
-            d->makepkgData.cxxflags = line;
+            makepkgData.cxxflags = line;
         } else if (line.startsWith("BUILDENV")) {
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
-            d->makepkgData.buildenv = line;
+            makepkgData.buildenv = line;
         } else if (line.startsWith("OPTIONS")) {
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
-            d->makepkgData.options = line;
+            makepkgData.options = line;
         } else if (line.startsWith("DOC_DIRS")) {
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
-            d->makepkgData.docdirs = line;
+            makepkgData.docdirs = line;
         } else
             continue;
     }
@@ -1009,6 +1009,7 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 }
 
 ConfigurationParser::ConfigurationParser()
+ : d(new Private())
 {
     Q_ASSERT(!s_globalParser->q);
     s_globalParser->q = this;
@@ -1020,7 +1021,7 @@ ConfigurationParser::ConfigurationParser()
 
 ConfigurationParser::~ConfigurationParser()
 {
-
+    delete d;
 }
 
 PacmanConf ConfigurationParser::getPacmanConf(bool forcereload)
@@ -1031,7 +1032,7 @@ PacmanConf ConfigurationParser::getPacmanConf(bool forcereload)
 
     d->initPacData();
 
-    parsePacmanConfig("/etc/pacman.conf", NULL, NULL);
+    d->parsePacmanConfig("/etc/pacman.conf", NULL, NULL);
 
     return d->pacData;
 }
@@ -1044,7 +1045,7 @@ ABSConf ConfigurationParser::getABSConf(bool forcereload)
 
     d->initABSData();
 
-    parseABSConfig();
+    d->parseABSConfig();
 
     return d->absData;
 }
@@ -1056,7 +1057,7 @@ MakePkgConf ConfigurationParser::getMakepkgConf(bool forcereload)
 
     d->initMakepkgData();
 
-    parseMakepkgConfig();
+    d->parseMakepkgConfig();
 
     return d->makepkgData;
 }
