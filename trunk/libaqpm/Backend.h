@@ -170,6 +170,9 @@ public:
     alpm_list_t *getPackagesFromRepo(const QString &reponame);
     QStringList getPackagesFromRepoAsStringList(const QString &reponame);
 
+    alpm_list_t *getPackagesFromGroup(const QString &groupname);
+    QStringList getPackagesFromGroupAsStringList(const QString &groupname);
+
     alpm_list_t *getUpgradeablePackages();
     QStringList getUpgradeablePackagesAsStringList();
 
