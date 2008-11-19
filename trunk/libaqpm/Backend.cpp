@@ -323,9 +323,6 @@ QStringList Backend::getUpgradeablePackagesAsStringList()
     } else {
         qDebug() << "Upgradeable packages:";
         while (syncpkgs != NULL) {
-            /* To Alpm Devs : LOL. Call three functions to get a fucking
-             * name of a package? Please.
-             */
             QString tmp(alpm_pkg_get_name(alpm_sync_get_pkg((pmsyncpkg_t *) alpm_list_getdata(syncpkgs))));
             qDebug() << tmp;
             retlist.append(tmp);

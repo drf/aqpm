@@ -77,13 +77,6 @@ public:
 
 class AQPM_EXPORT ConfigurationParser
 {
-    /* This parser will play bad tricks with your guts. It can parse
-     * and write on pacman.conf, abs.conf and makepkg.conf. It is tha
-     * tool to edit alpm configuration in any way you like. Can be used
-     * with inheritance (best, since it tries to avoid parsing the same
-     * file multiple times), or just by using it as an object.
-     */
-
 public:
 
     static ConfigurationParser *instance();

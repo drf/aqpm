@@ -132,18 +132,6 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
 void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
                               void *data3, int *response)
 {
-    /* This can become a HUGE problem. libalpm implementation
-     * here sucks (really?) as it doesn't consider anything
-     * but pacman. Obviously we can't freeze our process in this
-     * function, alternatives could be moving the function to
-     * a different thread and lock it, or implement a QTimer here.
-     * But what makes everything impossible here? Simple: we don't
-     * have a caller, so both the solution are useless! The only thing
-     * we can actually do is having **ALWAYS** the handler on
-     * a separate thread and really block the process here until somebody gets
-     * an answer. libalpm sucks. Really.
-     */
-
     qDebug() << "Alpm is asking a question.";
 
     QMutexLocker lock(Backend::instance()->backendMutex());
@@ -152,7 +140,7 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
     switch (event) {
     case PM_TRANS_CONV_INSTALL_IGNOREPKG:
         if (data2)
-            /* TODO we take this route based on data2 being not null? WTF (you suck)*/
+            /* TODO we take this route based on data2 being not null? WTF */
             message = QString(tr("%1 requires installing %2 from IgnorePkg/IgnoreGroup.\n Install anyway?")).arg(alpm_pkg_get_name((pmpkg_t *)data1)).
                       arg(alpm_pkg_get_name((pmpkg_t *)data2));
         else
