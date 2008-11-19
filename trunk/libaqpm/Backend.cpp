@@ -649,6 +649,19 @@ alpm_list_t *Backend::getPackagesFromRepo(const QString &reponame)
     return retlist;
 }
 
+QStringList Backend::getPackagesFromRepoAsStringList(const QString &reponame)
+{
+    QStringList retlist;
+    alpm_list_t *pkgs = alpm_list_first(getPackagesFromRepo(reponame));
+
+    while (pkgs) {
+        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
+        pkgs = alpm_list_next(pkgs);
+    }
+
+    return retlist;
+}
+
 int Backend::countPackages(PackageStatus status)
 {
     if (status == AllPackages) {
