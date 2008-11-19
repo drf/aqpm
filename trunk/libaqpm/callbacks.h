@@ -32,12 +32,6 @@ namespace Aqpm
 
 class CallBacks : public QObject
 {
-    /* I know this sucks, but it seems the only way. We have to declare
-     * callback functions as C functions, aka outside a class. But we
-     * obviously have some hard times with intercommunication. So...
-     * here's the nastiest thing ever.
-     */
-
     Q_OBJECT
 
 public:
