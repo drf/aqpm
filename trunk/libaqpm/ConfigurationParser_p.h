@@ -18,6 +18,9 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
+#ifndef CONFIGURATIONPARSER_P_H
+#define CONFIGURATIONPARSER_P_H
+
 #include "ConfigurationParser.h"
 
 namespace Aqpm
@@ -80,3 +83,5 @@ void ConfigurationParser::Private::initABSData()
 }
 
 }
+
+#endif /*CONFIGURATIONPARSER_P_H*/
