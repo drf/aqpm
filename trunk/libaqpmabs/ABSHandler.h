@@ -21,11 +21,13 @@
 #ifndef ABSHANDLER_H
 #define ABSHANDLER_H
 
+#include "Visibility.h"
+
 #include <QProcess>
 
 namespace Aqpm {
 
-class ABSHandler : public QObject {
+class AQPM_EXPORT ABSHandler : public QObject {
 
     Q_OBJECT
 
