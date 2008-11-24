@@ -24,7 +24,6 @@
 
 #include <QStringList>
 #include <QPointer>
-#include <QProcess>
 #include <QDir>
 #include <QDebug>
 
@@ -132,8 +131,8 @@ void BuildingHandler::processNextItem()
 
     d->process->setWorkingDirectory( path );
 
-    connect( d->process, SIGNAL( readyReadStandardOutput() ), SLOT( writeLineProgressMk() ) );
-    connect( d->process, SIGNAL( readyReadStandardError() ), SLOT( writeLineProgressErrMk() ) );
+    connect( d->process, SIGNAL( readyReadStandardOutput() ), SLOT( processOutput() ) );
+    connect( d->process, SIGNAL( readyReadStandardError() ), SLOT( processOutput() ) );
     connect( d->process, SIGNAL( finished( int, QProcess::ExitStatus ) ), SLOT( finishedBuildingAction( int, QProcess::ExitStatus ) ) );
 
     d->process->start( "makepkg" );

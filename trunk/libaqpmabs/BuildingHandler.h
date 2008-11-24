@@ -21,7 +21,7 @@
 #ifndef BUILDINGHANDLER_H
 #define BUILDINGHANDLER_H
 
-#include <QObject>
+#include <QProcess>
 
 namespace Aqpm {
 
@@ -43,6 +43,7 @@ public:
 class BuildingHandler : public QObject
 {
     public:
+
         BuildingHandler();
         virtual ~BuildingHandler();
 
@@ -58,7 +59,12 @@ class BuildingHandler : public QObject
         void buildingStarted();
         void buildingFinished(bool success);
 
+        void newOutput(const QString &output, QProcess::ProcessChannel channel);
+
         void packageBuilt(const QString &path);
+
+    private Q_SLOTS:
+        void processOutput();
 
     private:
         void processNextItem();
