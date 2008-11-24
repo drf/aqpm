@@ -238,8 +238,7 @@ Q_SIGNALS:
 
     void errorOccurred(int code);
 
-    void operationSuccessful();
-    void operationFailed();
+    void operationFinished(bool success);
 
 private Q_SLOTS:
     void computeTransactionResult();

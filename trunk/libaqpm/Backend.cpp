@@ -777,11 +777,7 @@ void Backend::computeTransactionResult()
         bool error = d->trThread->isError();
         d->trThread->deleteLater();
 
-        if (error) {
-            emit operationFailed();
-        } else {
-            emit operationSuccessful();
-        }
+        emit operationFinished(!error);
     }
 }
 
