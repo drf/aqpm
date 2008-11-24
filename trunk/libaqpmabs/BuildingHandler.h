@@ -34,6 +34,8 @@ public:
      env_path(p)
     {};
 
+    typedef QList<BuildItem*> List;
+
     QString name;
     QString env_path;
 };
@@ -57,6 +59,9 @@ class BuildingHandler : public QObject
         void buildingFinished(bool success);
 
         void packageBuilt(const QString &path);
+
+    private:
+        void processNextItem();
 
     private:
         class Private;
