@@ -21,12 +21,46 @@
 #ifndef BUILDINGHANDLER_H
 #define BUILDINGHANDLER_H
 
+#include <QObject>
+
 namespace Aqpm {
 
-class BuildingHandler {
+class BuildItem
+{
+public:
+    BuildItem() {};
+    BuildItem(const QString &n, const QString &p = QString())
+     : name(n),
+     env_path(p)
+    {};
+
+    QString name;
+    QString env_path;
+};
+
+class BuildingHandler : public QObject
+{
     public:
         BuildingHandler();
         virtual ~BuildingHandler();
+
+        void addItemToQueue(BuildItem *itm);
+
+        void clearQueue();
+        void processQueue();
+
+        QStringList getBuiltPackages();
+        void clearBuiltPackages();
+
+    Q_SIGNALS:
+        void buildingStarted();
+        void buildingFinished(bool success);
+
+        void packageBuilt(const QString &path);
+
+    private:
+        class Private;
+        Private *d;
 };
 
 }
