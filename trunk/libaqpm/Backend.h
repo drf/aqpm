@@ -74,51 +74,6 @@ public:
     Action action_id;
 };
 
-class TrCommitThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    TrCommitThread(QueueItem::List item, pmtransflag_t flags, QObject *parent = 0);
-    void run();
-
-    bool isError() {
-        return m_error;
-    }
-
-private:
-    bool performCurrentTransaction();
-
-signals:
-    void error(int code);
-
-private:
-    bool m_error;
-    pmtransflag_t m_flags;
-    QueueItem::List m_packages;
-};
-
-class UpDbThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    explicit UpDbThread(QObject *parent = 0);
-    void run();
-
-    bool isError() {
-        return m_error;
-    }
-
-signals:
-    void error(int code);
-    void dbStatusChanged(const QString &repo, int action);
-    void dbQty(const QStringList &db);
-
-private:
-    bool m_error;
-};
-
 class AQPM_EXPORT Backend : public QObject
 {
     Q_OBJECT
@@ -243,8 +198,10 @@ Q_SIGNALS:
 
     void operationFinished(bool success);
 
-private Q_SLOTS:
-    void computeTransactionResult();
+    // Reserved for thread communication
+
+    void startDbUpdate();
+    void startQueue(QList<pmtransflag_t> flags);
 
 private:
     class Private;

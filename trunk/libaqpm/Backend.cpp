@@ -22,6 +22,7 @@
 
 #include "callbacks.h"
 #include "ConfigurationParser.h"
+#include "BackendThread.h"
 
 #include <QMetaType>
 #include <QDebug>
@@ -37,16 +38,10 @@ public:
 
     Private() : mutex(new QMutex()), wCond(new QWaitCondition()) {};
 
-    pmdb_t *db_local;
-    pmdb_t *dbs_sync;
-
-    QPointer<UpDbThread> upThread;
-    QPointer<TrCommitThread> trThread;
-
     QMutex *mutex;
     QWaitCondition *wCond;
 
-    QueueItem::List queue;
+    BackendThread *thread;
 };
 
 class BackendHelper
@@ -79,12 +74,12 @@ Backend::Backend()
 
     qDebug() << "Construction Backend singleton";
 
-    alpm_initialize();
-
     qRegisterMetaType<pmtransevt_t>("pmtransevt_t");
     qRegisterMetaType<pmtransprog_t>("pmtransprog_t");
 
     CallBacks::instance();
+
+    d->thread = new BackendThread(this);
 
     connect(CallBacks::instance(), SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)),
             SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)));
@@ -92,6 +87,31 @@ Backend::Backend()
             SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
     connect(CallBacks::instance(), SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
             SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
+
+    connect(d->thread, SIGNAL(dbQty(const QStringList&)),
+            this, SIGNAL(dbQty(const QStringList&)));
+    connect(d->thread, SIGNAL(dbStatusChanged(const QString&,int)),
+            this, SIGNAL(dbStatusChanged(const QString&,int)));
+    connect(d->thread, SIGNAL(transactionStarted()),
+            this, SIGNAL(transactionStarted()));
+    connect(d->thread, SIGNAL(transactionReleased()),
+            this, SIGNAL(transactionReleased()));
+    connect(d->thread, SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)),
+            this, SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)));
+    connect(d->thread, SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)),
+            this, SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
+    connect(d->thread, SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
+            this, SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
+    connect(d->thread, SIGNAL(errorOccurred(int)),
+            this, SIGNAL(errorOccurred(int)));
+    connect(d->thread, SIGNAL(operationFinished(bool)),
+            this, SIGNAL(operationFinished(bool)));
+
+    connect(this, SIGNAL(startDbUpdate()),
+            d->thread, SLOT(updateDatabase()));
+    connect(this, SIGNAL(startQueue(QList<pmtransflag_t>)),
+            d->thread, SLOT(processQueue(QList<pmtransflag_t>)));
+
 }
 
 Backend::~Backend()
@@ -111,990 +131,223 @@ QWaitCondition *Backend::backendWCond()
 
 bool Backend::testLibrary()
 {
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS,
-                        cb_trans_evt,
-                        cb_trans_conv,
-                        cb_trans_progress) == -1) {
-        return false;
-    }
-
-    if (alpm_trans_release() == -1) {
-        return false;
-    }
-
-    return true;
+    return d->thread->testLibrary();
 }
 
 bool Backend::isOnTransaction()
 {
-    // I know, it sucks
-    if (!d->trThread && !d->upThread) {
-        return false;
-    } else {
-        return true;
-    }
-
+    return d->thread->isOnTransaction();
 }
 
 bool Backend::reloadPacmanConfiguration()
 {
-    PacmanConf pdata;
-
-    alpm_db_unregister(d->db_local);
-    alpm_db_unregister_all();
-
-    pdata.HoldPkg = alpmListToStringList(alpm_option_get_holdpkgs());
-
-    pdata.IgnorePkg = alpmListToStringList(alpm_option_get_ignorepkgs());
-
-    pdata.IgnoreGrp = alpmListToStringList(alpm_option_get_ignoregrps());
-
-    pdata.NoExtract = alpmListToStringList(alpm_option_get_noextracts());
-
-    pdata.NoUpgrade = alpmListToStringList(alpm_option_get_noupgrades());
-
-    foreach(const QString &str, pdata.HoldPkg) {
-        alpm_option_remove_holdpkg(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.IgnorePkg) {
-        alpm_option_remove_ignorepkg(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.IgnoreGrp) {
-        alpm_option_remove_ignoregrp(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.NoExtract) {
-        alpm_option_remove_noextract(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.NoUpgrade) {
-        alpm_option_remove_noupgrade(str.toAscii().data());
-    }
-
-    alpm_option_remove_cachedir("/var/cache/pacman/pkg");
-
-    setUpAlpm();
-
-    return true;
+    return d->thread->reloadPacmanConfiguration();
 }
 
 void Backend::setUpAlpm()
 {
-    PacmanConf pdata;
-
-    pdata = ConfigurationParser::instance()->getPacmanConf(true);
-
-    alpm_option_set_root("/");
-    alpm_option_set_dbpath("/var/lib/pacman");
-    alpm_option_add_cachedir("/var/cache/pacman/pkg");
-
-    d->db_local = alpm_db_register_local();
-
-    alpm_option_set_dlcb(cb_dl_progress);
-    alpm_option_set_totaldlcb(cb_dl_total);
-    alpm_option_set_logcb(cb_log);
-
-    if (pdata.logFile.isEmpty()) {
-        alpm_option_set_logfile("/var/log/pacman.log");
-    } else {
-        alpm_option_set_logfile(pdata.logFile.toAscii().data());
-    }
-
-    /* Register our sync databases, kindly taken from pacdata */
-
-    if (!pdata.loaded) {
-        qDebug() << "Error Parsing Pacman Configuration!!";
-    }
-
-    for (int i = 0; i < pdata.syncdbs.size(); ++i) {
-        if (pdata.serverAssoc.size() <= i) {
-            qDebug() << "Could not find a matching repo for" << pdata.syncdbs.at(i);
-            continue;
-        }
-
-        d->dbs_sync = alpm_db_register_sync(pdata.syncdbs.at(i).toAscii().data());
-
-        if (alpm_db_setserver(d->dbs_sync, pdata.serverAssoc.at(i).toAscii().data()) == 0) {
-            qDebug() << pdata.syncdbs.at(i) << "--->" << pdata.serverAssoc.at(i);
-        } else {
-            qDebug() << "Failed to add" << pdata.syncdbs.at(i) << "!!";
-        }
-    }
-
-    if (!pdata.xferCommand.isEmpty()) {
-        qDebug() << "XFerCommand is:" << pdata.xferCommand;
-        alpm_option_set_xfercommand(pdata.xferCommand.toAscii().data());
-    }
-
-    alpm_option_set_nopassiveftp(pdata.noPassiveFTP);
-
-    foreach(const QString &str, pdata.HoldPkg) {
-        alpm_option_add_holdpkg(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.IgnorePkg) {
-        alpm_option_add_ignorepkg(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.IgnoreGrp) {
-        alpm_option_add_ignoregrp(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.NoExtract) {
-        alpm_option_add_noextract(str.toAscii().data());
-    }
-
-    foreach(const QString &str, pdata.NoUpgrade) {
-        alpm_option_add_noupgrade(str.toAscii().data());
-    }
-
-    //alpm_option_set_usedelta(pdata.useDelta); Until a proper implementation is there
-    alpm_option_set_usesyslog(pdata.useSysLog);
+    d->thread->setUpAlpm();
 }
 
 alpm_list_t *Backend::getAvailableRepos()
 {
-    return alpm_option_get_syncdbs();
+    return d->thread->getAvailableRepos();
 }
 
 QStringList Backend::getAvailableReposAsStringList()
 {
-    alpm_list_t *dbs = alpm_option_get_syncdbs();
-    QStringList retlist;
-
-    retlist.clear();
-    dbs = alpm_list_first(dbs);
-
-    while (dbs != NULL) {
-        retlist.append(alpm_db_get_name((pmdb_t *) alpm_list_getdata(dbs)));
-        dbs = alpm_list_next(dbs);
-    }
-
-    return retlist;
+    return d->thread->getAvailableReposAsStringList();
 }
 
 alpm_list_t *Backend::getInstalledPackages()
 {
-    return alpm_db_getpkgcache(d->db_local);
+    return d->thread->getInstalledPackages();
 }
 
 QStringList Backend::getInstalledPackagesAsStringList()
 {
-    QStringList retlist;
-    alpm_list_t *pkgs = alpm_list_first(getInstalledPackages());
-
-    while (pkgs) {
-        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
-        pkgs = alpm_list_next(pkgs);
-    }
-
-    return retlist;
+    return d->thread->getInstalledPackagesAsStringList();
 }
 
 alpm_list_t *Backend::getUpgradeablePackages()
 {
-    alpm_list_t *syncpkgs = NULL;
-    QStringList retlist;
-    alpm_list_t *syncdbs;
-    retlist.clear();
-
-    syncdbs = alpm_list_first( alpm_option_get_syncdbs() );
-
-    if ( alpm_sync_sysupgrade( d->db_local, syncdbs, &syncpkgs ) == -1 ) {
-        return NULL;
-    }
-
-    return alpm_list_first( syncpkgs );
+    return d->thread->getUpgradeablePackages();
 }
 
 QStringList Backend::getUpgradeablePackagesAsStringList()
 {
-    alpm_list_t *syncpkgs = NULL;
-    QStringList retlist;
-    alpm_list_t *syncdbs;
-    retlist.clear();
-
-    syncdbs = alpm_list_first( alpm_option_get_syncdbs() );
-
-    if ( alpm_sync_sysupgrade( d->db_local, syncdbs, &syncpkgs ) == -1 )
-        return retlist;
-
-    syncpkgs = alpm_list_first( syncpkgs );
-
-    if ( !syncpkgs ) {
-        return retlist;
-    } else {
-        qDebug() << "Upgradeable packages:";
-        while ( syncpkgs != NULL ) {
-            /* To Alpm Devs : LOL. Call three functions to get a fucking
-             * name of a package? Please.
-             */
-            QString tmp( alpm_pkg_get_name( alpm_sync_get_pkg(( pmsyncpkg_t * ) alpm_list_getdata( syncpkgs ) ) ) );
-            qDebug() << tmp;
-            retlist.append( tmp );
-            syncpkgs = alpm_list_next( syncpkgs );
-        }
-        return retlist;
-    }
+    return d->thread->getUpgradeablePackagesAsStringList();
 }
 
 alpm_list_t *Backend::getAvailableGroups()
 {
-    alpm_list_t *grps = NULL, *syncdbs;
-
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
-
-    while (syncdbs != NULL) {
-        grps = alpm_list_join(grps, alpm_db_getgrpcache((pmdb_t *)alpm_list_getdata(syncdbs)));
-
-        syncdbs = alpm_list_next(syncdbs);
-    }
-
-    return grps;
+    return d->thread->getAvailableGroups();
 }
 
 QStringList Backend::getAvailableGroupsAsStringList()
 {
-    alpm_list_t *grps = NULL, *syncdbs;
-    QStringList retlist;
-    retlist.clear();
-
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
-
-    while (syncdbs != NULL) {
-        grps = alpm_db_getgrpcache((pmdb_t *)alpm_list_getdata(syncdbs));
-        grps = alpm_list_first(grps);
-
-        while (grps != NULL) {
-            retlist.append(alpm_grp_get_name((pmgrp_t *)alpm_list_getdata(grps)));
-            grps = alpm_list_next(grps);
-        }
-
-        syncdbs = alpm_list_next(syncdbs);
-    }
-
-    return retlist;
+    return d->thread->getAvailableGroupsAsStringList();
 }
 
 QStringList Backend::getPackageDependencies(pmpkg_t *package)
 {
-    alpm_list_t *deps;
-    QStringList retlist;
-
-    deps = alpm_pkg_get_depends(package);
-
-    while (deps != NULL) {
-        retlist.append(QString(alpm_dep_get_name((pmdepend_t *)alpm_list_getdata(deps))));
-        deps = alpm_list_next(deps);
-    }
-
-    return retlist;
+    return d->thread->getPackageDependencies(package);
 }
 
 QStringList Backend::getPackageDependencies(const QString &name, const QString &repo)
 {
-    alpm_list_t *deps;
-    QStringList retlist;
-
-    deps = alpm_pkg_get_depends(getPackageFromName(name, repo));
-
-    while (deps != NULL) {
-        retlist.append(QString(alpm_dep_get_name((pmdepend_t *)alpm_list_getdata(deps))));
-        deps = alpm_list_next(deps);
-    }
-
-    return retlist;
+    return d->thread->getPackageDependencies(name, repo);
 }
 
 QStringList Backend::getDependenciesOnPackage(pmpkg_t *package)
 {
-    if (package == NULL)
-        return QStringList();
-
-    alpm_list_t *deps;
-    QStringList retlist;
-
-    deps = alpm_pkg_compute_requiredby(package);
-
-    while (deps != NULL) {
-        retlist.append(QString((char *)alpm_list_getdata(deps)));
-        deps = alpm_list_next(deps);
-    }
-
-    return retlist;
+    return d->thread->getDependenciesOnPackage(package);
 }
 
 QStringList Backend::getDependenciesOnPackage(const QString &name, const QString &repo)
 {
-    alpm_list_t *deps;
-    QStringList retlist;
-
-    deps = alpm_pkg_compute_requiredby(getPackageFromName(name, repo));
-
-    while (deps != NULL) {
-        retlist.append(QString((char *)alpm_list_getdata(deps)));
-        deps = alpm_list_next(deps);
-    }
-
-    return retlist;
+    return d->thread->getDependenciesOnPackage(name, repo);
 }
 
 bool Backend::isInstalled(pmpkg_t *pkg)
 {
-    pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(pkg));
-    if (localpackage == NULL)
-        return false;
-
-    return true;
+    return d->thread->isInstalled(pkg);
 }
 
 bool Backend::isInstalled(const QString &pkg)
 {
-    pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, pkg.toAscii().data());
-    if (localpackage == NULL)
-        return false;
-
-    return true;
+    return d->thread->isInstalled(pkg);
 }
 
 QStringList Backend::getPackageFiles(pmpkg_t *package)
 {
-    alpm_list_t *files;
-    QStringList retlist;
-
-    files = alpm_pkg_get_files(alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(package)));
-
-    while (files != NULL) {
-        retlist.append(QString((char*)alpm_list_getdata(files)).prepend(alpm_option_get_root()));
-        files = alpm_list_next(files);
-    }
-
-    return retlist;
+    return d->thread->getPackageFiles(package);
 }
 
 QStringList Backend::getPackageFiles(const QString &name)
 {
-    alpm_list_t *files;
-    QStringList retlist;
-
-    files = alpm_pkg_get_files(alpm_db_get_pkg(d->db_local, name.toAscii().data()));
-
-    while (files != NULL) {
-        retlist.append(QString((char*)alpm_list_getdata(files)).prepend(alpm_option_get_root()));
-        files = alpm_list_next(files);
-    }
-
-    return retlist;
+    return d->thread->getPackageFiles(name);
 }
 
 QStringList Backend::getProviders(const QString &name, const QString &repo)
 {
-    alpm_list_t *provides;
-    QStringList retlist;
-
-    provides = alpm_pkg_get_provides(getPackageFromName(name, repo));
-
-    while (provides != NULL) {
-        retlist.append(QString((char *)alpm_list_getdata(provides)));
-        provides = alpm_list_next(provides);
-    }
-
-    return retlist;
+    return d->thread->getProviders(name, repo);
 }
 
 QStringList Backend::getProviders(pmpkg_t *pkg)
 {
-    alpm_list_t *provides;
-    QStringList retlist;
-
-    provides = alpm_pkg_get_provides(pkg);
-
-    while (provides != NULL) {
-        retlist.append(QString((char *)alpm_list_getdata(provides)));
-        provides = alpm_list_next(provides);
-    }
-
-    return retlist;
+    return d->thread->getProviders(pkg);
 }
 
 bool Backend::isProviderInstalled(const QString &provider)
 {
-    /* Here's what we need to do: iterate the installed
-     * packages, and find if something between them provides
-     * &provider
-     */
-
-    alpm_list_t *localpack = alpm_db_getpkgcache(d->db_local);
-
-    while (localpack != NULL) {
-        QStringList prv(getProviders(QString(alpm_pkg_get_name(
-                                                 (pmpkg_t *)alpm_list_getdata(localpack))), QString("local")));
-
-        for (int i = 0; i < prv.size(); ++i) {
-            QStringList tmp(prv.at(i).split('='));
-            if (!tmp.at(0).compare(provider)) {
-                qDebug() << "Provider is installed and it is" << alpm_pkg_get_name(
-                    (pmpkg_t *)alpm_list_getdata(localpack));
-                return true;
-            }
-        }
-
-        localpack = alpm_list_next(localpack);
-    }
-
-    return false;
+    return d->thread->isProviderInstalled(provider);
 }
 
 unsigned long Backend::getPackageSize(pmpkg_t *package)
 {
-    return alpm_pkg_get_size(package);
+    return d->thread->getPackageSize(package);
 }
 
 unsigned long Backend::getPackageSize(const QString &name, const QString &repo)
 {
-    return getPackageSize(getPackageFromName(name, repo));
+    return d->thread->getPackageSize(name, repo);
 }
 
 QString Backend::getAlpmVersion()
 {
-    return QString(alpm_version());
+    return d->thread->getAlpmVersion();
 }
 
 QString Backend::getPackageVersion(pmpkg_t *package)
 {
-    return alpm_pkg_get_version(package);
+    return d->thread->getPackageVersion(package);
 }
 
 QString Backend::getPackageVersion(const QString &name, const QString &repo)
 {
-    return getPackageVersion(getPackageFromName(name, repo));
+    return d->thread->getPackageVersion(name, repo);
 }
 
 QString Backend::getPackageRepo(const QString &name, bool checkver)
 {
-    alpm_list_t *syncdbs = alpm_option_get_syncdbs();
-    for (alpm_list_t *i = syncdbs; i; i = alpm_list_next(i)) {
-        pmdb_t *db = (pmdb_t *)alpm_list_getdata(i);
-        pmpkg_t *pkg;
-        pkg = alpm_db_get_pkg(db, name.toAscii().data());
-        if (pkg == NULL)
-            continue;
-
-        if (checkver && (alpm_pkg_get_version(pkg) == getPackageVersion(alpm_pkg_get_name(pkg), "local")))
-            continue;
-
-        return alpm_db_get_name(db);
-    }
-
-    return QString();
+    return d->thread->getPackageRepo(name, checkver);
 }
 
 alpm_list_t *Backend::getPackagesFromGroup(const QString &groupname)
 {
-    alpm_list_t *grps = alpm_list_first(getAvailableGroups());
-    pmgrp_t *group = NULL;
-
-    while (grps) {
-        if (alpm_grp_get_name((pmgrp_t *)alpm_list_getdata(grps)) == groupname) {
-            group = (pmgrp_t *)alpm_list_getdata(grps);
-            break;
-        }
-
-        grps = alpm_list_next(grps);
-    }
-
-    if (group == NULL) {
-        return NULL;
-    }
-
-    return alpm_grp_get_pkgs(group);
+    return d->thread->getPackagesFromGroup(groupname);
 }
 
 QStringList Backend::getPackagesFromGroupAsStringList(const QString &groupname)
 {
-    QStringList retlist;
-    alpm_list_t *pkgs = alpm_list_first(getPackagesFromGroup(groupname));
-
-    while (pkgs) {
-        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
-        pkgs = alpm_list_next(pkgs);
-    }
-
-    return retlist;
+    return d->thread->getPackagesFromGroupAsStringList(groupname);
 }
 
 alpm_list_t *Backend::getPackagesFromRepo(const QString &reponame)
 {
-    /* Since here local would be right the same of calling
-     * getInstalledPackages(), here by local we mean packages that
-     * don't belong to any other repo.
-     */
-
-    alpm_list_t *retlist;
-
-    retlist = NULL;
-
-    if (reponame == "local") {
-        alpm_list_t *pkglist = alpm_db_getpkgcache(d->db_local);
-
-        pkglist = alpm_list_first(pkglist);
-
-        while (pkglist != NULL) {
-            if (getPackageRepo(alpm_pkg_get_name((pmpkg_t *) alpm_list_getdata(pkglist))).isEmpty())
-                retlist = alpm_list_add(retlist, alpm_list_getdata(pkglist));
-
-            pkglist = alpm_list_next(pkglist);
-        }
-    } else {
-        alpm_list_t *syncdbs = alpm_option_get_syncdbs();
-
-        syncdbs = alpm_list_first(syncdbs);
-
-        while (syncdbs != NULL) {
-            if (!reponame.compare(alpm_db_get_name((pmdb_t *) alpm_list_getdata(syncdbs)))) {
-                retlist = alpm_db_getpkgcache((pmdb_t *) alpm_list_getdata(syncdbs));
-                break;
-            }
-
-            syncdbs = alpm_list_next(syncdbs);
-        }
-
-        syncdbs = alpm_list_first(syncdbs);
-    }
-
-    return retlist;
+    return d->thread->getPackagesFromRepo(reponame);
 }
 
 QStringList Backend::getPackagesFromRepoAsStringList(const QString &reponame)
 {
-    QStringList retlist;
-    alpm_list_t *pkgs = alpm_list_first(getPackagesFromRepo(reponame));
-
-    while (pkgs) {
-        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
-        pkgs = alpm_list_next(pkgs);
-    }
-
-    return retlist;
+    return d->thread->getPackagesFromRepoAsStringList(reponame);
 }
 
 int Backend::countPackages(PackageStatus status)
 {
-    if (status == AllPackages) {
-        int retvalue = 0;
-
-        alpm_list_t *databases = getAvailableRepos();
-
-        databases = alpm_list_first(databases);
-
-        while (databases != NULL) {
-            pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(databases);
-
-            alpm_list_t *currentpkgs = alpm_db_getpkgcache(dbcrnt);
-
-            retvalue += alpm_list_count(currentpkgs);
-
-            databases = alpm_list_next(databases);
-        }
-
-        return retvalue;
-    } else if (status == UpgradeablePackages) {
-        return getUpgradeablePackagesAsStringList().count();
-    } else if (status == InstalledPackages) {
-        alpm_list_t *currentpkgs = alpm_db_getpkgcache(d->db_local);
-
-        return alpm_list_count(currentpkgs);
-    } else
-        return 0;
+    return d->thread->countPackages(status);
 }
 
 QStringList Backend::alpmListToStringList(alpm_list_t *list)
 {
-    QStringList retlist;
-
-    list = alpm_list_first(list);
-
-    while (list != NULL) {
-        retlist.append((char *) alpm_list_getdata(list));
-        list = alpm_list_next(list);
-    }
-
-    return retlist;
+    return d->thread->alpmListToStringList(list);
 }
 
 pmpkg_t *Backend::getPackageFromName(const QString &name, const QString &repo)
 {
-    if (!repo.compare("local"))
-        return alpm_db_get_pkg(d->db_local, name.toAscii().data());
-
-    alpm_list_t *dbsync = alpm_list_first(alpm_option_get_syncdbs());
-
-    while (dbsync != NULL) {
-        pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(dbsync);
-
-        if (!repo.compare(QString((char *)alpm_db_get_name(dbcrnt)))) {
-            dbsync = alpm_list_first(dbsync);
-            return alpm_db_get_pkg(dbcrnt, name.toAscii().data());
-        }
-
-        dbsync = alpm_list_next(dbsync);
-    }
-
-    return NULL;
+    return d->thread->getPackageFromName(name, repo);
 }
 
 alpm_list_t *Backend::getPackageGroups(pmpkg_t *package)
 {
-    return alpm_pkg_get_groups(package);
+    return d->thread->getPackageGroups(package);
 }
 
 QStringList Backend::getPackageGroupsAsStringList(pmpkg_t *package)
 {
-    alpm_list_t *list = alpm_pkg_get_groups(package);
-    QStringList retlist;
-
-    while (list != NULL) {
-        retlist.append((char *)alpm_list_getdata(list));
-        list = alpm_list_next(list);
-    }
-
-    return retlist;
+    return d->thread->getPackageGroupsAsStringList(package);
 }
 
 bool Backend::updateDatabase()
 {
-    d->upThread = new UpDbThread(this);
-
-    connect(d->upThread, SIGNAL(dbQty(const QStringList&)), SIGNAL(dbQty(const QStringList&)));
-    connect(d->upThread, SIGNAL(dbStatusChanged(const QString&, int)),
-            SIGNAL(dbStatusChanged(const QString&, int)));
-    connect(d->upThread, SIGNAL(error(int)), SIGNAL(errorOccurred(int)));
-    connect(d->upThread, SIGNAL(finished()), SIGNAL(transactionReleased()));
-
-    emit transactionStarted();
-
-    qDebug() << "Starting DB Update";
-
-    d->upThread->start();
+    emit startDbUpdate();
+    return true;
 }
 
 bool Backend::fullSystemUpgrade()
 {
-    clearQueue();
-    addItemToQueue(new QueueItem(QString(), QueueItem::FullUpgrade));
-
-    return true;
-}
-
-void Backend::computeTransactionResult()
-{
-    if (d->trThread) {
-        clearQueue();
-        bool error = d->trThread->isError();
-        d->trThread->deleteLater();
-
-        emit operationFinished(!error);
-    }
+    return d->thread->fullSystemUpgrade();
 }
 
 void Backend::clearQueue()
 {
-    qDeleteAll(d->queue);
-    d->queue.clear();
+    d->thread->clearQueue();
 }
 
 void Backend::addItemToQueue(QueueItem *itm)
 {
-    d->queue.append(itm);
+    d->thread->addItemToQueue(itm);
 }
 
 QueueItem::List Backend::queue()
 {
-    return d->queue;
+    return d->thread->queue();
 }
 
 void Backend::processQueue(QList<pmtransflag_t> flags)
 {
-    pmtransflag_t alpmflags;
-
-    if (flags.isEmpty()) {
-        alpmflags = PM_TRANS_FLAG_ALLDEPS;
-    } else {
-        alpmflags = flags.at(0);
-
-        for (int i = 1; i < flags.count(); ++i) {
-            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)flags.at(i));
-        }
-    }
-
-    qDebug() << alpmflags;
-
-    d->trThread = new TrCommitThread(d->queue, alpmflags, this);
-
-    connect(d->trThread, SIGNAL(finished()), SLOT(computeTransactionResult()));
-
-    d->trThread->start();
-}
-
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
-
-TrCommitThread::TrCommitThread(QueueItem::List item, pmtransflag_t flags, QObject *parent)
-        : QThread(parent),
-        m_error(false),
-        m_flags(flags),
-        m_packages(item)
-{
-}
-
-void TrCommitThread::run()
-{
-    bool sync = false;
-    bool sysupgrade = false;
-    bool remove = false;
-    bool file = false;
-
-    foreach(QueueItem *itm, m_packages) {
-        switch (itm->action_id) {
-        case QueueItem::Sync:
-            qDebug() << "Sync action";
-            sync = true;
-            break;
-        case QueueItem::FromFile:
-            qDebug() << "From File action";
-            file = true;
-            break;
-        case QueueItem::Remove:
-            qDebug() << "Remove action";
-            remove = true;
-            break;
-        case QueueItem::FullUpgrade:
-            qDebug() << "Upgrade action";
-            sysupgrade = true;
-            break;
-        }
-    }
-
-    if (remove) {
-        if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, m_flags,
-                            cb_trans_evt,
-                            cb_trans_conv,
-                            cb_trans_progress) == -1) {
-            emit error(Backend::InitTransactionError);
-            m_error = true;
-            return;
-        }
-
-        qDebug() << "Starting Package Removal";
-
-        foreach(QueueItem *itm, m_packages) {
-            if (itm->action_id != QueueItem::Remove) {
-                return;
-            }
-
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
-
-            if (res == -1) {
-                emit error(Backend::AddTargetError);
-                m_error = true;
-                return;
-            }
-        }
-
-        if (!performCurrentTransaction()) {
-            return;
-        }
-    }
-
-    if (sync) {
-        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, m_flags,
-                            cb_trans_evt,
-                            cb_trans_conv,
-                            cb_trans_progress) == -1) {
-            emit error(Backend::InitTransactionError);
-            m_error = true;
-            return;
-        }
-
-        qDebug() << "Starting Package Syncing";
-
-        foreach(QueueItem *itm, m_packages) {
-            if (itm->action_id != QueueItem::Sync) {
-                return;
-            }
-
-            qDebug() << "Adding " << itm->name;
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
-
-            if (res == -1) {
-                emit error(Backend::AddTargetError);
-                m_error = true;
-                return;
-            }
-        }
-
-        if (!performCurrentTransaction()) {
-            return;
-        }
-    }
-
-    if (sysupgrade) {
-        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, m_flags,
-                            cb_trans_evt,
-                            cb_trans_conv,
-                            cb_trans_progress) == -1) {
-            emit error(Backend::InitTransactionError);
-            m_error = true;
-            return;
-        }
-
-        if (alpm_trans_sysupgrade() == -1) {
-            qDebug() << "Creating a sysupgrade transaction failed!!";
-            emit error(Backend::CreateSysUpgradeError);
-            alpm_trans_release();
-            m_error = true;
-            return;
-        }
-
-        if (!performCurrentTransaction()) {
-            return;
-        }
-    }
-
-    if (file) {
-        if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, m_flags,
-                            cb_trans_evt,
-                            cb_trans_conv,
-                            cb_trans_progress) == -1) {
-            emit error(Backend::InitTransactionError);
-            m_error = true;
-            return;
-        }
-
-        qDebug() << "Starting Package Syncing";
-
-        foreach(QueueItem *itm, m_packages) {
-            if (itm->action_id != QueueItem::FromFile) {
-                return;
-            }
-
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
-
-            if (res == -1) {
-                emit error(Backend::AddTargetError);
-                m_error = true;
-                return;
-            }
-        }
-
-        if (!performCurrentTransaction()) {
-            return;
-        }
-    }
-}
-
-bool TrCommitThread::performCurrentTransaction()
-{
-    alpm_list_t *data = NULL;
-
-    qDebug() << "Preparing...";
-    if (alpm_trans_prepare(&data) == -1) {
-        qDebug() << "Could not prepare transaction";
-        emit error(Backend::PrepareError);
-        m_error = true;
-        alpm_trans_release();
-        return false;
-
-    }
-
-    qDebug() << "Committing...";
-    if (alpm_trans_commit(&data) == -1) {
-        qDebug() << "Could not commit transaction";
-        emit error(Backend::CommitError);
-        m_error = true;
-        alpm_trans_release();
-        return false;
-    }
-    qDebug() << "Done";
-
-    if (data) {
-        FREELIST(data);
-    }
-
-    alpm_trans_release();
-
-    return true;
-}
-
-//
-
-UpDbThread::UpDbThread(QObject *parent)
-        : QThread(parent),
-        m_error(false)
-{
-    connect(this, SIGNAL(finished()), SLOT(deleteLater()));
-}
-
-void UpDbThread::run()
-{
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, cb_trans_evt, cb_trans_conv,
-                        cb_trans_progress) == -1) {
-        emit error(Backend::InitTransactionError);
-        qDebug() << "Error!";
-        m_error = true;
-        return;
-    }
-
-    int r;
-    alpm_list_t *syncdbs;
-
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
-
-    QStringList list;
-
-    while (syncdbs != NULL) {
-        pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(syncdbs);
-
-        list.append(QString((char *)alpm_db_get_name(dbcrnt)));
-        syncdbs = alpm_list_next(syncdbs);
-    }
-
-    qDebug() << "Found " << list;
-
-    emit dbQty(list);
-
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
-
-    while (syncdbs != NULL) {
-        qDebug() << "Updating DB";
-        pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(syncdbs);
-        QString curdbname((char *)alpm_db_get_name(dbcrnt));
-
-        emit dbStatusChanged(curdbname, Backend::Checking);
-
-        r = alpm_db_update(0, dbcrnt);
-
-        if (r > 0) {
-            emit dbStatusChanged(curdbname, Backend::DatabaseError);
-        } else if (r < 0) {
-            emit dbStatusChanged(curdbname, Backend::Unchanged);
-        } else {
-            emit dbStatusChanged(curdbname, Backend::Updated);
-        }
-
-        syncdbs = alpm_list_next(syncdbs);
-    }
-
-    if (alpm_trans_release() == -1) {
-        if (alpm_trans_interrupt() == -1) {
-            m_error = true;
-            emit error(Backend::ReleaseTransactionError);
-        }
-    }
-
-    qDebug() << "Database Update Performed";
+    emit startQueue(flags);
 }
 
 }

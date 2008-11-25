@@ -1,12 +1,14 @@
 
 SET(aqpm_SRCS 
     Backend.cpp
+    BackendThread.cpp
     ConfigurationParser.cpp
     callbacks.cpp
 )
 
 SET(aqpm_MOC_HDRS
     Backend.h
+    BackendThread.h
     callbacks.h
 )
 
