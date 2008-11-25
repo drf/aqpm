@@ -26,6 +26,7 @@
 
 #include <QMetaType>
 #include <QDebug>
+#include <QCoreApplication>
 
 #include "misc/Singleton.h"
 
@@ -42,6 +43,7 @@ public:
     QWaitCondition *wCond;
 
     BackendThread *thread;
+    QMap<Backend::BackendEvents, QEvent::Type> events;
 };
 
 class BackendHelper
@@ -77,10 +79,49 @@ Backend::Backend()
     qRegisterMetaType<pmtransevt_t>("pmtransevt_t");
     qRegisterMetaType<pmtransprog_t>("pmtransprog_t");
 
-    CallBacks::instance();
+    d->events[Initialization] = (QEvent::Type)QEvent::registerEventType();
+    d->events[UpdateDatabase] = (QEvent::Type)QEvent::registerEventType();
+    d->events[ProcessQueue] = (QEvent::Type)QEvent::registerEventType();
 
-    d->thread = new BackendThread(this);
+    qDebug() << d->events;
 
+    d->thread = new BackendThread();
+    d->thread->start();
+
+    connect(d->thread, SIGNAL(dbQty(const QStringList&)),
+            this, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
+    connect(d->thread, SIGNAL(dbStatusChanged(const QString&,int)),
+            this, SIGNAL(dbStatusChanged(const QString&,int)), Qt::QueuedConnection);
+    connect(d->thread, SIGNAL(transactionStarted()),
+            this, SIGNAL(transactionStarted()));
+    connect(d->thread, SIGNAL(transactionReleased()),
+            this, SIGNAL(transactionReleased()));
+    connect(d->thread, SIGNAL(errorOccurred(int)),
+            this, SIGNAL(errorOccurred(int)));
+    connect(d->thread, SIGNAL(operationFinished(bool)),
+            this, SIGNAL(operationFinished(bool)));
+    connect(d->thread, SIGNAL(threadInitialized()),
+            this, SLOT(connectCallbacks()));
+
+    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
+    QCoreApplication::flush();
+
+    sleep (2);
+}
+
+Backend::~Backend()
+{
+    d->thread->deleteLater();
+    delete d;
+}
+
+QEvent::Type Backend::getEventTypeFor(BackendEvents event)
+{
+    return d->events[event];
+}
+
+void Backend::connectCallbacks()
+{
     connect(CallBacks::instance(), SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)),
             SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)));
     connect(CallBacks::instance(), SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)),
@@ -88,35 +129,7 @@ Backend::Backend()
     connect(CallBacks::instance(), SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
             SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
 
-    connect(d->thread, SIGNAL(dbQty(const QStringList&)),
-            this, SIGNAL(dbQty(const QStringList&)));
-    connect(d->thread, SIGNAL(dbStatusChanged(const QString&,int)),
-            this, SIGNAL(dbStatusChanged(const QString&,int)));
-    connect(d->thread, SIGNAL(transactionStarted()),
-            this, SIGNAL(transactionStarted()));
-    connect(d->thread, SIGNAL(transactionReleased()),
-            this, SIGNAL(transactionReleased()));
-    connect(d->thread, SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)),
-            this, SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)));
-    connect(d->thread, SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)),
-            this, SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
-    connect(d->thread, SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
-            this, SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
-    connect(d->thread, SIGNAL(errorOccurred(int)),
-            this, SIGNAL(errorOccurred(int)));
-    connect(d->thread, SIGNAL(operationFinished(bool)),
-            this, SIGNAL(operationFinished(bool)));
-
-    connect(this, SIGNAL(startDbUpdate()),
-            d->thread, SLOT(updateDatabase()));
-    connect(this, SIGNAL(startQueue(QList<pmtransflag_t>)),
-            d->thread, SLOT(processQueue(QList<pmtransflag_t>)));
-
-}
-
-Backend::~Backend()
-{
-    delete d;
+    emit backendReady();
 }
 
 QMutex *Backend::backendMutex()
@@ -321,7 +334,9 @@ QStringList Backend::getPackageGroupsAsStringList(pmpkg_t *package)
 
 bool Backend::updateDatabase()
 {
-    emit startDbUpdate();
+    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(UpdateDatabase)));
+    QCoreApplication::flush();
+    qDebug() << "Thread is running";
     return true;
 }
 
@@ -335,9 +350,9 @@ void Backend::clearQueue()
     d->thread->clearQueue();
 }
 
-void Backend::addItemToQueue(QueueItem *itm)
+void Backend::addItemToQueue(const QString &name, QueueItem::Action action)
 {
-    d->thread->addItemToQueue(itm);
+    d->thread->addItemToQueue(name, action);
 }
 
 QueueItem::List Backend::queue()
@@ -347,7 +362,10 @@ QueueItem::List Backend::queue()
 
 void Backend::processQueue(QList<pmtransflag_t> flags)
 {
-    emit startQueue(flags);
+    d->thread->setFlags(flags);
+    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(ProcessQueue)));
+    QCoreApplication::flush();
+    qDebug() << "Thread is running";
 }
 
 }

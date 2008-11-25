@@ -22,6 +22,7 @@
 #define BACKENDTHREAD_H
 
 #include <QThread>
+#include <QEvent>
 
 #include "Backend.h"
 
@@ -36,6 +37,8 @@ class BackendThread : public QThread
     public:
         BackendThread(QObject *parent = 0);
         virtual ~BackendThread();
+
+        void init();
 
     public Q_SLOTS:
         void setUpAlpm();
@@ -101,8 +104,9 @@ class BackendThread : public QThread
         QString getAlpmVersion();
 
         void clearQueue();
-        void addItemToQueue(QueueItem *itm);
-        void processQueue(QList<pmtransflag_t> flags);
+        void addItemToQueue(const QString &name, QueueItem::Action action);
+        void setFlags(QList<pmtransflag_t> flags);
+        void processQueue();
         QueueItem::List queue();
 
     Q_SIGNALS:
@@ -112,17 +116,15 @@ class BackendThread : public QThread
         void transactionStarted();
         void transactionReleased();
 
-        void streamTransDlProg(char *c, int bytedone, int bytetotal, int speed,
-                int listdone, int listtotal, int speedtotal);
-
-        void streamTransProgress(pmtransprog_t event, char *pkgname, int percent,
-                int howmany, int remain);
-
-        void streamTransEvent(pmtransevt_t event, void *data1, void *data2);
-
         void errorOccurred(int code);
 
         void operationFinished(bool success);
+
+        void threadInitialized();
+
+    protected:
+        void customEvent(QEvent *event);
+        void run();
 
     private:
         bool performCurrentTransaction();

@@ -32,6 +32,7 @@
 #include <QMutexLocker>
 #include <QWaitCondition>
 #include <QStringList>
+#include <QEvent>
 
 namespace Aqpm
 {
@@ -104,10 +105,18 @@ public:
         UpgradeablePackages
     };
 
+    enum BackendEvents {
+        UpdateDatabase = 1001,
+        ProcessQueue = 1002,
+        Initialization = 1003
+    };
+
     static Backend *instance();
 
     Backend();
     virtual ~Backend();
+
+    QEvent::Type getEventTypeFor(BackendEvents event);
 
     QMutex *backendMutex();
     QWaitCondition *backendWCond();
@@ -175,7 +184,7 @@ public:
     QString getAlpmVersion();
 
     void clearQueue();
-    void addItemToQueue(QueueItem *itm);
+    void addItemToQueue(const QString &name, QueueItem::Action action);
     void processQueue(QList<pmtransflag_t> flags);
     QueueItem::List queue();
 
@@ -198,10 +207,15 @@ Q_SIGNALS:
 
     void operationFinished(bool success);
 
+    void backendReady();
+
     // Reserved for thread communication
 
     void startDbUpdate();
     void startQueue(QList<pmtransflag_t> flags);
+
+private Q_SLOTS:
+    void connectCallbacks();
 
 private:
     class Private;

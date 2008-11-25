@@ -24,6 +24,7 @@
 #include "ConfigurationParser.h"
 
 #include <QDebug>
+#include <QTimer>
 
 namespace Aqpm {
 
@@ -37,19 +38,46 @@ public:
     pmdb_t *dbs_sync;
 
     QueueItem::List queue;
+    QList<pmtransflag_t> flags;
+
 };
 
 BackendThread::BackendThread(QObject *parent)
  : QThread(parent)
 {
+    qDebug() << "Handling libalpm in a separate Thread";
     connect(this, SIGNAL(operationFinished(bool)), SIGNAL(transactionReleased()));
-    start();
-    alpm_initialize();
 }
 
 BackendThread::~BackendThread()
 {
     quit();
+}
+
+void BackendThread::run()
+{
+    exec();
+}
+
+void BackendThread::init()
+{
+    qDebug() << "Initializing";
+    CallBacks::instance();
+    alpm_initialize();
+    emit threadInitialized();
+}
+
+void BackendThread::customEvent(QEvent *event)
+{
+    qDebug() << "Received event of type" << event->type();
+
+    if (event->type() == Backend::instance()->getEventTypeFor(Backend::UpdateDatabase)) {
+        updateDatabase();
+    } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::ProcessQueue)) {
+        processQueue();
+    } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::Initialization)) {
+        init();
+    }
 }
 
 bool BackendThread::testLibrary()
@@ -763,12 +791,14 @@ bool BackendThread::updateDatabase()
     qDebug() << "Database Update Performed";
 
     emit transactionReleased();
+
+    return true;
 }
 
 bool BackendThread::fullSystemUpgrade()
 {
     clearQueue();
-    addItemToQueue(new QueueItem(QString(), QueueItem::FullUpgrade));
+    d->queue.append(new QueueItem(QString(), QueueItem::FullUpgrade));
 
     return true;
 }
@@ -779,9 +809,9 @@ void BackendThread::clearQueue()
     d->queue.clear();
 }
 
-void BackendThread::addItemToQueue(QueueItem *itm)
+void BackendThread::addItemToQueue(const QString &name, QueueItem::Action action)
 {
-    d->queue.append(itm);
+    d->queue.append(new QueueItem(name, action));
 }
 
 QueueItem::List BackendThread::queue()
@@ -789,17 +819,22 @@ QueueItem::List BackendThread::queue()
     return d->queue;
 }
 
-void BackendThread::processQueue(QList<pmtransflag_t> flags)
+void BackendThread::setFlags(QList<pmtransflag_t> flags)
+{
+    d->flags = flags;
+}
+
+void BackendThread::processQueue()
 {
     pmtransflag_t alpmflags;
 
-    if (flags.isEmpty()) {
+    if (d->flags.isEmpty()) {
         alpmflags = PM_TRANS_FLAG_ALLDEPS;
     } else {
-        alpmflags = flags.at(0);
+        alpmflags = d->flags.at(0);
 
-        for (int i = 1; i < flags.count(); ++i) {
-            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)flags.at(i));
+        for (int i = 1; i < d->flags.count(); ++i) {
+            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)d->flags.at(i));
         }
     }
 
