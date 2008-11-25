@@ -745,6 +745,24 @@ pmpkg_t *Backend::getPackageFromName(const QString &name, const QString &repo)
     return NULL;
 }
 
+alpm_list_t *Backend::getPackageGroups(pmpkg_t *package)
+{
+    return alpm_pkg_get_groups(package);
+}
+
+QStringList Backend::getPackageGroupsAsStringList(pmpkg_t *package)
+{
+    alpm_list_t *list = alpm_pkg_get_groups(package);
+    QStringList retlist;
+
+    while (list != NULL) {
+        retlist.append((char *)alpm_list_getdata(list));
+        list = alpm_list_next(list);
+    }
+
+    return retlist;
+}
+
 bool Backend::updateDatabase()
 {
     d->upThread = new UpDbThread(this);

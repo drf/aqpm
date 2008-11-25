@@ -182,6 +182,9 @@ public:
     QStringList getPackageDependencies(pmpkg_t *package);
     QStringList getPackageDependencies(const QString &name, const QString &repo);
 
+    alpm_list_t *getPackageGroups(pmpkg_t *package);
+    QStringList getPackageGroupsAsStringList(pmpkg_t *package);
+
     QStringList getDependenciesOnPackage(pmpkg_t *package);
     QStringList getDependenciesOnPackage(const QString &name, const QString &repo);
 
