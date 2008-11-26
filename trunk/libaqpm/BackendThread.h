@@ -30,7 +30,7 @@
 
 namespace Aqpm {
 
-class BackendThread : public QThread
+class BackendThread : public QObject
 {
     Q_OBJECT
 
@@ -124,14 +124,24 @@ class BackendThread : public QThread
 
     protected:
         void customEvent(QEvent *event);
-        void run();
-
-    private:
-        bool performCurrentTransaction();
 
     private:
         class Private;
         Private *d;
+};
+
+class ContainerThread : public QThread
+{
+    Q_OBJECT
+
+    public:
+        ContainerThread() {};
+
+    protected:
+        void run();
+
+    Q_SIGNALS:
+        void threadCreated(BackendThread *thread);
 };
 
 }

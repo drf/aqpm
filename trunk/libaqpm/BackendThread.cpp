@@ -28,6 +28,13 @@
 
 namespace Aqpm {
 
+void ContainerThread::run()
+{
+    BackendThread *t = new BackendThread(this);
+    emit threadCreated(t);
+    exec();
+}
+
 class BackendThread::Private
 {
 public:
@@ -39,11 +46,11 @@ public:
 
     QueueItem::List queue;
     QList<pmtransflag_t> flags;
-
 };
 
 BackendThread::BackendThread(QObject *parent)
- : QThread(parent)
+ : QObject(parent),
+ d(new Private())
 {
     qDebug() << "Handling libalpm in a separate Thread";
     connect(this, SIGNAL(operationFinished(bool)), SIGNAL(transactionReleased()));
@@ -51,12 +58,6 @@ BackendThread::BackendThread(QObject *parent)
 
 BackendThread::~BackendThread()
 {
-    quit();
-}
-
-void BackendThread::run()
-{
-    exec();
 }
 
 void BackendThread::init()
@@ -894,10 +895,32 @@ void BackendThread::processQueue()
             }
         }
 
-        if (!performCurrentTransaction()) {
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Backend::PrepareError);
+            alpm_trans_release();
             emit operationFinished(false);
             return;
         }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Backend::CommitError);
+            alpm_trans_release();
+            emit operationFinished(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
     }
 
     if (sync) {
@@ -927,10 +950,32 @@ void BackendThread::processQueue()
             }
         }
 
-        if (!performCurrentTransaction()) {
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Backend::PrepareError);
+            alpm_trans_release();
             emit operationFinished(false);
             return;
         }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Backend::CommitError);
+            alpm_trans_release();
+            emit operationFinished(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
     }
 
     if (sysupgrade) {
@@ -951,10 +996,32 @@ void BackendThread::processQueue()
             return;
         }
 
-        if (!performCurrentTransaction()) {
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Backend::PrepareError);
+            alpm_trans_release();
             emit operationFinished(false);
             return;
         }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Backend::CommitError);
+            alpm_trans_release();
+            emit operationFinished(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
     }
 
     if (file) {
@@ -983,44 +1050,35 @@ void BackendThread::processQueue()
             }
         }
 
-        if (!performCurrentTransaction()) {
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Backend::PrepareError);
+            alpm_trans_release();
             emit operationFinished(false);
             return;
         }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Backend::CommitError);
+            alpm_trans_release();
+            emit operationFinished(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
     }
 
     emit operationFinished(true);
-}
-
-bool BackendThread::performCurrentTransaction()
-{
-    alpm_list_t *data = NULL;
-
-    qDebug() << "Preparing...";
-    if (alpm_trans_prepare(&data) == -1) {
-        qDebug() << "Could not prepare transaction";
-        emit errorOccurred(Backend::PrepareError);
-        alpm_trans_release();
-        return false;
-
-    }
-
-    qDebug() << "Committing...";
-    if (alpm_trans_commit(&data) == -1) {
-        qDebug() << "Could not commit transaction";
-        emit errorOccurred(Backend::CommitError);
-        alpm_trans_release();
-        return false;
-    }
-    qDebug() << "Done";
-
-    if (data) {
-        FREELIST(data);
-    }
-
-    alpm_trans_release();
-
-    return true;
 }
 
 }

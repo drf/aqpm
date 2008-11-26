@@ -43,6 +43,7 @@ public:
     QWaitCondition *wCond;
 
     BackendThread *thread;
+    ContainerThread *containerThread;
     QMap<Backend::BackendEvents, QEvent::Type> events;
 };
 
@@ -85,8 +86,21 @@ Backend::Backend()
 
     qDebug() << d->events;
 
-    d->thread = new BackendThread();
-    d->thread->start();
+    d->containerThread = new ContainerThread();
+    connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(setUpSelf(BackendThread*)));
+    d->containerThread->start();
+}
+
+Backend::~Backend()
+{
+    d->containerThread->quit();
+    d->containerThread->deleteLater();
+    delete d;
+}
+
+void Backend::setUpSelf(BackendThread *t)
+{
+    d->thread = t;
 
     connect(d->thread, SIGNAL(dbQty(const QStringList&)),
             this, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
@@ -104,15 +118,6 @@ Backend::Backend()
             this, SLOT(connectCallbacks()));
 
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
-    QCoreApplication::flush();
-
-    sleep (2);
-}
-
-Backend::~Backend()
-{
-    d->thread->deleteLater();
-    delete d;
 }
 
 QEvent::Type Backend::getEventTypeFor(BackendEvents event)
@@ -335,7 +340,6 @@ QStringList Backend::getPackageGroupsAsStringList(pmpkg_t *package)
 bool Backend::updateDatabase()
 {
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(UpdateDatabase)));
-    QCoreApplication::flush();
     qDebug() << "Thread is running";
     return true;
 }
@@ -364,7 +368,6 @@ void Backend::processQueue(QList<pmtransflag_t> flags)
 {
     d->thread->setFlags(flags);
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(ProcessQueue)));
-    QCoreApplication::flush();
     qDebug() << "Thread is running";
 }
 

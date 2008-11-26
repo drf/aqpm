@@ -37,6 +37,8 @@
 namespace Aqpm
 {
 
+class BackendThread;
+
 /**
  * This class represent an item in the queue. To enqueue items in
  * Aqpm, you have to create an instance of this class and populate it.
@@ -216,6 +218,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void connectCallbacks();
+    void setUpSelf(BackendThread *t);
 
 private:
     class Private;
