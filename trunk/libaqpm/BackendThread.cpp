@@ -30,9 +30,10 @@ namespace Aqpm {
 
 void ContainerThread::run()
 {
-    BackendThread *t = new BackendThread(this);
+    BackendThread *t = new BackendThread();
     emit threadCreated(t);
     exec();
+    t->deleteLater();
 }
 
 class BackendThread::Private
@@ -58,6 +59,7 @@ BackendThread::BackendThread(QObject *parent)
 
 BackendThread::~BackendThread()
 {
+    delete d;
 }
 
 void BackendThread::init()
@@ -772,10 +774,10 @@ bool BackendThread::updateDatabase()
 
         r = alpm_db_update(0, dbcrnt);
 
-        if (r > 0) {
-            emit dbStatusChanged(curdbname, Backend::DatabaseError);
-        } else if (r < 0) {
+        if (r == 1) {
             emit dbStatusChanged(curdbname, Backend::Unchanged);
+        } else if (r < 0) {
+            emit dbStatusChanged(curdbname, Backend::DatabaseError);
         } else {
             emit dbStatusChanged(curdbname, Backend::Updated);
         }
