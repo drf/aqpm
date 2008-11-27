@@ -123,6 +123,7 @@ float CallBacks::get_update_timediff(int first_call)
 
 void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
 {
+    QMutexLocker lock(Backend::instance()->backendMutex());
     emit streamTransEvent(event, data1, data2);
     qDebug() << "Alpm Thread Waiting.";
     Backend::instance()->backendWCond()->wait(Backend::instance()->backendMutex());
@@ -319,7 +320,6 @@ void cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
 
 void cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
 {
-    QMutexLocker lock(Backend::instance()->backendMutex());
     qDebug() << "Received Event Callback";
     CallBacks::instance()->cb_trans_evt(event, data1, data2);
 }
