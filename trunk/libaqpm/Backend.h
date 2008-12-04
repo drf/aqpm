@@ -123,7 +123,6 @@ public:
     QMutex *backendMutex();
     QWaitCondition *backendWCond();
 
-    void setUpAlpm();
     bool testLibrary();
     bool isOnTransaction();
 
@@ -189,6 +188,9 @@ public:
     void addItemToQueue(const QString &name, QueueItem::Action action);
     void processQueue(QList<pmtransflag_t> flags);
     QueueItem::List queue();
+
+public Q_SLOTS:
+    void setUpAlpm();
 
 Q_SIGNALS:
     void dbStatusChanged(const QString &repo, int action);
