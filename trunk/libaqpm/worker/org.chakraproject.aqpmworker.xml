@@ -1,0 +1,23 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+	<interface name="org.chakraproject.aqpmworker">
+		<method name="updateDatabase">
+		</method>
+		<method name="processQueue">
+			<arg type="av" direction="in" />
+			<arg type="av" direction="in" />
+		</method>
+
+		<signal name="streamDbUpdatingStatus">
+			<arg type="s" direction="out" />
+			<arg type="i" direction="out" />
+		</signal>
+		<signal name="streamTransDlProg">
+			<arg type="s" direction="out" />
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+		</signal>
+	</interface>
+</node>

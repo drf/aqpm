@@ -1,4 +1,6 @@
 
+add_subdirectory(worker)
+
 SET(aqpm_SRCS 
     Backend.cpp
     BackendThread.cpp
