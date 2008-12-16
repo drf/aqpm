@@ -20,6 +20,8 @@
 
 #include "Worker.h"
 
+#include "aqpmworkeradaptor.h"
+
 #include "../ConfigurationParser.h"
 #include "../callbacks.h"
 #include "../Backend.h"
@@ -40,6 +42,8 @@ Worker::Worker(QObject *parent)
  : QObject(parent)
  , d(new Private())
 {
+    new AqpmworkerAdaptor(this);
+
     QDBusConnection dbus = QDBusConnection::systemBus();
 
     dbus.registerObject( "/Worker", this );

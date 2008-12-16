@@ -19,16 +19,12 @@
  ***************************************************************************/
 
 #include <iostream>
-#include <sys/utsname.h>
+
+#include "Worker.h"
+
 #include <QCoreApplication>
-#include <QString>
-#include <QSettings>
-#include <QFile>
-#include <QDir>
-#include <QDate>
-#include <QTranslator>
-#include <QDebug>
-#include <QtDBus>
+#include <QStringList>
+
 #include <alpm.h>
 
 int main( int argc, char **argv )
@@ -41,4 +37,6 @@ int main( int argc, char **argv )
     QCoreApplication::setApplicationVersion("0.2");
 
     QStringList arguments = app.arguments();
+
+    AqpmWorker::Worker *w = new AqpmWorker::Worker(0);
 }
