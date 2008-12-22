@@ -42,6 +42,8 @@ public:
 
 class BuildingHandler : public QObject
 {
+    Q_OBJECT
+
     public:
 
         BuildingHandler();

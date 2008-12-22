@@ -109,6 +109,9 @@ class BackendThread : public QObject
         void processQueue();
         QueueItem::List queue();
 
+    private Q_SLOTS:
+        void cleanupWorker();
+
     Q_SIGNALS:
         void dbStatusChanged(const QString &repo, int action);
         void dbQty(const QStringList &db);

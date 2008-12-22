@@ -28,6 +28,7 @@
 #include <QPointer>
 #include <QProcess>
 #include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
 
@@ -47,6 +48,8 @@ public:
 
     Private() {};
 
+    void waitForWorkerReady();
+
     pmdb_t *db_local;
     pmdb_t *dbs_sync;
 
@@ -54,7 +57,25 @@ public:
     QList<pmtransflag_t> flags;
 
     QDBusInterface *iface;
+    QPointer<QProcess> worker;
 };
+
+void BackendThread::Private::waitForWorkerReady()
+{
+    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
+        usleep(20);
+    }
+
+    QDBusInterface i("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker", QDBusConnection::systemBus());
+
+    bool ready = false;
+
+    while (!ready) {
+        QDBusReply<bool> reply = i.call("isWorkerReady");
+
+        ready = reply.value();
+    }
+}
 
 BackendThread::BackendThread(QObject *parent)
  : QObject(parent),
@@ -67,6 +88,14 @@ BackendThread::BackendThread(QObject *parent)
 BackendThread::~BackendThread()
 {
     delete d;
+}
+
+void BackendThread::cleanupWorker()
+{
+    d->worker->deleteLater();
+    d->iface->deleteLater();
+
+    emit transactionReleased();
 }
 
 void BackendThread::init()
@@ -743,10 +772,26 @@ bool BackendThread::updateDatabase()
 {
     emit transactionStarted();
 
+    if (d->worker) {
+        if (QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
+            return false;
+        } else {
+            d->worker->deleteLater();
+        }
+    }
+
+    d->worker = new QProcess(this);
+
+    connect(d->worker, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(cleanupWorker()));
+
+    d->worker->start("aqpmworker");
+    d->worker->waitForStarted();
+
+    d->waitForWorkerReady();
+
     d->iface = new QDBusInterface("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker", QDBusConnection::systemBus());
 
     if (!d->iface->isValid()) {
-        d->worker->deleteLater();
         qDebug() << "Iface not valid";
     }
 
@@ -757,8 +802,6 @@ bool BackendThread::updateDatabase()
 
     qDebug() << "Starting update";
     d->iface->call("updateDatabase");
-
-    //emit transactionReleased();
 
     return true;
 }

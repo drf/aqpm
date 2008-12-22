@@ -31,7 +31,7 @@ namespace Aqpm {
 
 class ABSHandler::Private {
 public:
-    Private();
+    Private() {};
 
     int rmrf( const char *path );
 

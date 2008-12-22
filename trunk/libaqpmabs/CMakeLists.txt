@@ -6,6 +6,7 @@ SET(aqpm_abs_SRCS
 
 SET(aqpm_abs_MOC_HDRS
     ABSHandler.h
+    BuildingHandler.h
 )
 
 SET(aqpm_abs_HEADERS

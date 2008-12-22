@@ -39,5 +39,4 @@ install(TARGETS aqpmworker RUNTIME DESTINATION bin
                      LIBRARY DESTINATION lib
                      ARCHIVE DESTINATION lib)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/aqpm.conf DESTINATION /etc/dbus-1/system.d)
-include(PkgConfigGetVar)
-dbus_add_activation_service(org.chakraproject.aqpmworker.service.in)
+

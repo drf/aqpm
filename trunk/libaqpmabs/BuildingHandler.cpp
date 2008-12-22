@@ -52,6 +52,11 @@ BuildingHandler::~BuildingHandler()
 {
 }
 
+void BuildingHandler::processOutput()
+{
+
+}
+
 void BuildingHandler::addItemToQueue(BuildItem *itm)
 {
     d->queue.append(itm);

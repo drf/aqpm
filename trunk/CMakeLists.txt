@@ -5,6 +5,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 include(FindQt4)
 include(FindSharedMimeInfo)
+include(FindPkgConfig)
 
 set(MAJOR_AQPM_VERSION "0")
 set(MINOR_AQPM_VERSION "2")
