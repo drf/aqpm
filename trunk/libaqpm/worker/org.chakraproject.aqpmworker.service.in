@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.chakraproject.aqpmworker
+Exec=@BIN_INSTALL_DIR@/aqpmworker

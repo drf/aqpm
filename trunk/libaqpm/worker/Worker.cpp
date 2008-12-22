@@ -63,6 +63,8 @@ Worker::Worker(QObject *parent)
     setuid(0);
     seteuid(0);
 
+    qDebug() << "uid and euid:" << getuid() << geteuid();
+
     alpm_initialize();
 
     connect(CallBacks::instance(), SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)),

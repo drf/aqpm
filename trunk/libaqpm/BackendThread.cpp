@@ -25,6 +25,11 @@
 
 #include <QDebug>
 #include <QTimer>
+#include <QPointer>
+#include <QProcess>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusConnectionInterface>
 
 namespace Aqpm {
 
@@ -47,6 +52,8 @@ public:
 
     QueueItem::List queue;
     QList<pmtransflag_t> flags;
+
+    QDBusInterface *iface;
 };
 
 BackendThread::BackendThread(QObject *parent)
@@ -736,64 +743,22 @@ bool BackendThread::updateDatabase()
 {
     emit transactionStarted();
 
-    qDebug() << "Starting DB Update";
+    d->iface = new QDBusInterface("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker", QDBusConnection::systemBus());
 
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, cb_trans_evt, cb_trans_conv,
-            cb_trans_progress) == -1) {
-        emit errorOccurred(Backend::InitTransactionError);
-        qDebug() << "Error!";
-        return false;
+    if (!d->iface->isValid()) {
+        d->worker->deleteLater();
+        qDebug() << "Iface not valid";
     }
 
-    int r;
-    alpm_list_t *syncdbs;
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "dbQty", this, SIGNAL(dbQty(const QStringList&)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
 
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
+    qDebug() << "Starting update";
+    d->iface->call("updateDatabase");
 
-    QStringList list;
-
-    while (syncdbs != NULL) {
-        pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(syncdbs);
-
-        list.append(QString((char *)alpm_db_get_name(dbcrnt)));
-        syncdbs = alpm_list_next(syncdbs);
-    }
-
-    qDebug() << "Found " << list;
-
-    emit dbQty(list);
-
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
-
-    while (syncdbs != NULL) {
-        qDebug() << "Updating DB";
-        pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(syncdbs);
-        QString curdbname((char *)alpm_db_get_name(dbcrnt));
-
-        emit dbStatusChanged(curdbname, Backend::Checking);
-
-        r = alpm_db_update(0, dbcrnt);
-
-        if (r == 1) {
-            emit dbStatusChanged(curdbname, Backend::Unchanged);
-        } else if (r < 0) {
-            emit dbStatusChanged(curdbname, Backend::DatabaseError);
-        } else {
-            emit dbStatusChanged(curdbname, Backend::Updated);
-        }
-
-        syncdbs = alpm_list_next(syncdbs);
-    }
-
-    if (alpm_trans_release() == -1) {
-        if (alpm_trans_interrupt() == -1) {
-            emit errorOccurred(Backend::ReleaseTransactionError);
-        }
-    }
-
-    qDebug() << "Database Update Performed";
-
-    emit transactionReleased();
+    //emit transactionReleased();
 
     return true;
 }
