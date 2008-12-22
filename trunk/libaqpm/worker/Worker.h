@@ -36,6 +36,8 @@ class Worker : public QObject
         Worker(QObject *parent = 0);
         virtual ~Worker();
 
+        bool isWorkerReady();
+
     public Q_SLOTS:
         void processQueue(QVariantList packages, QVariantList flags);
         void updateDatabase();
@@ -51,13 +53,13 @@ class Worker : public QObject
         void dbStatusChanged(const QString &repo, int action);
         void dbQty(const QStringList &db);
 
-        void streamTransDlProg(char *c, int bytedone, int bytetotal, int speed,
+        void streamTransDlProg(const QString &c, int bytedone, int bytetotal, int speed,
                 int listdone, int listtotal, int speedtotal);
 
-        void streamTransProgress(pmtransprog_t event, char *pkgname, int percent,
+        void streamTransProgress(int event, const QString &pkgname, int percent,
                 int howmany, int remain);
 
-        void streamTransEvent(pmtransevt_t event, void *data1, void *data2);
+        void streamTransEvent(int event, void *data1, void *data2);
 
     private:
         class Private;

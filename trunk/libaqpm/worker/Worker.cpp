@@ -23,7 +23,7 @@
 #include "aqpmworkeradaptor.h"
 
 #include "../ConfigurationParser.h"
-#include "../callbacks.h"
+#include "w_callbacks.h"
 #include "../Backend.h"
 
 #include <QtDBus/QDBusConnection>
@@ -34,8 +34,12 @@ namespace AqpmWorker {
 class Worker::Private
 {
     public:
+        Private() : ready(false) {};
+
         pmdb_t *db_local;
         pmdb_t *dbs_sync;
+
+        bool ready;
 };
 
 Worker::Worker(QObject *parent)
@@ -50,26 +54,34 @@ Worker::Worker(QObject *parent)
 
     qDebug() << "Aqpm worker registered on the System Bus as" << dbus.baseService();
 
-    if ( !dbus.registerService( "org.chakra-project.aqpmworker" ) ) {
+    if ( !dbus.registerService( "org.chakraproject.aqpmworker" ) ) {
         qFatal("Failed to register alias Service on DBus");
     } else {
         qDebug() << "Service successfully exported on the System Bus.";
     }
 
+    setuid(0);
+    seteuid(0);
+
     alpm_initialize();
 
-    connect(Aqpm::CallBacks::instance(), SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)),
-            SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)));
-    connect(Aqpm::CallBacks::instance(), SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)),
-            SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
-    connect(Aqpm::CallBacks::instance(), SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
-            SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
+    connect(CallBacks::instance(), SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)),
+            SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
+    connect(CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
+            SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
+    connect(CallBacks::instance(), SIGNAL(streamTransEvent(int, void*, void*)),
+            SIGNAL(streamTransEvent(int, void*, void*)));
 
     setUpAlpm();
 }
 
 Worker::~Worker()
 {
+}
+
+bool Worker::isWorkerReady()
+{
+    return d->ready;
 }
 
 void Worker::setUpAlpm()
@@ -84,9 +96,9 @@ void Worker::setUpAlpm()
 
     d->db_local = alpm_db_register_local();
 
-    alpm_option_set_dlcb(Aqpm::cb_dl_progress);
-    alpm_option_set_totaldlcb(Aqpm::cb_dl_total);
-    alpm_option_set_logcb(Aqpm::cb_log);
+    alpm_option_set_dlcb(AqpmWorker::cb_dl_progress);
+    alpm_option_set_totaldlcb(AqpmWorker::cb_dl_total);
+    alpm_option_set_logcb(AqpmWorker::cb_log);
 
     if (pdata.logFile.isEmpty()) {
         alpm_option_set_logfile("/var/log/pacman.log");
@@ -145,6 +157,7 @@ void Worker::setUpAlpm()
     //alpm_option_set_usedelta(pdata.useDelta); Until a proper implementation is there
     alpm_option_set_usesyslog(pdata.useSysLog);
 
+    d->ready = true;
     emit workerReady();
 }
 
@@ -152,8 +165,8 @@ void Worker::updateDatabase()
 {
     qDebug() << "Starting DB Update";
 
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, Aqpm::cb_trans_evt,
-                        Aqpm::cb_trans_conv, Aqpm::cb_trans_progress) == -1) {
+    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, AqpmWorker::cb_trans_evt,
+                        AqpmWorker::cb_trans_conv, AqpmWorker::cb_trans_progress) == -1) {
         emit workerFailure();
         qDebug() << "Error!";
         return;

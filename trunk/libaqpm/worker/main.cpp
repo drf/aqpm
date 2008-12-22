@@ -39,4 +39,6 @@ int main( int argc, char **argv )
     QStringList arguments = app.arguments();
 
     AqpmWorker::Worker *w = new AqpmWorker::Worker(0);
+
+    app.exec();
 }

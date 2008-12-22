@@ -7,14 +7,35 @@
 			<arg type="av" direction="in" />
 			<arg type="av" direction="in" />
 		</method>
+		<method name="isWorkerReady">
+			<arg type="b" direction="out" />
+		</method>
 
+		<signal name="workerReady">
+		</signal>
+		<signal name="workerFailure">
+		</signal>
+		<signal name="workerSuccess">
+		</signal>
 		<signal name="streamDbUpdatingStatus">
 			<arg type="s" direction="out" />
 			<arg type="i" direction="out" />
 		</signal>
+		<signal name="dbQty">
+			<arg type="as" direction="out" />
+		</signal>
 		<signal name="streamTransDlProg">
 			<arg type="s" direction="out" />
 			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+		</signal>
+		<signal name="streamTransProgress">
+			<arg type="i" direction="out" />
+			<arg type="s" direction="out" />
 			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />

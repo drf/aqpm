@@ -9,10 +9,12 @@ qt4_add_dbus_adaptor(aqpmworker_adaptor_SRCS org.chakraproject.aqpmworker.xml Wo
 SET(aqpmworker_SRCS 
     main.cpp
     Worker.cpp
+    w_callbacks.cpp
 )
 
 SET(aqpmworker_MOC_HDRS
     Worker.h
+    w_callbacks.h
 )
 
 QT4_WRAP_CPP(aqpmworker_MOC_SRCS ${aqpmworker_MOC_HDRS})
@@ -36,3 +38,4 @@ INSTALL(CODE "MESSAGE(\"Installing Aqpm worker...\")")
 install(TARGETS aqpmworker RUNTIME DESTINATION bin
                      LIBRARY DESTINATION lib
                      ARCHIVE DESTINATION lib)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/aqpm.conf DESTINATION /etc/dbus-1/system.d)
