@@ -256,9 +256,8 @@ void CallBacks::cb_dl_progress(const char *filename, off_t file_xfered, off_t fi
         d->xfered_last = xfered;
     }
 
-    if (d->last_file_xfered > file_xfered) {
+    if (d->last_file_xfered > file_xfered)
         d->last_file_xfered = 0;
-    }
 
     d->list_xfered += file_xfered - d->last_file_xfered;
     d->last_file_xfered = file_xfered;
@@ -293,6 +292,7 @@ void cb_dl_total(off_t total)
 
 void cb_dl_progress(const char *filename, off_t file_xfered, off_t file_total)
 {
+    qDebug() << "Progress" << file_xfered << file_total;
     CallBacks::instance()->cb_dl_progress(filename, file_xfered, file_total);
 }
 

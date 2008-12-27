@@ -67,11 +67,11 @@ Worker::Worker(QObject *parent)
 
     alpm_initialize();
 
-    connect(CallBacks::instance(), SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)),
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)),
             SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
-    connect(CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
-    connect(CallBacks::instance(), SIGNAL(streamTransEvent(int, void*, void*)),
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int, void*, void*)),
             SIGNAL(streamTransEvent(int, void*, void*)));
 
     setUpAlpm();
@@ -221,6 +221,8 @@ void Worker::updateDatabase()
     }
 
     qDebug() << "Database Update Performed";
+
+    emit workerSuccess();
 }
 
 void Worker::processQueue(QVariantList packages, QVariantList flags)
