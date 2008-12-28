@@ -24,6 +24,7 @@
 #include <iostream>
 #include <alpm.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #include <QObject>
 

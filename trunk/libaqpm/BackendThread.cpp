@@ -64,17 +64,24 @@ void BackendThread::Private::waitForWorkerReady()
 {
     if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
         usleep(20);
+        qDebug() << "Waiting for interface to appear";
     }
 
     QDBusInterface i("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker", QDBusConnection::systemBus());
 
+    qDebug() << "Got the interface";
+
     bool ready = false;
 
     while (!ready) {
+        qDebug() << "Checking if interface is ready";
+
         QDBusReply<bool> reply = i.call("isWorkerReady");
 
         ready = reply.value();
     }
+
+    qDebug() << "Ready, here we go";
 }
 
 BackendThread::BackendThread(QObject *parent)
@@ -92,6 +99,8 @@ BackendThread::~BackendThread()
 
 void BackendThread::cleanupWorker()
 {
+    d->worker->terminate();
+
     d->worker->deleteLater();
     d->iface->deleteLater();
 
@@ -782,8 +791,6 @@ bool BackendThread::updateDatabase()
 
     d->worker = new QProcess(this);
 
-    connect(d->worker, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(cleanupWorker()));
-
     d->worker->start("aqpmworker");
     d->worker->waitForStarted();
 
@@ -799,6 +806,8 @@ bool BackendThread::updateDatabase()
                                          "dbQty", this, SIGNAL(dbQty(const QStringList&)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "workerSuccess", this, SLOT(cleanupWorker()));
 
     qDebug() << "Starting update";
     d->iface->call("updateDatabase");
