@@ -1,11 +1,16 @@
 PROJECT(aqpm)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+
+if(COMMAND cmake_policy)
+   cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy) 
 
 include(FindQt4)
 include(FindSharedMimeInfo)
 include(FindPkgConfig)
+include(FindPolkitQt)
 
 set(MAJOR_AQPM_VERSION "0")
 set(MINOR_AQPM_VERSION "2")
@@ -34,6 +39,9 @@ SET(QT_MIN_VERSION "4.4.0")
 FIND_PACKAGE(Qt4 REQUIRED)
 FIND_PACKAGE(Alpm REQUIRED)
 FIND_PACKAGE(LibArchive REQUIRED)
+FIND_PACKAGE(PolkitQt REQUIRED)
+pkg_check_modules (POLKIT polkit>=0.8 REQUIRED)
+pkg_check_modules (POLKITDBUS polkit-dbus>=0.8 REQUIRED)
 
 INCLUDE(${QT_USE_FILE})
 
@@ -47,6 +55,9 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/misc
     ${CMAKE_SOURCE_DIR}/misc
+    ${POLKITQT_INCLUDE_DIR}
+    ${POLKIT_INCLUDE_DIRS}
+    ${POLKITDBUS_INCLUDE_DIRS}
 )
 
 CONFIGURE_FILE(

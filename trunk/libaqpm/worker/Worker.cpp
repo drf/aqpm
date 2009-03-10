@@ -29,6 +29,9 @@
 #include <QtDBus/QDBusConnection>
 #include <QDebug>
 
+#include <Context>
+#include <Auth>
+
 namespace AqpmWorker {
 
 class Worker::Private
@@ -48,22 +51,17 @@ Worker::Worker(QObject *parent)
 {
     new AqpmworkerAdaptor(this);
 
-    QDBusConnection dbus = QDBusConnection::systemBus();
-
-    dbus.registerObject( "/Worker", this );
-
-    qDebug() << "Aqpm worker registered on the System Bus as" << dbus.baseService();
-
-    if ( !dbus.registerService( "org.chakraproject.aqpmworker" ) ) {
-        qFatal("Failed to register alias Service on DBus");
-    } else {
-        qDebug() << "Service successfully exported on the System Bus.";
+    if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmworker")) {
+        qDebug() << "another helper is already running";
+        QTimer::singleShot(0, this, SLOT(quit()));
+        return;
     }
 
-    setuid(0);
-    seteuid(0);
-
-    qDebug() << "uid and euid:" << getuid() << geteuid();
+    if (!QDBusConnection::systemBus().registerObject("/", this)) {
+        qDebug() << "unable to register service interface to dbus";
+        QTimer::singleShot(0, this, SLOT(quit()));
+        return;
+    }
 
     alpm_initialize();
 
@@ -166,6 +164,17 @@ void Worker::setUpAlpm()
 void Worker::updateDatabase()
 {
     qDebug() << "Starting DB Update";
+
+    PolKitResult result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpmworker.updatedatabase",
+                                      message().service(),
+                                      true);
+    if (result == POLKIT_RESULT_YES) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        return;
+    }
 
     if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, AqpmWorker::cb_trans_evt,
                         AqpmWorker::cb_trans_conv, AqpmWorker::cb_trans_progress) == -1) {

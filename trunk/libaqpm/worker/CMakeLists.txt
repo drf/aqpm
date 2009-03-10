@@ -4,6 +4,8 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+set (AQPM_HELPER_INSTALL_DIR ${LIB_INSTALL_DIR}/aqpm)
+
 qt4_add_dbus_adaptor(aqpmworker_adaptor_SRCS org.chakraproject.aqpmworker.xml Worker.h AqpmWorker::Worker)
 
 SET(aqpmworker_SRCS 
@@ -31,12 +33,15 @@ TARGET_LINK_LIBRARIES(aqpmworker
     ${QT_QTDBUS_LIBRARY}
     ${ALPM_LIBS}
     ${LIBARCHIVE_LIBS}
+    ${POLKITQT_CORE_LIBRARY}
     aqpm
 )
 
 INSTALL(CODE "MESSAGE(\"Installing Aqpm worker...\")")
-install(TARGETS aqpmworker RUNTIME DESTINATION bin
-                     LIBRARY DESTINATION lib
-                     ARCHIVE DESTINATION lib)
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/aqpm.conf DESTINATION /etc/dbus-1/system.d)
+install(TARGETS aqpmworker DESTINATION ${AQPM_HELPER_INSTALL_DIR})
+
+dbus_add_activation_system_service(org.chakraproject.aqpmworker.service.in)
+
+install(FILES org.chakraproject.aqpmworker.conf DESTINATION /etc/dbus-1/system.d)
+install(FILES org.chakraproject.aqpmworker.policy DESTINATION ${POLICY_FILES_INSTALL_DIR})
 

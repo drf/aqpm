@@ -23,12 +23,13 @@
 
 #include <QObject>
 #include <QVariantList>
+#include <QtDBus/QDBusContext>
 
 #include <alpm.h>
 
 namespace AqpmWorker {
 
-class Worker : public QObject
+class Worker : public QObject, protected QDBusContext
 {
     Q_OBJECT
 
