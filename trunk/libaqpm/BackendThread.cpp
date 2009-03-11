@@ -48,7 +48,9 @@ class BackendThread::Private
 {
 public:
 
-    Private() {};
+    Private()
+     : handleAuth(true)
+    {};
 
     void waitForWorkerReady();
 
