@@ -6,6 +6,7 @@ SET(aqpm_SRCS
     BackendThread.cpp
     ConfigurationParser.cpp
     callbacks.cpp
+    QueueItem.cpp
 )
 
 SET(aqpm_MOC_HDRS
@@ -17,6 +18,7 @@ SET(aqpm_MOC_HDRS
 SET(aqpm_HEADERS
 	Backend.h
 	ConfigurationParser.h
+	QueueItem.h
 )
 
 QT4_WRAP_CPP(aqpm_MOC_SRCS ${aqpm_MOC_HDRS})

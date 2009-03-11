@@ -12,6 +12,7 @@ SET(aqpmworker_SRCS
     main.cpp
     Worker.cpp
     w_callbacks.cpp
+    ../QueueItem.cpp
 )
 
 SET(aqpmworker_MOC_HDRS

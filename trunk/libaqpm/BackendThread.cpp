@@ -816,20 +816,19 @@ bool BackendThread::updateDatabase()
 bool BackendThread::fullSystemUpgrade()
 {
     clearQueue();
-    d->queue.append(new QueueItem(QString(), QueueItem::FullUpgrade));
+    d->queue.append(QueueItem(QString(), QueueItem::FullUpgrade));
 
     return true;
 }
 
 void BackendThread::clearQueue()
 {
-    qDeleteAll(d->queue);
     d->queue.clear();
 }
 
 void BackendThread::addItemToQueue(const QString &name, QueueItem::Action action)
 {
-    d->queue.append(new QueueItem(name, action));
+    d->queue.append(QueueItem(name, action));
 }
 
 QueueItem::List BackendThread::queue()
@@ -851,8 +850,8 @@ void BackendThread::processQueue()
         flags.append(ent);
     }
 
-    foreach (QueueItem *ent, d->queue) {
-        qDebug() << "Appending " << ent->name;
+    foreach (QueueItem ent, d->queue) {
+        qDebug() << "Appending " << ent.name;
         packages.append(QVariant::fromValue(ent));
     }
 

@@ -24,6 +24,7 @@
 #include <alpm.h>
 
 #include "Visibility.h"
+#include "QueueItem.h"
 
 #include <QThread>
 #include <QPointer>
@@ -34,6 +35,7 @@
 #include <QStringList>
 #include <QEvent>
 #include <QMetaType>
+#include <QDBusArgument>
 
 namespace Aqpm
 {
@@ -44,39 +46,7 @@ class BackendThread;
  * This class represent an item in the queue. To enqueue items in
  * Aqpm, you have to create an instance of this class and populate it.
  */
-class AQPM_EXPORT QueueItem
-{
-public:
-    /**
-     * Defines the action that will be done on the item.
-     */
-    enum Action {
-        /** Sync operation (install/upgrade) */
-        Sync = 1,
-        /** Remove operation */
-        Remove = 2,
-        /** From file operation */
-        FromFile = 4,
-        /** This token is reserved. DO NOT ATTEMPT TO USE IT! */
-        FullUpgrade = 8
-    };
 
-    QueueItem();
-    /**
-     * Constructs a queue item with the needed data
-     *
-     * @param n The name of the package
-     * @param a The action that should be done on it
-     */
-    QueueItem(QString n, Action a)
-            : name(n),
-            action_id(a) {};
-
-    typedef QList<QueueItem*> List;
-
-    QString name;
-    Action action_id;
-};
 
 class AQPM_EXPORT Backend : public QObject
 {
@@ -232,7 +202,5 @@ private:
 };
 
 }
-
-Q_DECLARE_METATYPE(Aqpm::QueueItem*)
 
 #endif /* BACKEND_H */

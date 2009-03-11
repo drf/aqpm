@@ -278,13 +278,13 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     foreach (QVariant ent, packages) {
         qDebug() << ent.typeName();
-        queue.append(ent.value<Aqpm::QueueItem*>());
+        queue.append(ent.value<Aqpm::QueueItem>());
     }
 
     qDebug() << "Packages appended, starting evaluation";
 
-    foreach(Aqpm::QueueItem *itm, queue) {
-        switch (itm->action_id) {
+    foreach(Aqpm::QueueItem itm, queue) {
+        switch (itm.action_id) {
             case Aqpm::QueueItem::Sync:
                 qDebug() << "Sync action";
                 sync = true;
@@ -319,12 +319,12 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
         qDebug() << "Starting Package Removal";
 
-        foreach(Aqpm::QueueItem *itm, queue) {
-            if (itm->action_id != Aqpm::QueueItem::Remove) {
+        foreach(Aqpm::QueueItem itm, queue) {
+            if (itm.action_id != Aqpm::QueueItem::Remove) {
                 return;
             }
 
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
+            int res = alpm_trans_addtarget(qstrdup(itm.name.toUtf8()));
 
             if (res == -1) {
                 emit errorOccurred(Aqpm::Backend::AddTargetError);
@@ -373,13 +373,13 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
         qDebug() << "Starting Package Syncing";
 
-        foreach(Aqpm::QueueItem *itm, queue) {
-            if (itm->action_id != Aqpm::QueueItem::Sync) {
+        foreach(Aqpm::QueueItem itm, queue) {
+            if (itm.action_id != Aqpm::QueueItem::Sync) {
                 return;
             }
 
-            qDebug() << "Adding " << itm->name;
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
+            qDebug() << "Adding " << itm.name;
+            int res = alpm_trans_addtarget(qstrdup(itm.name.toUtf8()));
 
             if (res == -1) {
                 emit errorOccurred(Aqpm::Backend::AddTargetError);
@@ -474,12 +474,12 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
         qDebug() << "Starting Package Syncing";
 
-        foreach(Aqpm::QueueItem *itm, queue) {
-            if (itm->action_id != Aqpm::QueueItem::FromFile) {
+        foreach(Aqpm::QueueItem itm, queue) {
+            if (itm.action_id != Aqpm::QueueItem::FromFile) {
                 return;
             }
 
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
+            int res = alpm_trans_addtarget(qstrdup(itm.name.toUtf8()));
 
             if (res == -1) {
                 emit errorOccurred(Aqpm::Backend::AddTargetError);
