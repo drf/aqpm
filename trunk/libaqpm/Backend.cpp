@@ -77,6 +77,7 @@ Backend::Backend()
     s_globalBackend->q = this;
 
     qRegisterMetaType<QueueItem*>();
+    qDBusRegisterMetaType<QueueItem*>();
 
     qDebug() << "Construction Backend singleton";
 

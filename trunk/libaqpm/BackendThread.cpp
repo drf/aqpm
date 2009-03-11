@@ -852,7 +852,8 @@ void BackendThread::processQueue()
     }
 
     foreach (QueueItem *ent, d->queue) {
-        flags.append(QVariant(ent));
+        qDebug() << "Appending " << ent->name;
+        packages.append(QVariant::fromValue(ent));
     }
 
     QDBusMessage message;
@@ -890,8 +891,8 @@ void BackendThread::processQueue()
                                              "org.chakraproject.aqpmworker",
                                              QLatin1String("processQueue"));
     QList<QVariant> argumentList;
-    argumentList << qVariantFromValue(flags);
     argumentList << qVariantFromValue(packages);
+    argumentList << qVariantFromValue(flags);
     message.setArguments(argumentList);
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }

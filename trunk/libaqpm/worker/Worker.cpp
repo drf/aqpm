@@ -274,9 +274,14 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     Aqpm::QueueItem::List queue;
 
+    qDebug() << "Appending packages";
+
     foreach (QVariant ent, packages) {
+        qDebug() << ent.typeName();
         queue.append(ent.value<Aqpm::QueueItem*>());
     }
+
+    qDebug() << "Packages appended, starting evaluation";
 
     foreach(Aqpm::QueueItem *itm, queue) {
         switch (itm->action_id) {
@@ -295,6 +300,9 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             case Aqpm::QueueItem::FullUpgrade:
                 qDebug() << "Upgrade action";
                 sysupgrade = true;
+                break;
+            default:
+                qDebug() << "What is that?";
                 break;
         }
     }
