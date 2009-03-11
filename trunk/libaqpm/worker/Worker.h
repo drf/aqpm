@@ -61,6 +61,8 @@ class Worker : public QObject, protected QDBusContext
 
         void streamTransEvent(int event, void *data1, void *data2);
 
+        void errorOccurred(int code);
+
     private:
         class Private;
         Private *d;

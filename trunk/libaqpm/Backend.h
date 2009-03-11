@@ -33,6 +33,7 @@
 #include <QWaitCondition>
 #include <QStringList>
 #include <QEvent>
+#include <QMetaType>
 
 namespace Aqpm
 {
@@ -231,5 +232,7 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Aqpm::QueueItem*)
 
 #endif /* BACKEND_H */

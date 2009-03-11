@@ -239,7 +239,262 @@ void Worker::updateDatabase()
 
 void Worker::processQueue(QVariantList packages, QVariantList flags)
 {
+    pmtransflag_t alpmflags;
 
+    if (flags.isEmpty()) {
+        alpmflags = PM_TRANS_FLAG_ALLDEPS;
+    } else {
+        alpmflags = (pmtransflag_t)flags.at(0).toUInt();
+
+        for (int i = 1; i < flags.count(); ++i) {
+            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)flags.at(i).toUInt());
+        }
+    }
+
+    qDebug() << alpmflags;
+
+    bool sync = false;
+    bool sysupgrade = false;
+    bool remove = false;
+    bool file = false;
+
+    Aqpm::QueueItem::List queue;
+
+    foreach (QVariant ent, packages) {
+        queue.append(ent.value<Aqpm::QueueItem*>());
+    }
+
+    foreach(Aqpm::QueueItem *itm, queue) {
+        switch (itm->action_id) {
+            case Aqpm::QueueItem::Sync:
+                qDebug() << "Sync action";
+                sync = true;
+                break;
+            case Aqpm::QueueItem::FromFile:
+                qDebug() << "From File action";
+                file = true;
+                break;
+            case Aqpm::QueueItem::Remove:
+                qDebug() << "Remove action";
+                remove = true;
+                break;
+            case Aqpm::QueueItem::FullUpgrade:
+                qDebug() << "Upgrade action";
+                sysupgrade = true;
+                break;
+        }
+    }
+
+    if (remove) {
+        if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, alpmflags,
+                cb_trans_evt,
+                cb_trans_conv,
+                cb_trans_progress) == -1) {
+            emit errorOccurred(Aqpm::Backend::InitTransactionError);
+            emit workerResult(false);
+            return;
+        }
+
+        qDebug() << "Starting Package Removal";
+
+        foreach(Aqpm::QueueItem *itm, queue) {
+            if (itm->action_id != Aqpm::QueueItem::Remove) {
+                return;
+            }
+
+            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
+
+            if (res == -1) {
+                emit errorOccurred(Aqpm::Backend::AddTargetError);
+                emit workerResult(false);
+                return;
+            }
+        }
+
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Aqpm::Backend::PrepareError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Aqpm::Backend::CommitError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
+    }
+
+    if (sync) {
+        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+                cb_trans_evt,
+                cb_trans_conv,
+                cb_trans_progress) == -1) {
+            emit errorOccurred(Aqpm::Backend::InitTransactionError);
+            emit workerResult(false);
+            return;
+        }
+
+        qDebug() << "Starting Package Syncing";
+
+        foreach(Aqpm::QueueItem *itm, queue) {
+            if (itm->action_id != Aqpm::QueueItem::Sync) {
+                return;
+            }
+
+            qDebug() << "Adding " << itm->name;
+            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
+
+            if (res == -1) {
+                emit errorOccurred(Aqpm::Backend::AddTargetError);
+                emit workerResult(false);
+                return;
+            }
+        }
+
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Aqpm::Backend::PrepareError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Aqpm::Backend::CommitError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
+    }
+
+    if (sysupgrade) {
+        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+                cb_trans_evt,
+                cb_trans_conv,
+                cb_trans_progress) == -1) {
+            emit errorOccurred(Aqpm::Backend::InitTransactionError);
+            emit workerResult(false);
+            return;
+        }
+
+        if (alpm_trans_sysupgrade() == -1) {
+            qDebug() << "Creating a sysupgrade transaction failed!!";
+            emit errorOccurred(Aqpm::Backend::CreateSysUpgradeError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Aqpm::Backend::PrepareError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Aqpm::Backend::CommitError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
+    }
+
+    if (file) {
+        if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
+                cb_trans_evt,
+                cb_trans_conv,
+                cb_trans_progress) == -1) {
+            emit errorOccurred(Aqpm::Backend::InitTransactionError);
+            emit workerResult(false);
+            return;
+        }
+
+        qDebug() << "Starting Package Syncing";
+
+        foreach(Aqpm::QueueItem *itm, queue) {
+            if (itm->action_id != Aqpm::QueueItem::FromFile) {
+                return;
+            }
+
+            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
+
+            if (res == -1) {
+                emit errorOccurred(Aqpm::Backend::AddTargetError);
+                emit workerResult(false);
+                return;
+            }
+        }
+
+        alpm_list_t *data = NULL;
+
+        qDebug() << "Preparing...";
+        if (alpm_trans_prepare(&data) == -1) {
+            qDebug() << "Could not prepare transaction";
+            emit errorOccurred(Aqpm::Backend::PrepareError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+
+        qDebug() << "Committing...";
+        if (alpm_trans_commit(&data) == -1) {
+            qDebug() << "Could not commit transaction";
+            emit errorOccurred(Aqpm::Backend::CommitError);
+            alpm_trans_release();
+            emit workerResult(false);
+            return;
+        }
+        qDebug() << "Done";
+
+        if (data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
+    }
+
+    emit workerResult(true);
 }
 
 }

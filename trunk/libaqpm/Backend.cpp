@@ -27,6 +27,7 @@
 #include <QMetaType>
 #include <QDebug>
 #include <QCoreApplication>
+#include <QDBusMetaType>
 
 #include "misc/Singleton.h"
 
@@ -74,6 +75,8 @@ Backend::Backend()
 {
     Q_ASSERT(!s_globalBackend->q);
     s_globalBackend->q = this;
+
+    qRegisterMetaType<QueueItem*>();
 
     qDebug() << "Construction Backend singleton";
 
