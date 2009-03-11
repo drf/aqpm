@@ -239,6 +239,20 @@ void Worker::updateDatabase()
 
 void Worker::processQueue(QVariantList packages, QVariantList flags)
 {
+    qDebug() << "Starting Queue Processing";
+
+    PolKitResult result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.processqueue",
+                                                message().service(),
+                                                true);
+    if (result == POLKIT_RESULT_YES) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        QCoreApplication::instance()->quit();
+        return;
+    }
+
     pmtransflag_t alpmflags;
 
     if (flags.isEmpty()) {

@@ -844,258 +844,56 @@ void BackendThread::setFlags(QList<pmtransflag_t> flags)
 
 void BackendThread::processQueue()
 {
-    pmtransflag_t alpmflags;
+    QVariantList flags;
+    QVariantList packages;
 
-    if (d->flags.isEmpty()) {
-        alpmflags = PM_TRANS_FLAG_ALLDEPS;
-    } else {
-        alpmflags = d->flags.at(0);
+    foreach (pmtransflag_t ent, d->flags) {
+        flags.append(ent);
+    }
 
-        for (int i = 1; i < d->flags.count(); ++i) {
-            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)d->flags.at(i));
+    foreach (QueueItem *ent, d->queue) {
+        flags.append(QVariant(ent));
+    }
+
+    QDBusMessage message;
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                                             "/Worker",
+                                             "org.chakraproject.aqpmworker",
+                                             QLatin1String("isWorkerReady"));
+    QDBusMessage reply = QDBusConnection::systemBus().call(message);
+    if (reply.type() == QDBusMessage::ReplyMessage
+            && reply.arguments().size() == 1) {
+        qDebug() << reply.arguments().first().toBool();
+    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
+        qWarning() << "Message did not receive a reply (timeout by message bus)";
+        return;
+    }
+
+    if (d->handleAuth) {
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.processqueue")) {
+            qDebug() << "User unauthorized";
+            return;
         }
     }
 
-    qDebug() << alpmflags;
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "dbQty", this, SIGNAL(dbQty(const QStringList&)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "workerResult", this, SLOT(workerResult(bool)));
 
-    bool sync = false;
-    bool sysupgrade = false;
-    bool remove = false;
-    bool file = false;
+    qDebug() << "Starting update";
 
-    foreach(QueueItem *itm, d->queue) {
-        switch (itm->action_id) {
-            case QueueItem::Sync:
-                qDebug() << "Sync action";
-                sync = true;
-                break;
-            case QueueItem::FromFile:
-                qDebug() << "From File action";
-                file = true;
-                break;
-            case QueueItem::Remove:
-                qDebug() << "Remove action";
-                remove = true;
-                break;
-            case QueueItem::FullUpgrade:
-                qDebug() << "Upgrade action";
-                sysupgrade = true;
-                break;
-        }
-    }
-
-    emit transactionStarted();
-
-    if (remove) {
-        if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
-            emit errorOccurred(Backend::InitTransactionError);
-            emit operationFinished(false);
-            return;
-        }
-
-        qDebug() << "Starting Package Removal";
-
-        foreach(QueueItem *itm, d->queue) {
-            if (itm->action_id != QueueItem::Remove) {
-                return;
-            }
-
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
-
-            if (res == -1) {
-                emit errorOccurred(Backend::AddTargetError);
-                emit operationFinished(false);
-                return;
-            }
-        }
-
-        alpm_list_t *data = NULL;
-
-        qDebug() << "Preparing...";
-        if (alpm_trans_prepare(&data) == -1) {
-            qDebug() << "Could not prepare transaction";
-            emit errorOccurred(Backend::PrepareError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-
-        qDebug() << "Committing...";
-        if (alpm_trans_commit(&data) == -1) {
-            qDebug() << "Could not commit transaction";
-            emit errorOccurred(Backend::CommitError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-        qDebug() << "Done";
-
-        if (data) {
-            FREELIST(data);
-        }
-
-        alpm_trans_release();
-    }
-
-    if (sync) {
-        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
-            emit errorOccurred(Backend::InitTransactionError);
-            emit operationFinished(false);
-            return;
-        }
-
-        qDebug() << "Starting Package Syncing";
-
-        foreach(QueueItem *itm, d->queue) {
-            if (itm->action_id != QueueItem::Sync) {
-                return;
-            }
-
-            qDebug() << "Adding " << itm->name;
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
-
-            if (res == -1) {
-                emit errorOccurred(Backend::AddTargetError);
-                emit operationFinished(false);
-                return;
-            }
-        }
-
-        alpm_list_t *data = NULL;
-
-        qDebug() << "Preparing...";
-        if (alpm_trans_prepare(&data) == -1) {
-            qDebug() << "Could not prepare transaction";
-            emit errorOccurred(Backend::PrepareError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-
-        qDebug() << "Committing...";
-        if (alpm_trans_commit(&data) == -1) {
-            qDebug() << "Could not commit transaction";
-            emit errorOccurred(Backend::CommitError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-        qDebug() << "Done";
-
-        if (data) {
-            FREELIST(data);
-        }
-
-        alpm_trans_release();
-    }
-
-    if (sysupgrade) {
-        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
-            emit errorOccurred(Backend::InitTransactionError);
-            emit operationFinished(false);
-            return;
-        }
-
-        if (alpm_trans_sysupgrade() == -1) {
-            qDebug() << "Creating a sysupgrade transaction failed!!";
-            emit errorOccurred(Backend::CreateSysUpgradeError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-
-        alpm_list_t *data = NULL;
-
-        qDebug() << "Preparing...";
-        if (alpm_trans_prepare(&data) == -1) {
-            qDebug() << "Could not prepare transaction";
-            emit errorOccurred(Backend::PrepareError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-
-        qDebug() << "Committing...";
-        if (alpm_trans_commit(&data) == -1) {
-            qDebug() << "Could not commit transaction";
-            emit errorOccurred(Backend::CommitError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-        qDebug() << "Done";
-
-        if (data) {
-            FREELIST(data);
-        }
-
-        alpm_trans_release();
-    }
-
-    if (file) {
-        if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
-            emit errorOccurred(Backend::InitTransactionError);
-            emit operationFinished(false);
-            return;
-        }
-
-        qDebug() << "Starting Package Syncing";
-
-        foreach(QueueItem *itm, d->queue) {
-            if (itm->action_id != QueueItem::FromFile) {
-                return;
-            }
-
-            int res = alpm_trans_addtarget(qstrdup(itm->name.toUtf8()));
-
-            if (res == -1) {
-                emit errorOccurred(Backend::AddTargetError);
-                emit operationFinished(false);
-                return;
-            }
-        }
-
-        alpm_list_t *data = NULL;
-
-        qDebug() << "Preparing...";
-        if (alpm_trans_prepare(&data) == -1) {
-            qDebug() << "Could not prepare transaction";
-            emit errorOccurred(Backend::PrepareError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-
-        qDebug() << "Committing...";
-        if (alpm_trans_commit(&data) == -1) {
-            qDebug() << "Could not commit transaction";
-            emit errorOccurred(Backend::CommitError);
-            alpm_trans_release();
-            emit operationFinished(false);
-            return;
-        }
-        qDebug() << "Done";
-
-        if (data) {
-            FREELIST(data);
-        }
-
-        alpm_trans_release();
-    }
-
-    emit operationFinished(true);
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                                             "/Worker",
+                                             "org.chakraproject.aqpmworker",
+                                             QLatin1String("processQueue"));
+    QList<QVariant> argumentList;
+    argumentList << qVariantFromValue(flags);
+    argumentList << qVariantFromValue(packages);
+    message.setArguments(argumentList);
+    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }
 
 void BackendThread::setShouldHandleAuthorization(bool should)
