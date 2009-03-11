@@ -278,7 +278,9 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     foreach (QVariant ent, packages) {
         qDebug() << ent.typeName();
-        queue.append(ent.value<Aqpm::QueueItem>());
+        Aqpm::QueueItem item;
+        ent.value<QDBusArgument>() >> item;
+        queue.append(item);
     }
 
     qDebug() << "Packages appended, starting evaluation";
