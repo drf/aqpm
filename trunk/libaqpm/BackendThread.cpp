@@ -795,10 +795,14 @@ bool BackendThread::updateDatabase()
         }
     }
 
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "dbQty", this, SIGNAL(dbQty(const QStringList&)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+    if (!QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "dbQty", this, SIGNAL(dbQty(const QStringList&)))) {
+        qDebug() << "dbQty failed";
+    }
+    if (!QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)))) {
+        qDebug() << "dbStatus failed";
+    }
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerSuccess", this, SLOT(cleanupWorker()));
 
