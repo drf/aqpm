@@ -17,7 +17,7 @@
 		</signal>
 		<signal name="workerSuccess">
 		</signal>
-		<signal name="streamDbUpdatingStatus">
+		<signal name="dbStatusChanged">
 			<arg type="s" direction="out" />
 			<arg type="i" direction="out" />
 		</signal>
