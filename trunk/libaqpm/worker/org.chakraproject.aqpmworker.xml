@@ -13,9 +13,8 @@
 
 		<signal name="workerReady">
 		</signal>
-		<signal name="workerFailure">
-		</signal>
-		<signal name="workerSuccess">
+		<signal name="workerResult">
+			<arg type="b" direction="out" />
 		</signal>
 		<signal name="dbStatusChanged">
 			<arg type="s" direction="out" />

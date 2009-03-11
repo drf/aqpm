@@ -48,8 +48,7 @@ class Worker : public QObject, protected QDBusContext
 
     Q_SIGNALS:
         void workerReady();
-        void workerFailure();
-        void workerSuccess();
+        void workerResult(bool);
 
         void dbStatusChanged(const QString &repo, int action);
         void dbQty(const QStringList &db);

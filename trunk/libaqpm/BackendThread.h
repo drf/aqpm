@@ -125,6 +125,9 @@ class BackendThread : public QObject
 
         void threadInitialized();
 
+    private Q_SLOTS:
+        void workerResult(bool success);
+
     protected:
         void customEvent(QEvent *event);
 

@@ -173,12 +173,13 @@ void Worker::updateDatabase()
         qDebug() << message().service() << QString(" authorized");
     } else {
         qDebug() << QString("Not authorized");
+        QCoreApplication::instance()->quit();
         return;
     }
 
     if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, AqpmWorker::cb_trans_evt,
                         AqpmWorker::cb_trans_conv, AqpmWorker::cb_trans_progress) == -1) {
-        emit workerFailure();
+        emit workerResult(false);
         qDebug() << "Error!";
         return;
     }
@@ -225,13 +226,15 @@ void Worker::updateDatabase()
 
     if (alpm_trans_release() == -1) {
         if (alpm_trans_interrupt() == -1) {
-            emit workerFailure();
+            emit workerResult(false);
         }
     }
 
     qDebug() << "Database Update Performed";
 
-    emit workerSuccess();
+    emit workerResult(true);
+
+    QCoreApplication::instance()->quit();
 }
 
 void Worker::processQueue(QVariantList packages, QVariantList flags)

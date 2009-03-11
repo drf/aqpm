@@ -795,16 +795,12 @@ bool BackendThread::updateDatabase()
         }
     }
 
-    if (!QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "dbQty", this, SIGNAL(dbQty(const QStringList&)))) {
-        qDebug() << "dbQty failed";
-    }
-    if (!QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)))) {
-        qDebug() << "dbStatus failed";
-    }
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "workerSuccess", this, SLOT(cleanupWorker()));
+                                         "dbQty", this, SIGNAL(dbQty(const QStringList&)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "Starting update";
 
@@ -1110,6 +1106,18 @@ void BackendThread::setShouldHandleAuthorization(bool should)
 bool BackendThread::shouldHandleAuthorization() const
 {
     return d->handleAuth;
+}
+
+void BackendThread::workerResult(bool result)
+{
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "dbQty", this, SIGNAL(dbQty(const QStringList&)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "workerResult", this, SLOT(workerResult(bool)));
+
+    emit operationFinished(result);
 }
 
 }
