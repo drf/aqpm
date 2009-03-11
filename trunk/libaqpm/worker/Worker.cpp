@@ -57,7 +57,7 @@ Worker::Worker(QObject *parent)
         return;
     }
 
-    if (!QDBusConnection::systemBus().registerObject("/", this)) {
+    if (!QDBusConnection::systemBus().registerObject("/Worker", this)) {
         qDebug() << "unable to register service interface to dbus";
         QTimer::singleShot(0, this, SLOT(quit()));
         return;

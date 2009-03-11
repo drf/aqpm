@@ -11,6 +11,7 @@ include(FindQt4)
 include(FindSharedMimeInfo)
 include(FindPkgConfig)
 include(FindPolkitQt)
+include(InstallSettings)
 
 set(MAJOR_AQPM_VERSION "0")
 set(MINOR_AQPM_VERSION "2")

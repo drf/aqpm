@@ -189,6 +189,9 @@ public:
     void processQueue(QList<pmtransflag_t> flags);
     QueueItem::List queue();
 
+    void setShouldHandleAuthorization(bool should);
+    bool shouldHandleAuthorization() const;
+
 public Q_SLOTS:
     void setUpAlpm();
 

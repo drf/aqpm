@@ -109,8 +109,8 @@ class BackendThread : public QObject
         void processQueue();
         QueueItem::List queue();
 
-    private Q_SLOTS:
-        void cleanupWorker();
+        void setShouldHandleAuthorization(bool should);
+        bool shouldHandleAuthorization() const;
 
     Q_SIGNALS:
         void dbStatusChanged(const QString &repo, int action);

@@ -32,6 +32,8 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
 
+#include <Auth>
+
 namespace Aqpm {
 
 void ContainerThread::run()
@@ -56,8 +58,7 @@ public:
     QueueItem::List queue;
     QList<pmtransflag_t> flags;
 
-    QDBusInterface *iface;
-    QPointer<QProcess> worker;
+    bool handleAuth;
 };
 
 void BackendThread::Private::waitForWorkerReady()
@@ -95,16 +96,6 @@ BackendThread::BackendThread(QObject *parent)
 BackendThread::~BackendThread()
 {
     delete d;
-}
-
-void BackendThread::cleanupWorker()
-{
-    d->worker->terminate();
-
-    d->worker->deleteLater();
-    d->iface->deleteLater();
-
-    emit transactionReleased();
 }
 
 void BackendThread::init()
@@ -781,25 +772,25 @@ bool BackendThread::updateDatabase()
 {
     emit transactionStarted();
 
-    if (d->worker) {
-        if (QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
-            return false;
-        } else {
-            d->worker->deleteLater();
-        }
+    QDBusMessage message;
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                                             "/Worker",
+                                             "org.chakraproject.aqpmworker",
+                                             QLatin1String("isWorkerReady"));
+    QDBusMessage reply = QDBusConnection::systemBus().call(message);
+    if (reply.type() == QDBusMessage::ReplyMessage
+            && reply.arguments().size() == 1) {
+        qDebug() << reply.arguments().first().toBool();
+    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
+        qWarning() << "Message did not receive a reply (timeout by message bus)";
+        return false;
     }
 
-    d->worker = new QProcess(this);
-
-    d->worker->start("aqpmworker");
-    d->worker->waitForStarted();
-
-    d->waitForWorkerReady();
-
-    d->iface = new QDBusInterface("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker", QDBusConnection::systemBus());
-
-    if (!d->iface->isValid()) {
-        qDebug() << "Iface not valid";
+    if (d->handleAuth) {
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpmworker.updatedatabase")) {
+            qDebug() << "User unauthorized";
+            return false;
+        }
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
@@ -810,7 +801,12 @@ bool BackendThread::updateDatabase()
                                          "workerSuccess", this, SLOT(cleanupWorker()));
 
     qDebug() << "Starting update";
-    d->iface->call("updateDatabase");
+
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                                             "/Worker",
+                                             "org.chakraproject.aqpmworker",
+                                             QLatin1String("updateDatabase"));
+    QDBusConnection::systemBus().call(message);
 
     return true;
 }
@@ -1098,6 +1094,16 @@ void BackendThread::processQueue()
     }
 
     emit operationFinished(true);
+}
+
+void BackendThread::setShouldHandleAuthorization(bool should)
+{
+    d->handleAuth = should;
+}
+
+bool BackendThread::shouldHandleAuthorization() const
+{
+    return d->handleAuth;
 }
 
 }

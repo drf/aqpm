@@ -371,5 +371,15 @@ void Backend::processQueue(QList<pmtransflag_t> flags)
     qDebug() << "Thread is running";
 }
 
+void Backend::setShouldHandleAuthorization(bool should)
+{
+    d->thread->setShouldHandleAuthorization(should);
+}
+
+bool Backend::shouldHandleAuthorization() const
+{
+    return d->thread->shouldHandleAuthorization();
+}
+
 }
 
