@@ -808,7 +808,7 @@ bool BackendThread::updateDatabase()
                                              "/Worker",
                                              "org.chakraproject.aqpmworker",
                                              QLatin1String("updateDatabase"));
-    QDBusConnection::systemBus().call(message);
+    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 
     return true;
 }
