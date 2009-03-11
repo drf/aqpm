@@ -166,7 +166,7 @@ void Worker::updateDatabase()
     qDebug() << "Starting DB Update";
 
     PolKitResult result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpmworker.updatedatabase",
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updatedatabase",
                                       message().service(),
                                       true);
     if (result == POLKIT_RESULT_YES) {

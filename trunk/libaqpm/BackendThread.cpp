@@ -789,7 +789,7 @@ bool BackendThread::updateDatabase()
     }
 
     if (d->handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpmworker.updatedatabase")) {
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.updatedatabase")) {
             qDebug() << "User unauthorized";
             return false;
         }

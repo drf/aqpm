@@ -3,8 +3,10 @@
  "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
 <policyconfig>
+  <vendor>Aqpm - ArchLinux Package Management</vendor>
+  <vendor_url>http://chakra-project.org/</vendor_url>
 
-  <action id="org.chakraproject.aqpmworker.updatedatabase">
+  <action id="org.chakraproject.aqpm.updatedatabase">
     <description>Update Database</description>
     <message>Prevents Package Manager from updating the Database</message>
     <defaults>
