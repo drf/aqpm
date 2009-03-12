@@ -877,9 +877,11 @@ void BackendThread::processQueue()
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "dbQty", this, SIGNAL(dbQty(const QStringList&)));
+            "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+            "streamTransProgress", this, SIGNAL(streamTransProgress(int,const QString&,int,int,int)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "streamTransEvent", this, SIGNAL(streamTransEvent(int,void*,void*)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
             "workerResult", this, SLOT(workerResult(bool)));
 
@@ -912,6 +914,12 @@ void BackendThread::workerResult(bool result)
             "dbQty", this, SIGNAL(dbQty(const QStringList&)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
             "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "streamTransProgress", this, SIGNAL(streamTransProgress(int,const QString&,int,int,int)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+            "streamTransEvent", this, SIGNAL(streamTransEvent(int,void*,void*)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
             "workerResult", this, SLOT(workerResult(bool)));
 

@@ -119,6 +119,12 @@ void Backend::setUpSelf(BackendThread *t)
             this, SIGNAL(operationFinished(bool)));
     connect(d->thread, SIGNAL(threadInitialized()),
             this, SLOT(connectCallbacks()));
+    connect(d->thread, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)),
+            this, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)));
+    connect(d->thread, SIGNAL(streamTransProgress(int,const QString&,int,int,int)),
+            this, SIGNAL(streamTransProgress(int,const QString&,int,int,int)));
+    connect(d->thread, SIGNAL(streamTransProgress(int,const QString&,int,int,int)),
+            this, SIGNAL(streamTransEvent(int,void*,void*)));
 
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }
