@@ -20,10 +20,10 @@
 
 #include "ABSHandler.h"
 
-#include "misc/Singleton.h"
-
 #include <QDir>
 #include <QDebug>
+#include <QGlobalStatic>
+
 #include <dirent.h>
 #include <errno.h>
 
@@ -48,22 +48,22 @@ public:
     ABSHandler *q;
 };
 
-AQPM_GLOBAL_STATIC(ABSHandlerHelper, s_globalABSHandler)
+Q_GLOBAL_STATIC(ABSHandlerHelper, s_globalABSHandler)
 
 ABSHandler *ABSHandler::instance()
 {
-    if (!s_globalABSHandler->q) {
+    if (!s_globalABSHandler()->q) {
         new ABSHandler;
     }
 
-    return s_globalABSHandler->q;
+    return s_globalABSHandler()->q;
 }
 
 ABSHandler::ABSHandler()
  : d(new Private())
  {
-    Q_ASSERT(!s_globalABSHandler->q);
-    s_globalABSHandler->q = this;
+    Q_ASSERT(!s_globalABSHandler()->q);
+    s_globalABSHandler()->q = this;
 }
 
 ABSHandler::~ABSHandler()

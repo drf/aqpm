@@ -26,8 +26,7 @@
 #include <sys/types.h>
 #include <QWaitCondition>
 #include <QDebug>
-
-#include "misc/Singleton.h"
+#include <QGlobalStatic>
 
 #include "alpm.h"
 
@@ -62,23 +61,23 @@ public:
     CallBacks *q;
 };
 
-AQPM_GLOBAL_STATIC(CallBacksHelper, s_globalCallbacks)
+Q_GLOBAL_STATIC(CallBacksHelper, s_globalCallbacks)
 
 CallBacks *CallBacks::instance()
 {
-    if (!s_globalCallbacks->q) {
+    if (!s_globalCallbacks()->q) {
         new CallBacks;
     }
 
-    return s_globalCallbacks->q;
+    return s_globalCallbacks()->q;
 }
 
 CallBacks::CallBacks(QObject *parent)
         : QObject(parent),
         d(new Private())
 {
-    Q_ASSERT(!s_globalCallbacks->q);
-    s_globalCallbacks->q = this;
+    Q_ASSERT(!s_globalCallbacks()->q);
+    s_globalCallbacks()->q = this;
     qDebug() << "Constructing callbacks";
     answer = -1;
 }

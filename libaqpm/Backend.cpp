@@ -28,8 +28,7 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include <QDBusMetaType>
-
-#include "misc/Singleton.h"
+#include <QGlobalStatic>
 
 namespace Aqpm
 {
@@ -58,23 +57,23 @@ public:
     Backend *q;
 };
 
-AQPM_GLOBAL_STATIC(BackendHelper, s_globalBackend)
+Q_GLOBAL_STATIC(BackendHelper, s_globalBackend)
 
 Backend *Backend::instance()
 {
-    if (!s_globalBackend->q) {
+    if (!s_globalBackend()->q) {
         new Backend;
     }
 
-    return s_globalBackend->q;
+    return s_globalBackend()->q;
 }
 
 Backend::Backend()
         : QObject(),
         d(new Private())
 {
-    Q_ASSERT(!s_globalBackend->q);
-    s_globalBackend->q = this;
+    Q_ASSERT(!s_globalBackend()->q);
+    s_globalBackend()->q = this;
 
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();

@@ -36,8 +36,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
-
-#include "misc/Singleton.h"
+#include <QGlobalStatic>
 
 namespace Aqpm
 {
@@ -52,15 +51,15 @@ public:
     ConfigurationParser *q;
 };
 
-AQPM_GLOBAL_STATIC(ConfigurationParserHelper, s_globalParser)
+Q_GLOBAL_STATIC(ConfigurationParserHelper, s_globalParser)
 
 ConfigurationParser *ConfigurationParser::instance()
 {
-    if (!s_globalParser->q) {
+    if (!s_globalParser()->q) {
         new ConfigurationParser;
     }
 
-    return s_globalParser->q;
+    return s_globalParser()->q;
 }
 
 QStringList ConfigurationParser::Private::setrepeatingoption(const QString &ptr)
@@ -1011,8 +1010,8 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 ConfigurationParser::ConfigurationParser()
         : d(new Private())
 {
-    Q_ASSERT(!s_globalParser->q);
-    s_globalParser->q = this;
+    Q_ASSERT(!s_globalParser()->q);
+    s_globalParser()->q = this;
 
     d->initABSData();
     d->initMakepkgData();
