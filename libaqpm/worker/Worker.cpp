@@ -311,9 +311,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     if (remove) {
         if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
+                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;
@@ -365,9 +364,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     if (sync) {
         if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
+                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;
@@ -420,9 +418,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     if (sysupgrade) {
         if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
+                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;
@@ -466,9 +463,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     if (file) {
         if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
-                cb_trans_evt,
-                cb_trans_conv,
-                cb_trans_progress) == -1) {
+                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;

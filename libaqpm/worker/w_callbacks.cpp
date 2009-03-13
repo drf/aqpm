@@ -191,7 +191,9 @@ void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int 
     if (percent > 0 && percent < 100 && !timediff)
         return;
 
-    emit streamTransProgress(event, (char *)pkgname, percent, howmany, remain);
+    qDebug() << "Streaming trans progress";
+
+    emit streamTransProgress((int)event, QString(pkgname), percent, howmany, remain);
 }
 
 void CallBacks::cb_dl_total(off_t total)
