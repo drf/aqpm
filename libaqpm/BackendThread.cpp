@@ -846,11 +846,11 @@ void BackendThread::processQueue()
     QVariantList flags;
     QVariantList packages;
 
-    foreach (pmtransflag_t ent, d->flags) {
+    foreach (const pmtransflag_t &ent, d->flags) {
         flags.append(ent);
     }
 
-    foreach (QueueItem ent, d->queue) {
+    foreach (const QueueItem &ent, d->queue) {
         qDebug() << "Appending " << ent.name;
         packages.append(QVariant::fromValue(ent));
     }

@@ -309,13 +309,13 @@ void ConfigurationParser::Private::parseABSConfig()
     while (!in.atEnd()) {
         QString line = in.readLine();
 
-        if (line.startsWith("REPOS")) {
+        if (line.startsWith(QLatin1String("REPOS"))) {
 
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
             absData.supfiles = line;
-        } else if (line.startsWith("SYNCSERVER")) {
+        } else if (line.startsWith(QLatin1String("SYNCSERVER"))) {
             line = line.remove(0, line.indexOf(QChar('"')) + 1);
             line.truncate(line.indexOf(QChar('"')));
 
@@ -342,27 +342,27 @@ void ConfigurationParser::Private::parseMakepkgConfig()
     while (!in.atEnd()) {
         QString line = in.readLine();
 
-        if (line.startsWith("CFLAGS")) {
+        if (line.startsWith(QLatin1String("CFLAGS"))) {
             line = line.remove(0, line.indexOf(QChar('"')) + 1);
             line.truncate(line.indexOf(QChar('"')));
 
             makepkgData.cflags = line;
-        } else if (line.startsWith("CXXFLAGS")) {
+        } else if (line.startsWith(QLatin1String("CXXFLAGS"))) {
             line = line.remove(0, line.indexOf(QChar('"')) + 1);
             line.truncate(line.indexOf(QChar('"')));
 
             makepkgData.cxxflags = line;
-        } else if (line.startsWith("BUILDENV")) {
+        } else if (line.startsWith(QLatin1String("BUILDENV"))) {
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
             makepkgData.buildenv = line;
-        } else if (line.startsWith("OPTIONS")) {
+        } else if (line.startsWith(QLatin1String("OPTIONS"))) {
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
             makepkgData.options = line;
-        } else if (line.startsWith("DOC_DIRS")) {
+        } else if (line.startsWith(QLatin1String("DOC_DIRS"))) {
             line.truncate(line.indexOf(QChar(')')));
             line = line.remove(0, line.indexOf(QChar('(')) + 1);
 
@@ -376,8 +376,6 @@ void ConfigurationParser::Private::parseMakepkgConfig()
 
 bool ConfigurationParser::editPacmanKey(const QString &key, const QString &value, int action)
 {
-
-
     QFile fp("/etc/pacman.conf");
     QStringList list(key.split('/')), fileContent;
     QString key1(list.at(0)), key2(list.at(1)), realVal;
@@ -391,27 +389,28 @@ bool ConfigurationParser::editPacmanKey(const QString &key, const QString &value
 
     if (value != NULL) {
         if (value.contains('$')) {
-            QStringList tmplst = value.split(QString("$repo"),
+            QStringList tmplst = value.split(QLatin1String("$repo"),
                                              QString::SkipEmptyParts, Qt::CaseInsensitive);
-            QStringList tmp2lst = key.split(QString("/"),
+            QStringList tmp2lst = key.split(QChar('/'),
                                             QString::SkipEmptyParts, Qt::CaseInsensitive);
 
             QString dserv(tmplst.at(0));
 
             QString repo(tmp2lst.at(0));
 
-            if (repo == "kdemod-core")
+            if (repo == "kdemod-core") {
                 repo = "core";
-            if (repo == "kdemod-extragear")
+            } else if (repo == "kdemod-extragear") {
                 repo = "extragear";
-            if (repo == "kdemod-playground")
+            } else if (repo == "kdemod-playground") {
                 repo = "playground";
-            if (repo == "kdemod-testing")
+            } else if (repo == "kdemod-testing") {
                 repo = "testing";
-            if (repo == "kdemod-unstable")
+            } else if (repo == "kdemod-unstable") {
                 repo = "unstable";
-            if (repo == "kdemod-legacy")
+            } else if (repo == "kdemod-legacy") {
                 repo = "legacy";
+            }
 
             dserv.append(repo);
 
@@ -504,8 +503,10 @@ bool ConfigurationParser::editPacmanKey(const QString &key, const QString &value
                 }
 
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("[options]"))
+                if (!fileContent.at(i).startsWith(QLatin1String("[options]"))) {
                     continue;
+                }
+
                 QString toAdd(key2);
 
                 if (!realVal.isEmpty() || (!key2.compare("UseSyslog", Qt::CaseInsensitive) &&
@@ -707,7 +708,7 @@ bool ConfigurationParser::editABSSection(const QString &section, const QString &
 
         if (!fileContent.filter("REPOS").isEmpty()) {
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("REPOS"))
+                if (!fileContent.at(i).startsWith(QLatin1String("REPOS")))
                     continue;
 
                 if (fileContent.at(i) == val)
@@ -763,7 +764,7 @@ bool ConfigurationParser::editABSSection(const QString &section, const QString &
 
         if (!fileContent.filter("SYNCSERVER").isEmpty()) {
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("SYNCSERVER"))
+                if (!fileContent.at(i).startsWith(QLatin1String("SYNCSERVER")))
                     continue;
 
                 if (fileContent.at(i) == val)
@@ -847,7 +848,7 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 
         if (!fileContent.filter("CFLAGS").isEmpty()) {
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("CFLAGS"))
+                if (!fileContent.at(i).startsWith(QLatin1String("CFLAGS")))
                     continue;
 
                 if (fileContent.at(i) == val)
@@ -886,7 +887,7 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 
         if (!fileContent.filter("CXXFLAGS").isEmpty()) {
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("CXXFLAGS"))
+                if (!fileContent.at(i).startsWith(QLatin1String("CXXFLAGS")))
                     continue;
 
                 if (fileContent.at(i) == val)
@@ -917,7 +918,7 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 
         if (!fileContent.filter("BUILDENV").isEmpty()) {
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("BUILDENV"))
+                if (!fileContent.at(i).startsWith(QLatin1String("BUILDENV")))
                     continue;
 
                 if (fileContent.at(i) == val)
@@ -948,7 +949,7 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 
         if (!fileContent.filter("OPTIONS").isEmpty()) {
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("OPTIONS"))
+                if (!fileContent.at(i).startsWith(QLatin1String("OPTIONS")))
                     continue;
 
                 if (fileContent.at(i) == val)
@@ -979,7 +980,7 @@ bool ConfigurationParser::editMakepkgSection(const QString &section, const QStri
 
         if (!fileContent.filter("DOC_DIRS").isEmpty()) {
             for (int i = 0; i < fileContent.size(); ++i) {
-                if (!fileContent.at(i).startsWith("DOC_DIRS"))
+                if (!fileContent.at(i).startsWith(QLatin1String("DOC_DIRS")))
                     continue;
 
                 if (fileContent.at(i) == val)

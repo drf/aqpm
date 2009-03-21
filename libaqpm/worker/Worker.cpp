@@ -276,7 +276,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     qDebug() << "Appending packages";
 
-    foreach (QVariant ent, packages) {
+    foreach (const QVariant &ent, packages) {
         qDebug() << ent.typeName();
         Aqpm::QueueItem item;
         ent.value<QDBusArgument>() >> item;
@@ -285,7 +285,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     qDebug() << "Packages appended, starting evaluation";
 
-    foreach(Aqpm::QueueItem itm, queue) {
+    foreach(const Aqpm::QueueItem &itm, queue) {
         switch (itm.action_id) {
             case Aqpm::QueueItem::Sync:
                 qDebug() << "Sync action";
@@ -320,7 +320,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
         qDebug() << "Starting Package Removal";
 
-        foreach(Aqpm::QueueItem itm, queue) {
+        foreach(const Aqpm::QueueItem &itm, queue) {
             if (itm.action_id != Aqpm::QueueItem::Remove) {
                 return;
             }
@@ -373,7 +373,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
         qDebug() << "Starting Package Syncing";
 
-        foreach(Aqpm::QueueItem itm, queue) {
+        foreach(const Aqpm::QueueItem &itm, queue) {
             if (itm.action_id != Aqpm::QueueItem::Sync) {
                 return;
             }
@@ -472,7 +472,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
         qDebug() << "Starting Package Syncing";
 
-        foreach(Aqpm::QueueItem itm, queue) {
+        foreach(const Aqpm::QueueItem &itm, queue) {
             if (itm.action_id != Aqpm::QueueItem::FromFile) {
                 return;
             }

@@ -33,7 +33,7 @@ class ABSHandler::Private {
 public:
     Private() {};
 
-    int rmrf( const char *path );
+    int rmrf( const QString &path );
 
     QProcess *process;
 };
@@ -197,8 +197,9 @@ QStringList ABSHandler::getMakeDepends( const QString &package )
     while ( !in.atEnd() ) {
         QString line = in.readLine();
 
-        if ( !line.startsWith( "makedepends" ) )
+        if ( !line.startsWith( QLatin1String("makedepends") ) ) {
             continue;
+        }
 
         QString testline( line );
         testline.remove( ' ' );
@@ -268,44 +269,9 @@ void ABSHandler::slotOutputReady()
     emit absUpdateOutput(view);
 }
 
-int ABSHandler::Private::rmrf( const char *path )
+int ABSHandler::Private::rmrf( const QString &path )
 {
-    int errflag = 0;
-    struct dirent *dp;
-    DIR *dirp;
-
-    if ( !unlink( path ) )
-        return( 0 );
-    else {
-        if ( errno == ENOENT )
-            return( 0 );
-        else if ( errno == EPERM ) { }
-        /* fallthrough */
-        else if ( errno == EISDIR ) { }
-        /* fallthrough */
-        else if ( errno == ENOTDIR )
-            return( 1 );
-        else
-            /* not a directory */
-            return( 1 );
-
-        if (( dirp = opendir( path ) ) == ( DIR * ) - 1 )
-            return( 1 );
-        for ( dp = readdir( dirp ); dp != NULL; dp = readdir( dirp ) ) {
-            if ( dp->d_ino ) {
-                char name[4096];
-                sprintf( name, "%s/%s", path, dp->d_name );
-                if ( strcmp( dp->d_name, ".." ) && strcmp( dp->d_name, "." ) )
-                    errflag += rmrf( name );
-            }
-        }
-
-        closedir( dirp );
-        if ( rmdir( path ) )
-            errflag++;
-
-        return( errflag );
-    }
+    QProcess::execute("rm -rf " + path);
 }
 
 }

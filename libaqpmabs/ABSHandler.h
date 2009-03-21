@@ -24,6 +24,7 @@
 #include "Visibility.h"
 
 #include <QProcess>
+#include <QObject>
 
 namespace Aqpm {
 

@@ -29,7 +29,7 @@ class BuildItem
 {
 public:
     BuildItem() {};
-    BuildItem(const QString &n, const QString &p = QString())
+    explicit BuildItem(const QString &n, const QString &p = QString())
      : name(n),
      env_path(p)
     {};
