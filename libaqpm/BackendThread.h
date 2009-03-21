@@ -28,134 +28,135 @@
 
 #include <alpm.h>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class BackendThread : public QObject
 {
     Q_OBJECT
 
-    public:
-        BackendThread(QObject *parent = 0);
-        virtual ~BackendThread();
+public:
+    BackendThread(QObject *parent = 0);
+    virtual ~BackendThread();
 
-        void init();
+    void init();
 
-    public Q_SLOTS:
-        void setUpAlpm();
-        bool testLibrary();
-        bool isOnTransaction();
+public Q_SLOTS:
+    void setUpAlpm();
+    bool testLibrary();
+    bool isOnTransaction();
 
-        alpm_list_t *getAvailableRepos();
-        QStringList getAvailableReposAsStringList();
+    alpm_list_t *getAvailableRepos();
+    QStringList getAvailableReposAsStringList();
 
-        alpm_list_t *getAvailableGroups();
-        QStringList getAvailableGroupsAsStringList();
+    alpm_list_t *getAvailableGroups();
+    QStringList getAvailableGroupsAsStringList();
 
-        alpm_list_t *getPackagesFromRepo(const QString &reponame);
-        QStringList getPackagesFromRepoAsStringList(const QString &reponame);
+    alpm_list_t *getPackagesFromRepo(const QString &reponame);
+    QStringList getPackagesFromRepoAsStringList(const QString &reponame);
 
-        alpm_list_t *getPackagesFromGroup(const QString &groupname);
-        QStringList getPackagesFromGroupAsStringList(const QString &groupname);
+    alpm_list_t *getPackagesFromGroup(const QString &groupname);
+    QStringList getPackagesFromGroupAsStringList(const QString &groupname);
 
-        alpm_list_t *getUpgradeablePackages();
-        QStringList getUpgradeablePackagesAsStringList();
+    alpm_list_t *getUpgradeablePackages();
+    QStringList getUpgradeablePackagesAsStringList();
 
-        alpm_list_t *getInstalledPackages();
-        QStringList getInstalledPackagesAsStringList();
+    alpm_list_t *getInstalledPackages();
+    QStringList getInstalledPackagesAsStringList();
 
-        QStringList getPackageDependencies(pmpkg_t *package);
-        QStringList getPackageDependencies(const QString &name, const QString &repo);
+    QStringList getPackageDependencies(pmpkg_t *package);
+    QStringList getPackageDependencies(const QString &name, const QString &repo);
 
-        alpm_list_t *getPackageGroups(pmpkg_t *package);
-        QStringList getPackageGroupsAsStringList(pmpkg_t *package);
+    alpm_list_t *getPackageGroups(pmpkg_t *package);
+    QStringList getPackageGroupsAsStringList(pmpkg_t *package);
 
-        QStringList getDependenciesOnPackage(pmpkg_t *package);
-        QStringList getDependenciesOnPackage(const QString &name, const QString &repo);
+    QStringList getDependenciesOnPackage(pmpkg_t *package);
+    QStringList getDependenciesOnPackage(const QString &name, const QString &repo);
 
-        QStringList getPackageFiles(pmpkg_t *package);
-        QStringList getPackageFiles(const QString &name);
+    QStringList getPackageFiles(pmpkg_t *package);
+    QStringList getPackageFiles(const QString &name);
 
-        int countPackages(Backend::PackageStatus status);
+    int countPackages(Backend::PackageStatus status);
 
-        QStringList getProviders(const QString &name, const QString &repo);
-        QStringList getProviders(pmpkg_t *pkg);
-        bool isProviderInstalled(const QString &provider);
+    QStringList getProviders(const QString &name, const QString &repo);
+    QStringList getProviders(pmpkg_t *pkg);
+    bool isProviderInstalled(const QString &provider);
 
-        unsigned long getPackageSize(const QString &name, const QString &repo);
-        unsigned long getPackageSize(pmpkg_t *package);
+    unsigned long getPackageSize(const QString &name, const QString &repo);
+    unsigned long getPackageSize(pmpkg_t *package);
 
-        QString getPackageVersion(const QString &name, const QString &repo);
-        QString getPackageVersion(pmpkg_t *package);
+    QString getPackageVersion(const QString &name, const QString &repo);
+    QString getPackageVersion(pmpkg_t *package);
 
-        QString getPackageRepo(const QString &name, bool checkver = false);
+    QString getPackageRepo(const QString &name, bool checkver = false);
 
-        bool isInstalled(pmpkg_t *pkg);
-        bool isInstalled(const QString &pkg);
+    bool isInstalled(pmpkg_t *pkg);
+    bool isInstalled(const QString &pkg);
 
-        bool updateDatabase();
-        bool fullSystemUpgrade();
+    bool updateDatabase();
+    bool fullSystemUpgrade();
 
-        bool reloadPacmanConfiguration(); // In case the user modifies it.
+    bool reloadPacmanConfiguration(); // In case the user modifies it.
 
-        pmpkg_t *getPackageFromName(const QString &name, const QString &repo);
+    pmpkg_t *getPackageFromName(const QString &name, const QString &repo);
 
-        QStringList alpmListToStringList(alpm_list_t *list);
+    QStringList alpmListToStringList(alpm_list_t *list);
 
-        QString getAlpmVersion();
+    QString getAlpmVersion();
 
-        void clearQueue();
-        void addItemToQueue(const QString &name, QueueItem::Action action);
-        void setFlags(QList<pmtransflag_t> flags);
-        void processQueue();
-        QueueItem::List queue();
+    void clearQueue();
+    void addItemToQueue(const QString &name, QueueItem::Action action);
+    void setFlags(QList<pmtransflag_t> flags);
+    void processQueue();
+    QueueItem::List queue();
 
-        void setShouldHandleAuthorization(bool should);
-        bool shouldHandleAuthorization() const;
+    void setShouldHandleAuthorization(bool should);
+    bool shouldHandleAuthorization() const;
 
-    Q_SIGNALS:
-        void dbStatusChanged(const QString &repo, int action);
-        void dbQty(const QStringList &db);
+Q_SIGNALS:
+    void dbStatusChanged(const QString &repo, int action);
+    void dbQty(const QStringList &db);
 
-        void transactionStarted();
-        void transactionReleased();
+    void transactionStarted();
+    void transactionReleased();
 
-        void streamTransDlProg(const QString &c, int bytedone, int bytetotal, int speed,
-                               int listdone, int listtotal, int speedtotal);
+    void streamTransDlProg(const QString &c, int bytedone, int bytetotal, int speed,
+                           int listdone, int listtotal, int speedtotal);
 
-        void streamTransProgress(int event, const QString &pkgname, int percent,
-                                 int howmany, int remain);
+    void streamTransProgress(int event, const QString &pkgname, int percent,
+                             int howmany, int remain);
 
-        void streamTransEvent(int event, void *data1, void *data2);
+    void streamTransEvent(int event, void *data1, void *data2);
 
-        void errorOccurred(int code);
+    void errorOccurred(int code);
 
-        void operationFinished(bool success);
+    void operationFinished(bool success);
 
-        void threadInitialized();
+    void threadInitialized();
 
-    private Q_SLOTS:
-        void workerResult(bool success);
+private Q_SLOTS:
+    void workerResult(bool success);
 
-    protected:
-        void customEvent(QEvent *event);
+protected:
+    void customEvent(QEvent *event);
 
-    private:
-        class Private;
-        Private *d;
+private:
+    class Private;
+    Private *d;
 };
 
 class ContainerThread : public QThread
 {
     Q_OBJECT
 
-    public:
-        ContainerThread() {};
+public:
+    ContainerThread() {};
 
-    protected:
-        void run();
+protected:
+    void run();
 
-    Q_SIGNALS:
-        void threadCreated(BackendThread *thread);
+Q_SIGNALS:
+    void threadCreated(BackendThread *thread);
 };
 
 }

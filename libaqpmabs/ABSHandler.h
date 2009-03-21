@@ -26,38 +26,40 @@
 #include <QProcess>
 #include <QObject>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-class AQPM_EXPORT ABSHandler : public QObject {
+class AQPM_EXPORT ABSHandler : public QObject
+{
 
     Q_OBJECT
 
-    public:
+public:
 
-        ABSHandler *instance();
+    ABSHandler *instance();
 
-        ABSHandler();
-        virtual ~ABSHandler();
+    ABSHandler();
+    virtual ~ABSHandler();
 
-        static QString getABSPath( const QString &package );
-        bool setUpBuildingEnvironment(const QString &package, const QString &p);
-        bool cleanBuildingEnvironment(const QString &package, const QString &p);
+    static QString getABSPath(const QString &package);
+    bool setUpBuildingEnvironment(const QString &package, const QString &p);
+    bool cleanBuildingEnvironment(const QString &package, const QString &p);
 
-        void updateABSTree();
+    void updateABSTree();
 
-        static QStringList getMakeDepends(const QString &package);
+    static QStringList getMakeDepends(const QString &package);
 
-    private Q_SLOTS:
-        void slotABSUpdated(int code, QProcess::ExitStatus e);
-        void slotOutputReady();
+private Q_SLOTS:
+    void slotABSUpdated(int code, QProcess::ExitStatus e);
+    void slotOutputReady();
 
-    Q_SIGNALS:
-        void absTreeUpdated(bool success);
-        void absUpdateOutput(const QString &output);
+Q_SIGNALS:
+    void absTreeUpdated(bool success);
+    void absUpdateOutput(const QString &output);
 
-    private:
-        class Private;
-        Private *d;
+private:
+    class Private;
+    Private *d;
 };
 
 }

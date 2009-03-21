@@ -27,12 +27,12 @@
 
 #include <alpm.h>
 
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
     QCoreApplication::setOrganizationName("chakra");
-    QCoreApplication::setOrganizationDomain("chakra-project.org" );
+    QCoreApplication::setOrganizationDomain("chakra-project.org");
     QCoreApplication::setApplicationName("aqpmworker");
     QCoreApplication::setApplicationVersion("0.2");
 

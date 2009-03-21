@@ -26,7 +26,8 @@
 #include <QMetaType>
 #include <QDBusArgument>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class AQPM_EXPORT QueueItem
 {

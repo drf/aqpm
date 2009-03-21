@@ -32,22 +32,23 @@
 #include <Context>
 #include <Auth>
 
-namespace AqpmWorker {
+namespace AqpmWorker
+{
 
 class Worker::Private
 {
-    public:
-        Private() : ready(false) {};
+public:
+    Private() : ready(false) {};
 
-        pmdb_t *db_local;
-        pmdb_t *dbs_sync;
+    pmdb_t *db_local;
+    pmdb_t *dbs_sync;
 
-        bool ready;
+    bool ready;
 };
 
 Worker::Worker(QObject *parent)
- : QObject(parent)
- , d(new Private())
+        : QObject(parent)
+        , d(new Private())
 {
     new AqpmworkerAdaptor(this);
 
@@ -167,8 +168,8 @@ void Worker::updateDatabase()
 
     PolKitResult result;
     result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updatedatabase",
-                                      message().service(),
-                                      true);
+             message().service(),
+             true);
     if (result == POLKIT_RESULT_YES) {
         qDebug() << message().service() << QString(" authorized");
     } else {
@@ -243,8 +244,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     PolKitResult result;
     result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.processqueue",
-                                                message().service(),
-                                                true);
+             message().service(),
+             true);
     if (result == POLKIT_RESULT_YES) {
         qDebug() << message().service() << QString(" authorized");
     } else {
@@ -276,7 +277,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     qDebug() << "Appending packages";
 
-    foreach (const QVariant &ent, packages) {
+    foreach(const QVariant &ent, packages) {
         qDebug() << ent.typeName();
         Aqpm::QueueItem item;
         ent.value<QDBusArgument>() >> item;
@@ -287,32 +288,32 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     foreach(const Aqpm::QueueItem &itm, queue) {
         switch (itm.action_id) {
-            case Aqpm::QueueItem::Sync:
-                qDebug() << "Sync action";
-                sync = true;
-                break;
-            case Aqpm::QueueItem::FromFile:
-                qDebug() << "From File action";
-                file = true;
-                break;
-            case Aqpm::QueueItem::Remove:
-                qDebug() << "Remove action";
-                remove = true;
-                break;
-            case Aqpm::QueueItem::FullUpgrade:
-                qDebug() << "Upgrade action";
-                sysupgrade = true;
-                break;
-            default:
-                qDebug() << "What is that?";
-                break;
+        case Aqpm::QueueItem::Sync:
+            qDebug() << "Sync action";
+            sync = true;
+            break;
+        case Aqpm::QueueItem::FromFile:
+            qDebug() << "From File action";
+            file = true;
+            break;
+        case Aqpm::QueueItem::Remove:
+            qDebug() << "Remove action";
+            remove = true;
+            break;
+        case Aqpm::QueueItem::FullUpgrade:
+            qDebug() << "Upgrade action";
+            sysupgrade = true;
+            break;
+        default:
+            qDebug() << "What is that?";
+            break;
         }
     }
 
     if (remove) {
         if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, alpmflags,
-                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
-                AqpmWorker::cb_trans_progress) == -1) {
+                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                            AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;
@@ -364,8 +365,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     if (sync) {
         if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
-                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
-                AqpmWorker::cb_trans_progress) == -1) {
+                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                            AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;
@@ -418,8 +419,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     if (sysupgrade) {
         if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
-                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
-                AqpmWorker::cb_trans_progress) == -1) {
+                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                            AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;
@@ -463,8 +464,8 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
     if (file) {
         if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
-                AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
-                AqpmWorker::cb_trans_progress) == -1) {
+                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                            AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
             emit workerResult(false);
             return;

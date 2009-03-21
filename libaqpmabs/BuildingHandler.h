@@ -23,16 +23,16 @@
 
 #include <QProcess>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class BuildItem
 {
 public:
     BuildItem() {};
     explicit BuildItem(const QString &n, const QString &p = QString())
-     : name(n),
-     env_path(p)
-    {};
+            : name(n),
+            env_path(p) {};
 
     typedef QList<BuildItem*> List;
 
@@ -44,36 +44,36 @@ class BuildingHandler : public QObject
 {
     Q_OBJECT
 
-    public:
+public:
 
-        BuildingHandler();
-        virtual ~BuildingHandler();
+    BuildingHandler();
+    virtual ~BuildingHandler();
 
-        void addItemToQueue(BuildItem *itm);
+    void addItemToQueue(BuildItem *itm);
 
-        void clearQueue();
-        void processQueue();
+    void clearQueue();
+    void processQueue();
 
-        QStringList getBuiltPackages();
-        void clearBuiltPackages();
+    QStringList getBuiltPackages();
+    void clearBuiltPackages();
 
-    Q_SIGNALS:
-        void buildingStarted();
-        void buildingFinished(bool success);
+Q_SIGNALS:
+    void buildingStarted();
+    void buildingFinished(bool success);
 
-        void newOutput(const QString &output, QProcess::ProcessChannel channel);
+    void newOutput(const QString &output, QProcess::ProcessChannel channel);
 
-        void packageBuilt(const QString &path);
+    void packageBuilt(const QString &path);
 
-    private Q_SLOTS:
-        void processOutput();
+private Q_SLOTS:
+    void processOutput();
 
-    private:
-        void processNextItem();
+private:
+    void processNextItem();
 
-    private:
-        class Private;
-        Private *d;
+private:
+    class Private;
+    Private *d;
 };
 
 }

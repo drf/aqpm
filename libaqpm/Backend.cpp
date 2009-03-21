@@ -107,8 +107,8 @@ void Backend::setUpSelf(BackendThread *t)
 
     connect(d->thread, SIGNAL(dbQty(const QStringList&)),
             this, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
-    connect(d->thread, SIGNAL(dbStatusChanged(const QString&,int)),
-            this, SIGNAL(dbStatusChanged(const QString&,int)), Qt::QueuedConnection);
+    connect(d->thread, SIGNAL(dbStatusChanged(const QString&, int)),
+            this, SIGNAL(dbStatusChanged(const QString&, int)), Qt::QueuedConnection);
     connect(d->thread, SIGNAL(transactionStarted()),
             this, SIGNAL(transactionStarted()));
     connect(d->thread, SIGNAL(transactionReleased()),
@@ -119,12 +119,12 @@ void Backend::setUpSelf(BackendThread *t)
             this, SIGNAL(operationFinished(bool)));
     connect(d->thread, SIGNAL(threadInitialized()),
             this, SLOT(connectCallbacks()));
-    connect(d->thread, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)),
-            this, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)));
-    connect(d->thread, SIGNAL(streamTransProgress(int,const QString&,int,int,int)),
-            this, SIGNAL(streamTransProgress(int,const QString&,int,int,int)));
-    connect(d->thread, SIGNAL(streamTransProgress(int,const QString&,int,int,int)),
-            this, SIGNAL(streamTransEvent(int,void*,void*)));
+    connect(d->thread, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)),
+            this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
+    connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
+            this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
+    connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
+            this, SIGNAL(streamTransEvent(int, void*, void*)));
 
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }

@@ -34,7 +34,8 @@
 
 #include <Auth>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 void ContainerThread::run()
 {
@@ -49,8 +50,7 @@ class BackendThread::Private
 public:
 
     Private()
-     : handleAuth(true)
-    {};
+            : handleAuth(true) {};
 
     void waitForWorkerReady();
 
@@ -88,8 +88,8 @@ void BackendThread::Private::waitForWorkerReady()
 }
 
 BackendThread::BackendThread(QObject *parent)
- : QObject(parent),
- d(new Private())
+        : QObject(parent),
+        d(new Private())
 {
     qDebug() << "Handling libalpm in a separate Thread";
     connect(this, SIGNAL(operationFinished(bool)), SIGNAL(transactionReleased()));
@@ -307,13 +307,13 @@ alpm_list_t *BackendThread::getUpgradeablePackages()
     alpm_list_t *syncdbs;
     retlist.clear();
 
-    syncdbs = alpm_list_first( alpm_option_get_syncdbs() );
+    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
-    if ( alpm_sync_sysupgrade( d->db_local, syncdbs, &syncpkgs ) == -1 ) {
+    if (alpm_sync_sysupgrade(d->db_local, syncdbs, &syncpkgs) == -1) {
         return NULL;
     }
 
-    return alpm_list_first( syncpkgs );
+    return alpm_list_first(syncpkgs);
 }
 
 QStringList BackendThread::getUpgradeablePackagesAsStringList()
@@ -323,25 +323,25 @@ QStringList BackendThread::getUpgradeablePackagesAsStringList()
     alpm_list_t *syncdbs;
     retlist.clear();
 
-    syncdbs = alpm_list_first( alpm_option_get_syncdbs() );
+    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
-    if ( alpm_sync_sysupgrade( d->db_local, syncdbs, &syncpkgs ) == -1 )
+    if (alpm_sync_sysupgrade(d->db_local, syncdbs, &syncpkgs) == -1)
         return retlist;
 
-    syncpkgs = alpm_list_first( syncpkgs );
+    syncpkgs = alpm_list_first(syncpkgs);
 
-    if ( !syncpkgs ) {
+    if (!syncpkgs) {
         return retlist;
     } else {
         qDebug() << "Upgradeable packages:";
-        while ( syncpkgs != NULL ) {
+        while (syncpkgs != NULL) {
             /* To Alpm Devs : LOL. Call three functions to get a fucking
              * name of a package? Please.
              */
-            QString tmp( alpm_pkg_get_name( alpm_sync_get_pkg(( pmsyncpkg_t * ) alpm_list_getdata( syncpkgs ) ) ) );
+            QString tmp(alpm_pkg_get_name(alpm_sync_get_pkg((pmsyncpkg_t *) alpm_list_getdata(syncpkgs))));
             qDebug() << tmp;
-            retlist.append( tmp );
-            syncpkgs = alpm_list_next( syncpkgs );
+            retlist.append(tmp);
+            syncpkgs = alpm_list_next(syncpkgs);
         }
         return retlist;
     }
@@ -776,9 +776,9 @@ bool BackendThread::updateDatabase()
 
     QDBusMessage message;
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-                                             "/Worker",
-                                             "org.chakraproject.aqpmworker",
-                                             QLatin1String("isWorkerReady"));
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("isWorkerReady"));
     QDBusMessage reply = QDBusConnection::systemBus().call(message);
     if (reply.type() == QDBusMessage::ReplyMessage
             && reply.arguments().size() == 1) {
@@ -805,9 +805,9 @@ bool BackendThread::updateDatabase()
     qDebug() << "Starting update";
 
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-                                             "/Worker",
-                                             "org.chakraproject.aqpmworker",
-                                             QLatin1String("updateDatabase"));
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("updateDatabase"));
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 
     return true;
@@ -846,20 +846,20 @@ void BackendThread::processQueue()
     QVariantList flags;
     QVariantList packages;
 
-    foreach (const pmtransflag_t &ent, d->flags) {
+    foreach(const pmtransflag_t &ent, d->flags) {
         flags.append(ent);
     }
 
-    foreach (const QueueItem &ent, d->queue) {
+    foreach(const QueueItem &ent, d->queue) {
         qDebug() << "Appending " << ent.name;
         packages.append(QVariant::fromValue(ent));
     }
 
     QDBusMessage message;
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-                                             "/Worker",
-                                             "org.chakraproject.aqpmworker",
-                                             QLatin1String("isWorkerReady"));
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("isWorkerReady"));
     QDBusMessage reply = QDBusConnection::systemBus().call(message);
     if (reply.type() == QDBusMessage::ReplyMessage
             && reply.arguments().size() == 1) {
@@ -877,20 +877,20 @@ void BackendThread::processQueue()
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)));
+                                         "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "streamTransProgress", this, SIGNAL(streamTransProgress(int,const QString&,int,int,int)));
+                                         "streamTransProgress", this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "streamTransEvent", this, SIGNAL(streamTransEvent(int,void*,void*)));
+                                         "streamTransEvent", this, SIGNAL(streamTransEvent(int, void*, void*)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "workerResult", this, SLOT(workerResult(bool)));
+                                         "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "Starting update";
 
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-                                             "/Worker",
-                                             "org.chakraproject.aqpmworker",
-                                             QLatin1String("processQueue"));
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("processQueue"));
     QList<QVariant> argumentList;
     argumentList << qVariantFromValue(packages);
     argumentList << qVariantFromValue(flags);
@@ -911,17 +911,17 @@ bool BackendThread::shouldHandleAuthorization() const
 void BackendThread::workerResult(bool result)
 {
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "dbQty", this, SIGNAL(dbQty(const QStringList&)));
+                                            "dbQty", this, SIGNAL(dbQty(const QStringList&)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
+                                            "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&,int,int,int,int,int,int)));
+                                            "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "streamTransProgress", this, SIGNAL(streamTransProgress(int,const QString&,int,int,int)));
+                                            "streamTransProgress", this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "streamTransEvent", this, SIGNAL(streamTransEvent(int,void*,void*)));
+                                            "streamTransEvent", this, SIGNAL(streamTransEvent(int, void*, void*)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-            "workerResult", this, SLOT(workerResult(bool)));
+                                            "workerResult", this, SLOT(workerResult(bool)));
 
     emit operationFinished(result);
 }

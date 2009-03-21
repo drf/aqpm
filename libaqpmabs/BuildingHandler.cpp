@@ -27,24 +27,24 @@
 #include <QDir>
 #include <QDebug>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class BuildingHandler::Private
 {
-    public:
-        Private()
-         : working_dir("/tmp/aqpm/build")
-        {};
+public:
+    Private()
+            : working_dir("/tmp/aqpm/build") {};
 
-        QStringList built_packages;
-        BuildItem::List queue;
-        BuildItem::List::const_iterator iterator;
-        QPointer<QProcess> process;
-        QString working_dir;
+    QStringList built_packages;
+    BuildItem::List queue;
+    BuildItem::List::const_iterator iterator;
+    QPointer<QProcess> process;
+    QString working_dir;
 };
 
 BuildingHandler::BuildingHandler()
- : d(new Private())
+        : d(new Private())
 {
 }
 
@@ -114,33 +114,33 @@ void BuildingHandler::processNextItem()
 
     QDir from((*d->iterator)->env_path);
 
-    from.setFilter( QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks );
+    from.setFilter(QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
     QFileInfoList Plist = from.entryInfoList();
 
-    for ( int i = 0; i < Plist.size(); ++i ) {
+    for (int i = 0; i < Plist.size(); ++i) {
         QString dest(path);
 
         if (!dest.endsWith(QChar('/'))) {
-            dest.append( QChar( '/' ) );
+            dest.append(QChar('/'));
         }
 
         dest.append(Plist.at(i).fileName());
 
-        qDebug() << "Copying " << Plist.at( i ).absoluteFilePath() << " to " << dest;
+        qDebug() << "Copying " << Plist.at(i).absoluteFilePath() << " to " << dest;
 
         if (!QFile::copy(Plist.at(i).absoluteFilePath(), dest)) {
             qDebug() << "Copy failed";
         }
     }
 
-    d->process->setWorkingDirectory( path );
+    d->process->setWorkingDirectory(path);
 
-    connect( d->process, SIGNAL( readyReadStandardOutput() ), SLOT( processOutput() ) );
-    connect( d->process, SIGNAL( readyReadStandardError() ), SLOT( processOutput() ) );
-    connect( d->process, SIGNAL( finished( int, QProcess::ExitStatus ) ), SLOT( finishedBuildingAction( int, QProcess::ExitStatus ) ) );
+    connect(d->process, SIGNAL(readyReadStandardOutput()), SLOT(processOutput()));
+    connect(d->process, SIGNAL(readyReadStandardError()), SLOT(processOutput()));
+    connect(d->process, SIGNAL(finished(int, QProcess::ExitStatus)), SLOT(finishedBuildingAction(int, QProcess::ExitStatus)));
 
-    d->process->start( "makepkg" );
+    d->process->start("makepkg");
 }
 
 }

@@ -27,13 +27,15 @@
 #include <dirent.h>
 #include <errno.h>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-class ABSHandler::Private {
+class ABSHandler::Private
+{
 public:
     Private() {};
 
-    int rmrf( const QString &path );
+    int rmrf(const QString &path);
 
     QProcess *process;
 };
@@ -60,8 +62,8 @@ ABSHandler *ABSHandler::instance()
 }
 
 ABSHandler::ABSHandler()
- : d(new Private())
- {
+        : d(new Private())
+{
     Q_ASSERT(!s_globalABSHandler()->q);
     s_globalABSHandler()->q = this;
 }
@@ -71,35 +73,35 @@ ABSHandler::~ABSHandler()
     delete d;
 }
 
-QString ABSHandler::getABSPath( const QString &package )
+QString ABSHandler::getABSPath(const QString &package)
 {
-    QDir absDir( "/var/abs" );
-    absDir.setFilter( QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks );
+    QDir absDir("/var/abs");
+    absDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
     int found = 0;
     QString absSource;
 
     QFileInfoList list = absDir.entryInfoList();
 
-    for ( int i = 0; i < list.size(); ++i ) {
-        QDir subAbsDir( list.at( i ).absoluteFilePath() );
-        subAbsDir.setFilter( QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks );
+    for (int i = 0; i < list.size(); ++i) {
+        QDir subAbsDir(list.at(i).absoluteFilePath());
+        subAbsDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
         QFileInfoList subList = subAbsDir.entryInfoList();
 
-        for ( int j = 0; j < subList.size(); ++j ) {
-            qDebug() << subList.at( j ).absoluteFilePath();
-            if ( !subList.at( j ).baseName().compare( package ) ) {
+        for (int j = 0; j < subList.size(); ++j) {
+            qDebug() << subList.at(j).absoluteFilePath();
+            if (!subList.at(j).baseName().compare(package)) {
                 found = 1;
-                absSource = subList.at( j ).absoluteFilePath();
+                absSource = subList.at(j).absoluteFilePath();
                 break;
             }
         }
 
-        if ( found == 1 )
+        if (found == 1)
             break;
     }
 
-    if ( !found )
+    if (!found)
         return QString();
 
     qDebug() << "ABS Dir is " << absSource;
@@ -111,12 +113,12 @@ bool ABSHandler::cleanBuildingEnvironment(const QString &package, const QString 
 {
     QString path = p;
 
-    if ( !path.endsWith( QChar( '/' ) ) )
-        path.append( QChar( '/' ) );
+    if (!path.endsWith(QChar('/')))
+        path.append(QChar('/'));
 
-    path.append( package );
+    path.append(package);
 
-    d->rmrf( path.toAscii().data() );
+    d->rmrf(path.toAscii().data());
 
     return true;
 }
@@ -125,42 +127,42 @@ bool ABSHandler::setUpBuildingEnvironment(const QString &package, const QString 
 {
     QString path = p;
 
-    if ( !path.endsWith( QChar( '/' ) ) ) {
-        path.append( QChar( '/' ) );
+    if (!path.endsWith(QChar('/'))) {
+        path.append(QChar('/'));
     }
 
-    path.append( package );
+    path.append(package);
 
-    QDir pathDir( path );
-    if ( pathDir.exists() ) {
-        cleanBuildingEnvironment( package, path );
+    QDir pathDir(path);
+    if (pathDir.exists()) {
+        cleanBuildingEnvironment(package, path);
     }
 
-    if ( !pathDir.mkpath( path ) ) {
+    if (!pathDir.mkpath(path)) {
         return false;
     }
 
-    QString abspath( getABSPath( package ) );
+    QString abspath(getABSPath(package));
 
-    if ( abspath.isEmpty() ) {
+    if (abspath.isEmpty()) {
         qDebug() << "Couldn't find a matching ABS Dir!!";
         return false;
     }
 
-    QDir absPDir( abspath );
-    absPDir.setFilter( QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks );
+    QDir absPDir(abspath);
+    absPDir.setFilter(QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
     QFileInfoList Plist = absPDir.entryInfoList();
 
-    for ( int i = 0; i < Plist.size(); ++i ) {
-        QString dest( path );
-        if ( !dest.endsWith( QChar( '/' ) ) )
-            dest.append( QChar( '/' ) );
-        dest.append( Plist.at( i ).fileName() );
+    for (int i = 0; i < Plist.size(); ++i) {
+        QString dest(path);
+        if (!dest.endsWith(QChar('/')))
+            dest.append(QChar('/'));
+        dest.append(Plist.at(i).fileName());
 
-        qDebug() << "Copying " << Plist.at( i ).absoluteFilePath() << " to " << dest;
+        qDebug() << "Copying " << Plist.at(i).absoluteFilePath() << " to " << dest;
 
-        if ( !QFile::copy( Plist.at( i ).absoluteFilePath(), dest ) ) {
+        if (!QFile::copy(Plist.at(i).absoluteFilePath(), dest)) {
             return false;
         }
     }
@@ -168,72 +170,72 @@ bool ABSHandler::setUpBuildingEnvironment(const QString &package, const QString 
     return true;
 }
 
-QStringList ABSHandler::getMakeDepends( const QString &package )
+QStringList ABSHandler::getMakeDepends(const QString &package)
 {
     QStringList retList;
 
     retList.clear();
 
-    QDir absDir( "/var/abs" );
-    absDir.setFilter( QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks );
+    QDir absDir("/var/abs");
+    absDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
-    QString absSource( ABSHandler::getABSPath( package ) );
+    QString absSource(ABSHandler::getABSPath(package));
 
-    if ( absSource.isEmpty() )
+    if (absSource.isEmpty())
         return retList;
 
-    if ( !absSource.endsWith( QChar( '/' ) ) )
-        absSource.append( QChar( '/' ) );
+    if (!absSource.endsWith(QChar('/')))
+        absSource.append(QChar('/'));
 
-    absSource.append( "PKGBUILD" );
+    absSource.append("PKGBUILD");
 
-    QFile fp( absSource );
+    QFile fp(absSource);
 
-    if ( !fp.open( QIODevice::ReadOnly | QIODevice::Text ) )
+    if (!fp.open(QIODevice::ReadOnly | QIODevice::Text))
         return retList;
 
-    QTextStream in( &fp );
+    QTextStream in(&fp);
 
-    while ( !in.atEnd() ) {
+    while (!in.atEnd()) {
         QString line = in.readLine();
 
-        if ( !line.startsWith( QLatin1String("makedepends") ) ) {
+        if (!line.startsWith(QLatin1String("makedepends"))) {
             continue;
         }
 
-        QString testline( line );
-        testline.remove( ' ' );
+        QString testline(line);
+        testline.remove(' ');
 
-        while ( true ) {
-            if ( line.contains( '(' ) )
-                line = line.split( '(' ).at( 1 );
+        while (true) {
+            if (line.contains('('))
+                line = line.split('(').at(1);
 
-            foreach( const QString &rdep, line.split( QChar( '\'' ), QString::SkipEmptyParts ) ) {
-                QString dep( rdep );
+            foreach(const QString &rdep, line.split(QChar('\''), QString::SkipEmptyParts)) {
+                QString dep(rdep);
 
-                if ( !dep.contains( ')' ) && !dep.contains( ' ' ) ) {
-                    if ( dep.contains( '>' ) )
-                        dep.truncate( dep.indexOf( '>' ) );
+                if (!dep.contains(')') && !dep.contains(' ')) {
+                    if (dep.contains('>'))
+                        dep.truncate(dep.indexOf('>'));
 
-                    if ( dep.contains( '<' ) )
-                        dep.truncate( dep.indexOf( '<' ) );
+                    if (dep.contains('<'))
+                        dep.truncate(dep.indexOf('<'));
 
-                    if ( dep.contains( '=' ) )
-                        dep.truncate( dep.indexOf( '=' ) );
+                    if (dep.contains('='))
+                        dep.truncate(dep.indexOf('='));
 
                     qDebug() << "Adding" << dep;
 
-                    retList.append( dep );
+                    retList.append(dep);
                 }
             }
 
-            if ( testline.endsWith( ')' ) )
+            if (testline.endsWith(')'))
                 break;
 
             line = in.readLine();
 
             testline = line;
-            testline.remove( ' ' );
+            testline.remove(' ');
         }
 
         break;
@@ -246,11 +248,11 @@ QStringList ABSHandler::getMakeDepends( const QString &package )
 
 void ABSHandler::updateABSTree()
 {
-    d->process = new QProcess( this );
-    connect( d->process, SIGNAL(readyReadStandardOutput()), SLOT(slotOutputReady()));
-    connect( d->process, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(slotABSUpdated(int,QProcess::ExitStatus)));
+    d->process = new QProcess(this);
+    connect(d->process, SIGNAL(readyReadStandardOutput()), SLOT(slotOutputReady()));
+    connect(d->process, SIGNAL(finished(int, QProcess::ExitStatus)), SLOT(slotABSUpdated(int, QProcess::ExitStatus)));
 
-    d->process->start( "abs" );
+    d->process->start("abs");
 }
 
 void ABSHandler::slotABSUpdated(int code, QProcess::ExitStatus)
@@ -264,12 +266,12 @@ void ABSHandler::slotABSUpdated(int code, QProcess::ExitStatus)
 
 void ABSHandler::slotOutputReady()
 {
-    QString view = QString::fromLocal8Bit( d->process->readLine( 1024 ) );
+    QString view = QString::fromLocal8Bit(d->process->readLine(1024));
 
     emit absUpdateOutput(view);
 }
 
-int ABSHandler::Private::rmrf( const QString &path )
+int ABSHandler::Private::rmrf(const QString &path)
 {
     QProcess::execute("rm -rf " + path);
 }

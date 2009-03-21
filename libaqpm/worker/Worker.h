@@ -27,45 +27,46 @@
 
 #include <alpm.h>
 
-namespace AqpmWorker {
+namespace AqpmWorker
+{
 
 class Worker : public QObject, protected QDBusContext
 {
     Q_OBJECT
 
-    public:
-        Worker(QObject *parent = 0);
-        virtual ~Worker();
+public:
+    Worker(QObject *parent = 0);
+    virtual ~Worker();
 
-        bool isWorkerReady();
+    bool isWorkerReady();
 
-    public Q_SLOTS:
-        void processQueue(QVariantList packages, QVariantList flags);
-        void updateDatabase();
+public Q_SLOTS:
+    void processQueue(QVariantList packages, QVariantList flags);
+    void updateDatabase();
 
-    private:
-        void setUpAlpm();
+private:
+    void setUpAlpm();
 
-    Q_SIGNALS:
-        void workerReady();
-        void workerResult(bool);
+Q_SIGNALS:
+    void workerReady();
+    void workerResult(bool);
 
-        void dbStatusChanged(const QString &repo, int action);
-        void dbQty(const QStringList &db);
+    void dbStatusChanged(const QString &repo, int action);
+    void dbQty(const QStringList &db);
 
-        void streamTransDlProg(const QString &c, int bytedone, int bytetotal, int speed,
-                int listdone, int listtotal, int speedtotal);
+    void streamTransDlProg(const QString &c, int bytedone, int bytetotal, int speed,
+                           int listdone, int listtotal, int speedtotal);
 
-        void streamTransProgress(int event, const QString &pkgname, int percent,
-                int howmany, int remain);
+    void streamTransProgress(int event, const QString &pkgname, int percent,
+                             int howmany, int remain);
 
-        void streamTransEvent(int event, void *data1, void *data2);
+    void streamTransEvent(int event, void *data1, void *data2);
 
-        void errorOccurred(int code);
+    void errorOccurred(int code);
 
-    private:
-        class Private;
-        Private *d;
+private:
+    class Private;
+    Private *d;
 };
 
 }
