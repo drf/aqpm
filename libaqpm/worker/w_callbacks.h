@@ -31,9 +31,13 @@
 namespace AqpmWorker
 {
 
+class CallBacksPrivate;
+
 class CallBacks : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(CallBacks)
+    Q_DECLARE_PRIVATE(CallBacks)
 
 public:
 
@@ -47,9 +51,8 @@ public:
                        void *data3, int *response);
     void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                            int howmany, int remain);
-    void cb_dl_total(off_t total);
-    void cb_dl_progress(const char *filename, off_t file_xfered, off_t file_total);
     void cb_log(pmloglevel_t level, char *fmt, va_list args);
+    void cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
 
 signals:
     void streamTransEvent(int event, void *data1, void *data2);
@@ -57,19 +60,14 @@ signals:
                              void *data3);
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
-    void streamTransDlProg(const QString &filename, int file_x, int file_t, int spd_f,
-                           int list_x, int list_t, int spd_l);
     void questionStreamed(const QString &msg);
-    void streamTransDlProg(const QString &filename, int singlePercent, int singleSpeed,
-                           int totalPercent, int totalSpeed);
     void logMsgStreamed(const QString &msg);
 
 public:
     int answer;
 
 private:
-    class Private;
-    Private *d;
+    CallBacksPrivate *d_ptr;
 };
 
 void cb_trans_evt(pmtransevt_t event, void *data1, void *data2);
@@ -77,10 +75,8 @@ void cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
                    void *data3, int *response);
 void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                        int howmany, int remain);
-void cb_dl_total(off_t total);
-/* callback to handle display of download progress */
-void cb_dl_progress(const char *filename, off_t file_xfered, off_t file_total);
 void cb_log(pmloglevel_t level, char *fmt, va_list args);
+void cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
 int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list args);
 
 }

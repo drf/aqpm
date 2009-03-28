@@ -32,6 +32,7 @@ add_executable(aqpmworker
 TARGET_LINK_LIBRARIES(aqpmworker
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
     ${ALPM_LIBS}
     ${LIBARCHIVE_LIBS}
     ${POLKITQT_CORE_LIBRARY}

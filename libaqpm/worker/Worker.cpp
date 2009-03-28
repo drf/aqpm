@@ -97,8 +97,6 @@ void Worker::setUpAlpm()
 
     d->db_local = alpm_db_register_local();
 
-    alpm_option_set_dlcb(AqpmWorker::cb_dl_progress);
-    alpm_option_set_totaldlcb(AqpmWorker::cb_dl_total);
     alpm_option_set_logcb(AqpmWorker::cb_log);
 
     if (pdata.logFile.isEmpty()) {
