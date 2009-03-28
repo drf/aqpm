@@ -52,7 +52,7 @@ public:
     void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                            int howmany, int remain);
     void cb_log(pmloglevel_t level, char *fmt, va_list args);
-    void cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
+    int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
 
 signals:
     void streamTransEvent(int event, void *data1, void *data2);
@@ -76,7 +76,7 @@ void cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
 void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                        int howmany, int remain);
 void cb_log(pmloglevel_t level, char *fmt, va_list args);
-void cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
+int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
 int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list args);
 
 }

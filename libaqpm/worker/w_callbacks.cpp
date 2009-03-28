@@ -27,8 +27,10 @@
 #include <QWaitCondition>
 #include <QDebug>
 #include <QGlobalStatic>
+#include <QDateTime>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkProxy>
 
 #include "alpm.h"
@@ -198,9 +200,25 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
 
 }
 
-void CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew)
+int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew)
 {
     Q_D(CallBacks);
+
+    QNetworkRequest request = d->createNetworkRequest(QUrl(url));
+    QNetworkReply *reply = d->manager->head(request);
+
+    // Let's check if the modification times collide. If so, there's no need to download the file
+
+    while (!reply->header(QNetworkRequest::LastModifiedHeader).isValid()) {
+        reply->waitForBytesWritten(200);
+    }
+
+    QDateTime dtime = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+    *mtimenew = dtime.toTime_t();
+    if (*mtimenew == mtimeold) {
+        return 1;
+    }
+
 }
 
 void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
@@ -247,9 +265,9 @@ void CallBacks::cb_log(pmloglevel_t level, char *fmt, va_list args)
 
 /* Now the real suckness is coming... */
 
-void cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew)
+int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew)
 {
-    CallBacks::instance()->cb_fetch(url, localpath, mtimeold, mtimenew);
+    return CallBacks::instance()->cb_fetch(url, localpath, mtimeold, mtimenew);
 }
 
 void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
