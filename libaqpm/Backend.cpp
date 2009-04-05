@@ -119,12 +119,14 @@ void Backend::setUpSelf(BackendThread *t)
             this, SIGNAL(operationFinished(bool)));
     connect(d->thread, SIGNAL(threadInitialized()),
             this, SLOT(connectCallbacks()));
-    connect(d->thread, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)),
-            this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
+    connect(d->thread, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
+            this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransEvent(int, void*, void*)));
+    connect(d->thread, SIGNAL(questionStreamed(const QString&)),
+            this, SIGNAL(questionStreamed(const QString&)));
 
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }
@@ -136,12 +138,10 @@ QEvent::Type Backend::getEventTypeFor(BackendEvents event)
 
 void Backend::connectCallbacks()
 {
-    connect(CallBacks::instance(), SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)),
-            SIGNAL(streamTransDlProg(char*, int, int, int, int, int, int)));
     connect(CallBacks::instance(), SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)),
-            SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
+            this, SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
     connect(CallBacks::instance(), SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
-            SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
+            this, SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
 
     emit backendReady();
 }
@@ -388,6 +388,11 @@ void Backend::setShouldHandleAuthorization(bool should)
 bool Backend::shouldHandleAuthorization() const
 {
     return d->thread->shouldHandleAuthorization();
+}
+
+void Backend::setAnswer(int answer)
+{
+    d->thread->setAnswer(answer);
 }
 
 }

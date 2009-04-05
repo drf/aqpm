@@ -800,6 +800,8 @@ bool BackendThread::updateDatabase()
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "questionStreamed", this, SIGNAL(questionStreamed(const QString&)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "Starting update";
@@ -877,11 +879,13 @@ void BackendThread::processQueue()
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
+                                         "streamDlProg", this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "streamTransProgress", this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "streamTransEvent", this, SIGNAL(streamTransEvent(int, void*, void*)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "questionStreamed", this, SIGNAL(questionStreamed(const QString&)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", this, SLOT(workerResult(bool)));
 
@@ -915,7 +919,7 @@ void BackendThread::workerResult(bool result)
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                            "streamTransDlProg", this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
+                                            "streamDlProg", this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "streamTransProgress", this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
@@ -924,6 +928,14 @@ void BackendThread::workerResult(bool result)
                                             "workerResult", this, SLOT(workerResult(bool)));
 
     emit operationFinished(result);
+}
+
+void BackendThread::setAnswer(int answer)
+{
+    QDBusInterface iface("org.chakraproject.aqpmworker", "/Worker",
+                         "org.chakraproject.aqpmworker", QDBusConnection::systemBus());
+
+    iface.call("setAnswer", answer);
 }
 
 }

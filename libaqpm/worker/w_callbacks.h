@@ -69,6 +69,8 @@ signals:
                           qint64 rate, qint64 list_done, qint64 list_total);
     void questionStreamed(const QString &msg);
     void logMsgStreamed(const QString &msg);
+
+    // Internal use
     void answerReady();
 
 private:

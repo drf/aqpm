@@ -113,6 +113,8 @@ public Q_SLOTS:
     void setShouldHandleAuthorization(bool should);
     bool shouldHandleAuthorization() const;
 
+    void setAnswer(int answer);
+
 Q_SIGNALS:
     void dbStatusChanged(const QString &repo, int action);
     void dbQty(const QStringList &db);
@@ -120,13 +122,15 @@ Q_SIGNALS:
     void transactionStarted();
     void transactionReleased();
 
-    void streamTransDlProg(const QString &c, int bytedone, int bytetotal, int speed,
-                           int listdone, int listtotal, int speedtotal);
+    void streamDlProg(const QString &c, int bytedone, int bytetotal, int speed,
+                      int listdone, int listtotal);
 
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
     void streamTransEvent(int event, void *data1, void *data2);
+
+    void questionStreamed(const QString &msg);
 
     void errorOccurred(int code);
 
