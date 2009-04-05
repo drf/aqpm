@@ -30,6 +30,7 @@
 #include <QDateTime>
 #include <QEventLoop>
 #include <QFile>
+#include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -52,15 +53,11 @@ public:
     Q_DECLARE_PUBLIC(CallBacks)
     CallBacks *q_ptr;
 
-    float rate_last;
-    int xfered_last;
-    float rate_total;
-    int xfered_total;
-    float list_total;
-    float list_xfered;
-    float last_file_xfered;
+    qint64 list_total;
+    qint64 list_xfered;
     int onDl;
-    struct timeval initial_time;
+    QDateTime initial_time;
+    QTimer updateTimer;
     QNetworkAccessManager *manager;
 };
 
@@ -91,6 +88,8 @@ CallBacksPrivate::CallBacksPrivate()
     Q_Q(CallBacks);
     manager = new QNetworkAccessManager(q);
     manager->setProxy(QNetworkProxy());
+    updateTimer.setSingleShot(true);
+    updateTimer.setInterval(UPDATE_SPEED_SEC);
 }
 
 QNetworkRequest CallBacksPrivate::createNetworkRequest(const QUrl &url)
@@ -245,23 +244,31 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     return 0;
 }
 
+void CallBacks::cb_dl_total(off_t total)
+{
+    Q_D(CallBacks);
+
+    d->list_total = total;
+    qDebug() << "total called, offset" << total;
+    /* if we get a 0 value, it means this list has finished downloading,
+     * so clear out our list_xfered as well */
+    if (total == 0) {
+        d->list_xfered = 0;
+    }
+}
+
 void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                                   int howmany, int remain)
 {
     Q_D(CallBacks);
-    float timediff = 0.0;
 
-    if (percent == 0) {
-        gettimeofday(&d->initial_time, NULL);
-        timediff = get_update_timediff(1);
+    if (d->updateTimer.isActive()) {
+        return;
     } else {
-        timediff = get_update_timediff(0);
-
-        if (timediff < UPDATE_SPEED_SEC)
-            return;
+        d->updateTimer.start();
     }
 
-    if (percent > 0 && percent < 100 && !timediff)
+    if (percent > 0 && percent < 100)
         return;
 
     qDebug() << "Streaming trans progress";
@@ -288,6 +295,11 @@ void CallBacks::cb_log(pmloglevel_t level, char *fmt, va_list args)
 }
 
 /* Now the real suckness is coming... */
+
+void cb_dl_total(off_t total)
+{
+    CallBacks::instance()->cb_dl_total(total);
+}
 
 int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew)
 {

@@ -51,6 +51,7 @@ public:
                        void *data3, int *response);
     void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                            int howmany, int remain);
+    void cb_dl_total(off_t total);
     void cb_log(pmloglevel_t level, char *fmt, va_list args);
     int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
 
@@ -73,6 +74,7 @@ private:
 void cb_trans_evt(pmtransevt_t event, void *data1, void *data2);
 void cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
                    void *data3, int *response);
+void cb_dl_total(off_t total);
 void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                        int howmany, int remain);
 void cb_log(pmloglevel_t level, char *fmt, va_list args);
