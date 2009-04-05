@@ -27,6 +27,7 @@
 #include "../Backend.h"
 
 #include <QtDBus/QDBusConnection>
+#include <QTimer>
 #include <QDebug>
 
 #include <Context>

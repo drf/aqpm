@@ -28,6 +28,8 @@
 #include <QDebug>
 #include <QGlobalStatic>
 #include <QDateTime>
+#include <QEventLoop>
+#include <QFile>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -215,10 +217,32 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     QDateTime dtime = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     *mtimenew = dtime.toTime_t();
+    reply->deleteLater();
     if (*mtimenew == mtimeold) {
         return 1;
     }
 
+    // If we got here, it's time to download the file.
+    // We should handle the request synchronously, so get ready for some loops.
+
+    QEventLoop e;
+    connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
+    connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(computeDownloadProgress(qint64,qint64)));
+    reply = d->manager->get(request);
+    e.exec();
+
+    QFile file(localpath);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return -1;
+    }
+
+    QTextStream out(&file);
+    out << reply->readAll();
+    file.flush();
+    file.close();
+    reply->deleteLater();
+    return 0;
 }
 
 void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
