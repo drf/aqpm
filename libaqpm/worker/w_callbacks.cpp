@@ -109,7 +109,6 @@ CallBacks::CallBacks(QObject *parent)
     s_globalCallbacks()->q = this;
     d_ptr->q_ptr = this;
     qDebug() << "Constructing callbacks";
-    //answer = -1;
 }
 
 CallBacks::~CallBacks()

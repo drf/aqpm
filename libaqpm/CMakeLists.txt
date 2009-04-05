@@ -9,22 +9,13 @@ SET(aqpm_SRCS
     QueueItem.cpp
 )
 
-SET(aqpm_MOC_HDRS
-    Backend.h
-    BackendThread.h
-    callbacks.h
-)
-
 SET(aqpm_HEADERS
 	Backend.h
 	ConfigurationParser.h
 	QueueItem.h
 )
-
-QT4_WRAP_CPP(aqpm_MOC_SRCS ${aqpm_MOC_HDRS})
-QT4_AUTOMOC(${aqpm_SRCS})
                       
-add_library(aqpm SHARED
+automoc4_add_library(aqpm SHARED
     ${aqpm_SRCS}
     ${aqpm_MOC_SRCS}
 )
@@ -37,7 +28,6 @@ TARGET_LINK_LIBRARIES(aqpm
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${ALPM_LIBS}
-    ${LIBARCHIVE_LIBS}
     ${POLKITQT_CORE_LIBRARY}
 )
 

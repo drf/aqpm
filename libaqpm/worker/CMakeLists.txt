@@ -14,16 +14,8 @@ SET(aqpmworker_SRCS
     w_callbacks.cpp
     ../QueueItem.cpp
 )
-
-SET(aqpmworker_MOC_HDRS
-    Worker.h
-    w_callbacks.h
-)
-
-QT4_WRAP_CPP(aqpmworker_MOC_SRCS ${aqpmworker_MOC_HDRS})
-QT4_AUTOMOC(${aqpmworker_SRCS})
                       
-add_executable(aqpmworker
+automoc4_add_executable(aqpmworker
     ${aqpmworker_SRCS}
     ${aqpmworker_adaptor_SRCS}
     ${aqpmworker_MOC_SRCS}
@@ -34,7 +26,6 @@ TARGET_LINK_LIBRARIES(aqpmworker
     ${QT_QTDBUS_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${ALPM_LIBS}
-    ${LIBARCHIVE_LIBS}
     ${POLKITQT_CORE_LIBRARY}
     aqpm
 )

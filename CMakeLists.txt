@@ -8,6 +8,7 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy) 
 
 include(FindQt4)
+include(FindAutomoc4)
 include(FindSharedMimeInfo)
 include(FindPkgConfig)
 include(FindPolkitQt)
