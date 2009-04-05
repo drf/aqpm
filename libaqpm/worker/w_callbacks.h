@@ -56,6 +56,9 @@ public:
     int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
     void computeDownloadProgress(qint64 downloaded, qint64 total);
 
+public Q_SLOTS:
+    void setAnswer(int answer);
+
 signals:
     void streamTransEvent(int event, void *data1, void *data2);
     void streamTransQuestion(int event, void *data1, void *data2,
@@ -66,6 +69,7 @@ signals:
                           qint64 rate, qint64 list_done, qint64 list_total);
     void questionStreamed(const QString &msg);
     void logMsgStreamed(const QString &msg);
+    void answerReady();
 
 private:
     CallBacksPrivate *d_ptr;

@@ -67,12 +67,16 @@ Worker::Worker(QObject *parent)
 
     alpm_initialize();
 
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)),
-            SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int, int)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&,qint64,qint64,qint64,qint64,qint64)),
+            this, SIGNAL(streamTransDlProg(const QString&,qint64,qint64,qint64,qint64,qint64)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
-            SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
+            this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int, void*, void*)),
-            SIGNAL(streamTransEvent(int, void*, void*)));
+            this, SIGNAL(streamTransEvent(int, void*, void*)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(questionStreamed(const QString&)),
+            this, SIGNAL(questionStreamed(const QString&)));
+    connect(this, SIGNAL(streamAnswer(int)),
+            AqpmWorker::CallBacks::instance(), SLOT(setAnswer(int)));
 
     setUpAlpm();
 }
@@ -515,6 +519,11 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
     }
 
     emit workerResult(true);
+}
+
+void Worker::setAnswer(int answer)
+{
+    emit streamAnswer(answer);
 }
 
 }

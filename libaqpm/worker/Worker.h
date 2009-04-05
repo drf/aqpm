@@ -43,6 +43,7 @@ public:
 public Q_SLOTS:
     void processQueue(QVariantList packages, QVariantList flags);
     void updateDatabase();
+    void setAnswer(int answer);
 
 private:
     void setUpAlpm();
@@ -54,15 +55,19 @@ Q_SIGNALS:
     void dbStatusChanged(const QString &repo, int action);
     void dbQty(const QStringList &db);
 
-    void streamTransDlProg(const QString &c, int bytedone, int bytetotal, int speed,
-                           int listdone, int listtotal, int speedtotal);
-
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
     void streamTransEvent(int event, void *data1, void *data2);
 
+    void streamDlProgress(const QString &pkg, qint64 package_done, qint64 package_total,
+                              qint64 rate, qint64 list_done, qint64 list_total);
+
+    void questionStreamed(const QString &msg);
+
     void errorOccurred(int code);
+
+    void streamAnswer(int answer);
 
 private:
     class Private;

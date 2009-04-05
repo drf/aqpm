@@ -52,6 +52,7 @@ public:
     Q_DECLARE_PUBLIC(CallBacks)
     CallBacks *q_ptr;
 
+    int answer;
     qint64 list_total;
     qint64 list_xfered;
     qint64 list_last;
@@ -85,6 +86,7 @@ CallBacks *CallBacks::instance()
 }
 
 CallBacksPrivate::CallBacksPrivate()
+ : answer(-1)
 {
     Q_Q(CallBacks);
     manager = new QNetworkAccessManager(q);
@@ -123,9 +125,19 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
     qDebug() << "Alpm Thread awake.";
 }
 
+void CallBacks::setAnswer(int answer)
+{
+    Q_D(CallBacks);
+
+    d->answer = answer;
+    emit answerReady();
+}
+
 void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
                               void *data3, int *response)
 {
+    Q_D(CallBacks);
+
     qDebug() << "Alpm is asking a question.";
 
     QString message;
@@ -162,11 +174,17 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
 
     emit questionStreamed(message);
 
-    qDebug() << "Question Streamed, Alpm Thread waiting.";
+    QEventLoop e;
 
-    qDebug() << "Alpm Thread awake, committing answer.";
+    connect(this, SIGNAL(answerReady()), &e, SLOT(quit()));
 
-    //*response = answer;
+    qDebug() << "Question Streamed, entering in custom event loop, waiting for answer";
+
+    e.exec();
+
+    qDebug() << "Looks like answer is there, and it's " << d->answer;
+
+    *response = d->answer;
 
     return;
 

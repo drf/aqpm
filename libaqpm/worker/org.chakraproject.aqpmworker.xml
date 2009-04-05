@@ -10,6 +10,9 @@
 		<method name="isWorkerReady">
 			<arg type="b" direction="out" />
 		</method>
+		<method name="setAnswer">
+			<arg type="i" direction="in" />
+		</method>
 
 		<signal name="workerReady">
 		</signal>
@@ -23,9 +26,8 @@
 		<signal name="dbQty">
 			<arg type="as" direction="out" />
 		</signal>
-		<signal name="streamTransDlProg">
+		<signal name="streamDlProg">
 			<arg type="s" direction="out" />
-			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />
@@ -38,6 +40,9 @@
 			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />
+		</signal>
+		<signal name="questionStreamed">
+			<arg type="s" direction="out" />
 		</signal>
 	</interface>
 </node>
