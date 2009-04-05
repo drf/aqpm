@@ -56,9 +56,8 @@ public:
     qint64 list_total;
     qint64 list_xfered;
     qint64 list_last;
-    QDateTime initial_time;
     QTimer updateTimer;
-    QTime averageRateTime;
+    QDateTime averageRateTime;
     QString currentFile;
     QNetworkAccessManager *manager;
 };
@@ -125,7 +124,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
     emit streamTransEvent(event, data1, data2);
 
     if (event == PM_TRANS_EVT_RETRIEVE_START && d->averageRateTime.isNull()) {
-        d->averageRateTime = QTime::currentTime();
+        d->averageRateTime = QDateTime::currentDateTime();
     }
 }
 
@@ -251,7 +250,7 @@ void CallBacks::computeDownloadProgress(qint64 downloaded, qint64 total)
     d->list_last = d->list_xfered + downloaded;
 
     // Update Rate
-    int seconds = d->averageRateTime.secsTo(QTime::currentTime());
+    int seconds = d->averageRateTime.secsTo(QDateTime::currentDateTime());
 
     int rate = d->list_last / seconds;
 
