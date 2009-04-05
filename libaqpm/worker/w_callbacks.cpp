@@ -58,7 +58,6 @@ public:
     qint64 list_last;
     QDateTime initial_time;
     QTimer updateTimer;
-    QTime instantRateTime;
     QTime averageRateTime;
     QString currentFile;
     QNetworkAccessManager *manager;
@@ -86,7 +85,8 @@ CallBacks *CallBacks::instance()
 }
 
 CallBacksPrivate::CallBacksPrivate()
- : answer(-1)
+        : answer(-1)
+        , averageRateTime()
 {
     Q_Q(CallBacks);
     manager = new QNetworkAccessManager(q);
@@ -120,9 +120,13 @@ CallBacks::~CallBacks()
 
 void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
 {
+    Q_D(CallBacks);
+
     emit streamTransEvent(event, data1, data2);
-    qDebug() << "Alpm Thread Waiting.";
-    qDebug() << "Alpm Thread awake.";
+
+    if (event == PM_TRANS_EVT_RETRIEVE_START && d->averageRateTime.isNull()) {
+        d->averageRateTime = QTime::currentTime();
+    }
 }
 
 void CallBacks::setAnswer(int answer)
@@ -217,7 +221,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     QEventLoop e;
     connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
-    connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(computeDownloadProgress(qint64,qint64)));
+    connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(computeDownloadProgress(qint64, qint64)));
     reply = d->manager->get(request);
     e.exec();
 
@@ -241,16 +245,15 @@ void CallBacks::computeDownloadProgress(qint64 downloaded, qint64 total)
 
     if (downloaded == total) {
         d->list_xfered += downloaded;
+        return;
     }
 
-    // Instant Rate
-    int seconds = d->instantRateTime.secsTo(QTime::currentTime());
-    qint64 bytes = (d->list_xfered + downloaded) - d->list_last;
-
-    int rate = bytes / seconds;
-
-    d->instantRateTime = QTime::currentTime();
     d->list_last = d->list_xfered + downloaded;
+
+    // Update Rate
+    int seconds = d->averageRateTime.secsTo(QTime::currentTime());
+
+    int rate = d->list_last / seconds;
 
     emit streamDlProgress(d->currentFile, downloaded, total, rate, d->list_last, d->list_total);
 }

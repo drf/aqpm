@@ -61,7 +61,7 @@ Q_SIGNALS:
     void streamTransEvent(int event, void *data1, void *data2);
 
     void streamDlProgress(const QString &pkg, qint64 package_done, qint64 package_total,
-                              qint64 rate, qint64 list_done, qint64 list_total);
+                          qint64 rate, qint64 list_done, qint64 list_total);
 
     void questionStreamed(const QString &msg);
 

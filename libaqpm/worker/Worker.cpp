@@ -67,8 +67,8 @@ Worker::Worker(QObject *parent)
 
     alpm_initialize();
 
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&,qint64,qint64,qint64,qint64,qint64)),
-            this, SIGNAL(streamTransDlProg(const QString&,qint64,qint64,qint64,qint64,qint64)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&, qint64, qint64, qint64, qint64, qint64)),
+            this, SIGNAL(streamTransDlProg(const QString&, qint64, qint64, qint64, qint64, qint64)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int, void*, void*)),
