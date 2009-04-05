@@ -20,8 +20,6 @@
 
 #include "w_callbacks.h"
 
-#include <iostream>
-#include <string>
 #include <unistd.h>
 #include <sys/types.h>
 #include <QWaitCondition>
@@ -31,6 +29,7 @@
 #include <QEventLoop>
 #include <QFile>
 #include <QTimer>
+#include <QStringList>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -55,9 +54,12 @@ public:
 
     qint64 list_total;
     qint64 list_xfered;
-    int onDl;
+    qint64 list_last;
     QDateTime initial_time;
     QTimer updateTimer;
+    QTime instantRateTime;
+    QTime averageRateTime;
+    QString currentFile;
     QNetworkAccessManager *manager;
 };
 
@@ -83,7 +85,6 @@ CallBacks *CallBacks::instance()
 }
 
 CallBacksPrivate::CallBacksPrivate()
- : onDl(1)
 {
     Q_Q(CallBacks);
     manager = new QNetworkAccessManager(q);
@@ -107,42 +108,12 @@ CallBacks::CallBacks(QObject *parent)
     s_globalCallbacks()->q = this;
     d_ptr->q_ptr = this;
     qDebug() << "Constructing callbacks";
-    answer = -1;
+    //answer = -1;
 }
 
 CallBacks::~CallBacks()
 {
     delete d_ptr;
-}
-
-float CallBacks::get_update_timediff(int first_call)
-{
-    float retval = 0.0;
-    static struct timeval last_time = {0, 0};
-
-    /* on first call, simply set the last time and return */
-    if (first_call) {
-        gettimeofday(&last_time, NULL);
-    } else {
-        struct timeval this_time;
-        float diff_sec, diff_usec;
-
-        gettimeofday(&this_time, NULL);
-        diff_sec = this_time.tv_sec - last_time.tv_sec;
-        diff_usec = this_time.tv_usec - last_time.tv_usec;
-
-        retval = diff_sec + (diff_usec / 1000000.0);
-
-        /* return 0 and do not update last_time if interval was too short */
-        if (retval < UPDATE_SPEED_SEC) {
-            retval = 0.0;
-        } else {
-            last_time = this_time;
-            /* printf("\nupdate retval: %f\n", retval); DEBUG*/
-        }
-    }
-
-    return(retval);
 }
 
 void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
@@ -195,7 +166,7 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
 
     qDebug() << "Alpm Thread awake, committing answer.";
 
-    *response = answer;
+    //*response = answer;
 
     return;
 
@@ -207,6 +178,8 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     QNetworkRequest request = d->createNetworkRequest(QUrl(url));
     QNetworkReply *reply = d->manager->head(request);
+
+    d->currentFile = QString(localpath).split('/').at(QString(localpath).split('/').length());
 
     // Let's check if the modification times collide. If so, there's no need to download the file
 
@@ -242,6 +215,26 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     file.close();
     reply->deleteLater();
     return 0;
+}
+
+void CallBacks::computeDownloadProgress(qint64 downloaded, qint64 total)
+{
+    Q_D(CallBacks);
+
+    if (downloaded == total) {
+        d->list_xfered += downloaded;
+    }
+
+    // Instant Rate
+    int seconds = d->instantRateTime.secsTo(QTime::currentTime());
+    qint64 bytes = (d->list_xfered + downloaded) - d->list_last;
+
+    int rate = bytes / seconds;
+
+    d->instantRateTime = QTime::currentTime();
+    d->list_last = d->list_xfered + downloaded;
+
+    emit streamDlProgress(d->currentFile, downloaded, total, rate, d->list_last, d->list_total);
 }
 
 void CallBacks::cb_dl_total(off_t total)

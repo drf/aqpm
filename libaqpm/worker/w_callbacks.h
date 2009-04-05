@@ -54,6 +54,7 @@ public:
     void cb_dl_total(off_t total);
     void cb_log(pmloglevel_t level, char *fmt, va_list args);
     int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
+    void computeDownloadProgress(qint64 downloaded, qint64 total);
 
 signals:
     void streamTransEvent(int event, void *data1, void *data2);
@@ -61,11 +62,10 @@ signals:
                              void *data3);
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
+    void streamDlProgress(const QString &pkg, qint64 package_done, qint64 package_total,
+                          qint64 rate, qint64 list_done, qint64 list_total);
     void questionStreamed(const QString &msg);
     void logMsgStreamed(const QString &msg);
-
-public:
-    int answer;
 
 private:
     CallBacksPrivate *d_ptr;
