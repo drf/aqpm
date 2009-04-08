@@ -7,11 +7,6 @@ if(COMMAND cmake_policy)
    cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy) 
 
-include(FindQt4)
-include(FindAutomoc4)
-include(FindSharedMimeInfo)
-include(FindPkgConfig)
-include(FindPolkitQt)
 include(InstallSettings)
 
 set(MAJOR_AQPM_VERSION "0")
@@ -39,8 +34,9 @@ ENDMACRO (MACRO_OPTIONAL_FIND_PACKAGE)
 SET(QT_MIN_VERSION "4.4.0")
 
 FIND_PACKAGE(Qt4 REQUIRED)
+FIND_PACKAGE(Automoc4 REQUIRED)
 FIND_PACKAGE(Alpm REQUIRED)
-FIND_PACKAGE(LibArchive REQUIRED)
+#FIND_PACKAGE(LibArchive REQUIRED)
 SET(POLKITQT_MIN_VERSION 0.9.2)
 FIND_PACKAGE(PolkitQt REQUIRED)
 
