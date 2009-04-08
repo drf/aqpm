@@ -169,11 +169,11 @@ void Worker::updateDatabase()
 {
     qDebug() << "Starting DB Update";
 
-    PolKitResult result;
+    PolkitQt::Auth::Result result;
     result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updatedatabase",
              message().service(),
              true);
-    if (result == POLKIT_RESULT_YES) {
+    if (result == PolkitQt::Auth::Yes) {
         qDebug() << message().service() << QString(" authorized");
     } else {
         qDebug() << QString("Not authorized");
@@ -245,11 +245,11 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 {
     qDebug() << "Starting Queue Processing";
 
-    PolKitResult result;
+    PolkitQt::Auth::Result result;
     result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.processqueue",
              message().service(),
              true);
-    if (result == POLKIT_RESULT_YES) {
+    if (result == PolkitQt::Auth::Yes) {
         qDebug() << message().service() << QString(" authorized");
     } else {
         qDebug() << QString("Not authorized");
