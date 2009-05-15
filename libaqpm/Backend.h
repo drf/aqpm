@@ -78,7 +78,7 @@ public:
         UpgradeablePackages
     };
 
-    enum BackendEvents {
+    enum BackendEvent {
         UpdateDatabase = 1001,
         ProcessQueue = 1002,
         Initialization = 1003
@@ -90,7 +90,7 @@ public:
     Backend();
     virtual ~Backend();
 
-    QEvent::Type getEventTypeFor(BackendEvents event);
+    QEvent::Type getEventTypeFor(BackendEvent event);
 
     bool testLibrary();
     bool isOnTransaction();

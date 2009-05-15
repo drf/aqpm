@@ -39,7 +39,7 @@ public:
 
     BackendThread *thread;
     ContainerThread *containerThread;
-    QMap<Backend::BackendEvents, QEvent::Type> events;
+    QMap<Backend::BackendEvent, QEvent::Type> events;
 };
 
 class BackendHelper
@@ -132,7 +132,7 @@ void Backend::setUpSelf(BackendThread *t)
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }
 
-QEvent::Type Backend::getEventTypeFor(BackendEvents event)
+QEvent::Type Backend::getEventTypeFor(BackendEvent event)
 {
     return d->events[event];
 }
