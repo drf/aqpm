@@ -20,13 +20,13 @@
 
 #include "BackendThread.h"
 
-#include "callbacks.h"
 #include "ConfigurationParser.h"
 
 #include <QDebug>
 #include <QTimer>
 #include <QPointer>
 #include <QProcess>
+#include <QFile>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusConnection>
@@ -49,8 +49,7 @@ class BackendThread::Private
 {
 public:
 
-    Private()
-            : handleAuth(true) {};
+    Private() : handleAuth(true) {}
 
     void waitForWorkerReady();
 
@@ -103,7 +102,6 @@ BackendThread::~BackendThread()
 void BackendThread::init()
 {
     qDebug() << "Initializing";
-    CallBacks::instance();
     alpm_initialize();
     emit threadInitialized();
 }
@@ -123,18 +121,7 @@ void BackendThread::customEvent(QEvent *event)
 
 bool BackendThread::testLibrary()
 {
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS,
-                        cb_trans_evt,
-                        cb_trans_conv,
-                        cb_trans_progress) == -1) {
-        return false;
-    }
-
-    if (alpm_trans_release() == -1) {
-        return false;
-    }
-
-    return true;
+    return !QFile::exists("/var/lib/pacman/db.lck");
 }
 
 bool BackendThread::isOnTransaction()
@@ -198,10 +185,6 @@ void BackendThread::setUpAlpm()
     alpm_option_add_cachedir("/var/cache/pacman/pkg");
 
     d->db_local = alpm_db_register_local();
-
-    alpm_option_set_dlcb(cb_dl_progress);
-    alpm_option_set_totaldlcb(cb_dl_total);
-    alpm_option_set_logcb(cb_log);
 
     if (pdata.logFile.isEmpty()) {
         alpm_option_set_logfile("/var/log/pacman.log");

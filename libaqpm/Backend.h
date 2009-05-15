@@ -85,14 +85,12 @@ public:
     };
 
     static Backend *instance();
+    static QString version();
 
     Backend();
     virtual ~Backend();
 
     QEvent::Type getEventTypeFor(BackendEvents event);
-
-    QMutex *backendMutex();
-    QWaitCondition *backendWCond();
 
     bool testLibrary();
     bool isOnTransaction();
@@ -136,8 +134,8 @@ public:
     unsigned long getPackageSize(const QString &name, const QString &repo);
     unsigned long getPackageSize(pmpkg_t *package);
 
-    QString getPackageVersion(const QString &name, const QString &repo);
-    QString getPackageVersion(pmpkg_t *package);
+    QString getPackageVersion(const QString &name, const QString &repo) const;
+    QString getPackageVersion(pmpkg_t *package) const;
 
     QString getPackageRepo(const QString &name, bool checkver = false);
 
@@ -197,7 +195,6 @@ Q_SIGNALS:
     void startQueue(QList<pmtransflag_t> flags);
 
 private Q_SLOTS:
-    void connectCallbacks();
     void setUpSelf(BackendThread *t);
 
 private:

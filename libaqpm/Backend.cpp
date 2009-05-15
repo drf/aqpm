@@ -20,7 +20,6 @@
 
 #include "Backend.h"
 
-#include "callbacks.h"
 #include "ConfigurationParser.h"
 #include "BackendThread.h"
 
@@ -36,11 +35,7 @@ namespace Aqpm
 class Backend::Private
 {
 public:
-
-    Private() : mutex(new QMutex()), wCond(new QWaitCondition()) {};
-
-    QMutex *mutex;
-    QWaitCondition *wCond;
+    Private() {}
 
     BackendThread *thread;
     ContainerThread *containerThread;
@@ -101,6 +96,12 @@ Backend::~Backend()
     delete d;
 }
 
+QString Backend::version()
+{
+    //TODO
+    return "1.0.0";
+}
+
 void Backend::setUpSelf(BackendThread *t)
 {
     d->thread = t;
@@ -118,7 +119,7 @@ void Backend::setUpSelf(BackendThread *t)
     connect(d->thread, SIGNAL(operationFinished(bool)),
             this, SIGNAL(operationFinished(bool)));
     connect(d->thread, SIGNAL(threadInitialized()),
-            this, SLOT(connectCallbacks()));
+            this, SIGNAL(backendReady()));
     connect(d->thread, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
             this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
@@ -134,26 +135,6 @@ void Backend::setUpSelf(BackendThread *t)
 QEvent::Type Backend::getEventTypeFor(BackendEvents event)
 {
     return d->events[event];
-}
-
-void Backend::connectCallbacks()
-{
-    connect(CallBacks::instance(), SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)),
-            this, SIGNAL(streamTransProgress(pmtransprog_t, char*, int, int, int)));
-    connect(CallBacks::instance(), SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)),
-            this, SIGNAL(streamTransEvent(pmtransevt_t, void*, void*)));
-
-    emit backendReady();
-}
-
-QMutex *Backend::backendMutex()
-{
-    return d->mutex;
-}
-
-QWaitCondition *Backend::backendWCond()
-{
-    return d->wCond;
 }
 
 bool Backend::testLibrary()
@@ -286,12 +267,12 @@ QString Backend::getAlpmVersion()
     return d->thread->getAlpmVersion();
 }
 
-QString Backend::getPackageVersion(pmpkg_t *package)
+QString Backend::getPackageVersion(pmpkg_t *package) const
 {
     return d->thread->getPackageVersion(package);
 }
 
-QString Backend::getPackageVersion(const QString &name, const QString &repo)
+QString Backend::getPackageVersion(const QString &name, const QString &repo) const
 {
     return d->thread->getPackageVersion(name, repo);
 }

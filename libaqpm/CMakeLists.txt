@@ -5,7 +5,7 @@ SET(aqpm_SRCS
     Backend.cpp
     BackendThread.cpp
     ConfigurationParser.cpp
-    callbacks.cpp
+#    callbacks.cpp
     QueueItem.cpp
 )
 
