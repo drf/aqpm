@@ -137,7 +137,7 @@ bool BackendThread::reloadPacmanConfiguration()
     alpm_db_unregister(d->db_local);
     alpm_db_unregister_all();
 
-    pdata.HoldPkg = alpmListToStringList(alpm_option_get_holdpkgs());
+    //pdata.HoldPkg = alpmListToStringList(alpm_option_get_holdpkgs());
 
     pdata.IgnorePkg = alpmListToStringList(alpm_option_get_ignorepkgs());
 
@@ -147,9 +147,9 @@ bool BackendThread::reloadPacmanConfiguration()
 
     pdata.NoUpgrade = alpmListToStringList(alpm_option_get_noupgrades());
 
-    foreach(const QString &str, pdata.HoldPkg) {
+    /*foreach(const QString &str, pdata.HoldPkg) {
         alpm_option_remove_holdpkg(str.toAscii().data());
-    }
+    }*/
 
     foreach(const QString &str, pdata.IgnorePkg) {
         alpm_option_remove_ignorepkg(str.toAscii().data());
@@ -220,9 +220,9 @@ void BackendThread::setUpAlpm()
 
     alpm_option_set_nopassiveftp(pdata.noPassiveFTP);
 
-    foreach(const QString &str, pdata.HoldPkg) {
+    /*foreach(const QString &str, pdata.HoldPkg) {
         alpm_option_add_holdpkg(str.toAscii().data());
-    }
+    }*/
 
     foreach(const QString &str, pdata.IgnorePkg) {
         alpm_option_add_ignorepkg(str.toAscii().data());
@@ -267,7 +267,7 @@ QStringList BackendThread::getAvailableReposAsStringList()
 
 alpm_list_t *BackendThread::getInstalledPackages()
 {
-    return alpm_db_getpkgcache(d->db_local);
+    return alpm_db_get_pkgcache(d->db_local);
 }
 
 QStringList BackendThread::getInstalledPackagesAsStringList()
@@ -286,16 +286,16 @@ QStringList BackendThread::getInstalledPackagesAsStringList()
 alpm_list_t *BackendThread::getUpgradeablePackages()
 {
     alpm_list_t *syncpkgs = NULL;
-    QStringList retlist;
-    alpm_list_t *syncdbs;
-    retlist.clear();
+    alpm_list_t *syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
+    alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, NULL, NULL, NULL);
 
-    if (alpm_sync_sysupgrade(d->db_local, syncdbs, &syncpkgs) == -1) {
+    if (alpm_trans_sysupgrade() == -1) {
         return NULL;
     }
 
+    syncpkgs = alpm_trans_get_pkgs();
+    alpm_trans_release();
     return alpm_list_first(syncpkgs);
 }
 
@@ -304,24 +304,24 @@ QStringList BackendThread::getUpgradeablePackagesAsStringList()
     alpm_list_t *syncpkgs = NULL;
     QStringList retlist;
     alpm_list_t *syncdbs;
-    retlist.clear();
 
     syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
-    if (alpm_sync_sysupgrade(d->db_local, syncdbs, &syncpkgs) == -1)
-        return retlist;
+    alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, NULL, NULL, NULL);
 
-    syncpkgs = alpm_list_first(syncpkgs);
+    if (alpm_trans_sysupgrade() == -1) {
+        return QStringList();
+    }
+
+    syncpkgs = alpm_trans_get_pkgs();
+    alpm_trans_release();
 
     if (!syncpkgs) {
         return retlist;
     } else {
         qDebug() << "Upgradeable packages:";
         while (syncpkgs != NULL) {
-            /* To Alpm Devs : LOL. Call three functions to get a fucking
-             * name of a package? Please.
-             */
-            QString tmp(alpm_pkg_get_name(alpm_sync_get_pkg((pmsyncpkg_t *) alpm_list_getdata(syncpkgs))));
+            QString tmp(alpm_pkg_get_name((pmpkg_t *) alpm_list_getdata(syncpkgs)));
             qDebug() << tmp;
             retlist.append(tmp);
             syncpkgs = alpm_list_next(syncpkgs);
@@ -337,7 +337,7 @@ alpm_list_t *BackendThread::getAvailableGroups()
     syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
     while (syncdbs != NULL) {
-        grps = alpm_list_join(grps, alpm_db_getgrpcache((pmdb_t *)alpm_list_getdata(syncdbs)));
+        grps = alpm_list_join(grps, alpm_db_get_grpcache((pmdb_t *)alpm_list_getdata(syncdbs)));
 
         syncdbs = alpm_list_next(syncdbs);
     }
@@ -354,7 +354,7 @@ QStringList BackendThread::getAvailableGroupsAsStringList()
     syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
     while (syncdbs != NULL) {
-        grps = alpm_db_getgrpcache((pmdb_t *)alpm_list_getdata(syncdbs));
+        grps = alpm_db_get_grpcache((pmdb_t *)alpm_list_getdata(syncdbs));
         grps = alpm_list_first(grps);
 
         while (grps != NULL) {
@@ -516,7 +516,7 @@ bool BackendThread::isProviderInstalled(const QString &provider)
      * &provider
      */
 
-    alpm_list_t *localpack = alpm_db_getpkgcache(d->db_local);
+    alpm_list_t *localpack = alpm_db_get_pkgcache(d->db_local);
 
     while (localpack != NULL) {
         QStringList prv(getProviders(QString(alpm_pkg_get_name(
@@ -627,7 +627,7 @@ alpm_list_t *BackendThread::getPackagesFromRepo(const QString &reponame)
     retlist = NULL;
 
     if (reponame == "local") {
-        alpm_list_t *pkglist = alpm_db_getpkgcache(d->db_local);
+        alpm_list_t *pkglist = alpm_db_get_pkgcache(d->db_local);
 
         pkglist = alpm_list_first(pkglist);
 
@@ -644,7 +644,7 @@ alpm_list_t *BackendThread::getPackagesFromRepo(const QString &reponame)
 
         while (syncdbs != NULL) {
             if (!reponame.compare(alpm_db_get_name((pmdb_t *) alpm_list_getdata(syncdbs)))) {
-                retlist = alpm_db_getpkgcache((pmdb_t *) alpm_list_getdata(syncdbs));
+                retlist = alpm_db_get_pkgcache((pmdb_t *) alpm_list_getdata(syncdbs));
                 break;
             }
 
@@ -682,7 +682,7 @@ int BackendThread::countPackages(Backend::PackageStatus status)
         while (databases != NULL) {
             pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(databases);
 
-            alpm_list_t *currentpkgs = alpm_db_getpkgcache(dbcrnt);
+            alpm_list_t *currentpkgs = alpm_db_get_pkgcache(dbcrnt);
 
             retvalue += alpm_list_count(currentpkgs);
 
@@ -693,7 +693,7 @@ int BackendThread::countPackages(Backend::PackageStatus status)
     } else if (status == Backend::UpgradeablePackages) {
         return getUpgradeablePackagesAsStringList().count();
     } else if (status == Backend::InstalledPackages) {
-        alpm_list_t *currentpkgs = alpm_db_getpkgcache(d->db_local);
+        alpm_list_t *currentpkgs = alpm_db_get_pkgcache(d->db_local);
 
         return alpm_list_count(currentpkgs);
     } else
@@ -872,7 +872,7 @@ void BackendThread::processQueue()
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", this, SLOT(workerResult(bool)));
 
-    qDebug() << "Starting update";
+    qDebug() << "Process queue started";
 
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",

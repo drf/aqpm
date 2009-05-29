@@ -39,7 +39,7 @@ namespace AqpmWorker
 class Worker::Private
 {
 public:
-    Private() : ready(false) {};
+    Private() : ready(false) {}
 
     pmdb_t *db_local;
     pmdb_t *dbs_sync;
@@ -67,8 +67,8 @@ Worker::Worker(QObject *parent)
 
     alpm_initialize();
 
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&, qint64, qint64, qint64, qint64, qint64)),
-            this, SIGNAL(streamTransDlProg(const QString&, qint64, qint64, qint64, qint64, qint64)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
+            this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int, void*, void*)),
@@ -103,6 +103,8 @@ void Worker::setUpAlpm()
     d->db_local = alpm_db_register_local();
 
     alpm_option_set_logcb(AqpmWorker::cb_log);
+    alpm_option_set_fetchcb(AqpmWorker::cb_fetch);
+    alpm_option_set_totaldlcb(AqpmWorker::cb_dl_total);
 
     if (pdata.logFile.isEmpty()) {
         alpm_option_set_logfile("/var/log/pacman.log");
@@ -138,9 +140,9 @@ void Worker::setUpAlpm()
 
     alpm_option_set_nopassiveftp(pdata.noPassiveFTP);
 
-    foreach(const QString &str, pdata.HoldPkg) {
-        alpm_option_add_holdpkg(str.toAscii().data());
-    }
+    /*foreach(const QString &str, pdata.HoldPkg) {
+        alpm_option_add_(str.toAscii().data());
+    }*/
 
     foreach(const QString &str, pdata.IgnorePkg) {
         alpm_option_add_ignorepkg(str.toAscii().data());
@@ -385,11 +387,11 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Adding " << itm.name;
             int res = alpm_trans_addtarget(qstrdup(itm.name.toUtf8()));
 
-            if (res == -1) {
+            /*if (res == -1) {
                 emit errorOccurred(Aqpm::Backend::AddTargetError);
                 emit workerResult(false);
                 return;
-            }
+            }*/
         }
 
         alpm_list_t *data = NULL;

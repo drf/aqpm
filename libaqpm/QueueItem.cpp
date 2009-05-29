@@ -20,6 +20,21 @@
 
 #include "QueueItem.h"
 
+namespace Aqpm
+{
+
+QueueItem::QueueItem()
+{
+}
+
+QueueItem::QueueItem(QString n, Action a)
+            : name(n),
+            action_id(a)
+{
+}
+
+}
+
 // Marshall the WicdConnectionInfo data into a D-BUS argument
 QDBusArgument &operator<<(QDBusArgument &argument, const Aqpm::QueueItem &item)
 {

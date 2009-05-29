@@ -46,6 +46,7 @@ class CallBacksPrivate
 {
 public:
     CallBacksPrivate();
+    void init();
 
     QNetworkRequest createNetworkRequest(const QUrl &url);
 
@@ -58,6 +59,7 @@ public:
     qint64 list_last;
     QTimer updateTimer;
     QDateTime averageRateTime;
+    QTime busControlTime;
     QString currentFile;
     QNetworkAccessManager *manager;
 };
@@ -86,6 +88,13 @@ CallBacks *CallBacks::instance()
 CallBacksPrivate::CallBacksPrivate()
         : answer(-1)
         , averageRateTime()
+        , list_xfered(0)
+        , list_last(0)
+        , list_total(0)
+{
+}
+
+void CallBacksPrivate::init()
 {
     Q_Q(CallBacks);
     manager = new QNetworkAccessManager(q);
@@ -99,6 +108,7 @@ QNetworkRequest CallBacksPrivate::createNetworkRequest(const QUrl &url)
     QNetworkRequest request;
     request.setUrl(url);
     request.setRawHeader("User-Agent", "Aqpm 1.0");
+    return request;
 }
 
 CallBacks::CallBacks(QObject *parent)
@@ -109,6 +119,7 @@ CallBacks::CallBacks(QObject *parent)
     s_globalCallbacks()->q = this;
     d_ptr->q_ptr = this;
     qDebug() << "Constructing callbacks";
+    d_ptr->init();
 }
 
 CallBacks::~CallBacks()
@@ -154,9 +165,9 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
             message = QString(tr("%1 is in IgnorePkg/IgnoreGroup.\n Install anyway?")).arg(alpm_pkg_get_name((pmpkg_t *)data1));
 
         break;
-    case PM_TRANS_CONV_REMOVE_HOLDPKG:
+    /*case PM_TRANS_CONV_REMOVE_HOLDPKG:
         message = QString(tr("%1 is designated as a HoldPkg.\n Remove anyway?")).arg(alpm_pkg_get_name((pmpkg_t *)data1));
-        break;
+        break;*/
     case PM_TRANS_CONV_REPLACE_PKG:
         message = QString(tr("Replace %1 with %2/%3?")).arg(alpm_pkg_get_name((pmpkg_t *)data1)).
                   arg((char *)data3).arg(alpm_pkg_get_name((pmpkg_t *)data2));
@@ -196,43 +207,51 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 {
     Q_D(CallBacks);
 
-    QNetworkRequest request = d->createNetworkRequest(QUrl(url));
-    QNetworkReply *reply = d->manager->head(request);
+    qDebug() << "fetching: " << url << localpath;
 
-    d->currentFile = QString(localpath).split('/').at(QString(localpath).split('/').length());
+    QNetworkReply *reply;
+    QEventLoop re;
+    reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
+    connect(reply, SIGNAL(finished()), &re, SLOT(quit()));
+    re.exec();
+    disconnect(reply, SIGNAL(finished()), &re, SLOT(quit()));
+
+    d->currentFile = QString(url).split('/').at(QString(url).split('/').length() - 1);
+
+    qDebug() << "The file is " << d->currentFile;
 
     // Let's check if the modification times collide. If so, there's no need to download the file
 
-    while (!reply->header(QNetworkRequest::LastModifiedHeader).isValid()) {
-        reply->waitForBytesWritten(200);
-    }
-
     QDateTime dtime = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
-    *mtimenew = dtime.toTime_t();
+    qDebug() << "Modified on:" << dtime;
+    time_t newtime = dtime.toTime_t();
+    mtimenew = &newtime;
     reply->deleteLater();
+    qDebug() << "Comparing";
+
     if (*mtimenew == mtimeold) {
         return 1;
     }
+
+    qDebug() << "Compare successful";
 
     // If we got here, it's time to download the file.
     // We should handle the request synchronously, so get ready for some loops.
 
     QEventLoop e;
+    reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
     connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
     connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(computeDownloadProgress(qint64, qint64)));
-    reply = d->manager->get(request);
     e.exec();
 
-    QFile file(localpath);
+    QFile file(localpath + d->currentFile);
 
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (!file.open(QIODevice::ReadWrite)) {
         return -1;
     }
 
-    QTextStream out(&file);
-    out << reply->readAll();
-    file.flush();
-    file.close();
+    file.write(reply->readAll());
+
     reply->deleteLater();
     return 0;
 }
@@ -251,9 +270,17 @@ void CallBacks::computeDownloadProgress(qint64 downloaded, qint64 total)
     // Update Rate
     int seconds = d->averageRateTime.secsTo(QDateTime::currentDateTime());
 
-    int rate = d->list_last / seconds;
+    int rate = 0;
 
-    emit streamDlProgress(d->currentFile, downloaded, total, rate, d->list_last, d->list_total);
+    if (seconds != 0 && d->list_last != 0) {
+        rate = (int)(d->list_last / seconds);
+    }
+
+    // Don't you fucking hog the bus! Update maximum each 0.250 seconds
+    if (d->busControlTime.msecsTo(QTime::currentTime()) > 250 || !d->busControlTime.isValid()) {
+        emit streamDlProg(d->currentFile, (int)downloaded, (int)total, (int)rate, (int)d->list_last, (int)d->list_total);
+        d->busControlTime = QTime::currentTime();
+    }
 }
 
 void CallBacks::cb_dl_total(off_t total)
@@ -266,6 +293,8 @@ void CallBacks::cb_dl_total(off_t total)
      * so clear out our list_xfered as well */
     if (total == 0) {
         d->list_xfered = 0;
+        d->list_last = 0;
+        d->list_total = 0;
     }
 }
 

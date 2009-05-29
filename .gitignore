@@ -8,4 +8,4 @@ ui_*
 *.orig
 *~
 .svn/
-
+*.user

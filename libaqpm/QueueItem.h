@@ -46,17 +46,18 @@ public:
         FullUpgrade = 8
     };
 
-    QueueItem() {};
+    QueueItem();
     /**
      * Constructs a queue item with the needed data
      *
      * @param n The name of the package
      * @param a The action that should be done on it
      */
-    QueueItem(QString n, Action a)
-            : name(n),
-            action_id(a) {};
+    QueueItem(QString n, Action a);
 
+    /**
+     * A list of QueueItem, convenience TypeDef
+     */
     typedef QList<QueueItem> List;
 
     QString name;
