@@ -124,10 +124,10 @@ void Backend::setUpSelf(BackendThread *t)
             this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
-    connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
-            this, SIGNAL(streamTransEvent(int, void*, void*)));
-    connect(d->thread, SIGNAL(questionStreamed(const QString&)),
-            this, SIGNAL(questionStreamed(const QString&)));
+    connect(d->thread, SIGNAL(streamTransEvent(int, QVariantMap)),
+            this, SIGNAL(streamTransEvent(int, QVariantMap)));
+    connect(d->thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
+            this, SIGNAL(streamTransQuestion(int, QVariantMap)));
 
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }

@@ -128,9 +128,9 @@ Q_SIGNALS:
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
-    void streamTransEvent(int event, void *data1, void *data2);
+    void streamTransEvent(int event, QVariantMap args);
 
-    void questionStreamed(const QString &msg);
+    void streamTransQuestion(int event, QVariantMap args);
 
     void errorOccurred(int code);
 
@@ -154,7 +154,7 @@ class ContainerThread : public QThread
     Q_OBJECT
 
 public:
-    ContainerThread() {};
+    ContainerThread() {}
 
 protected:
     void run();
