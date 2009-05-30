@@ -154,6 +154,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         break;
     case PM_TRANS_EVT_ADD_DONE:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t*)data1);
         emit streamTransEvent((int) Aqpm::Globals::AddDone, args);
         //alpm_logaction( addTxt.toUtf8().data() );
         break;
@@ -258,12 +259,9 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
             args["SecondPackage"] = alpm_pkg_get_name((pmpkg_t *)data2);
             emit streamTransQuestion((int) Aqpm::Globals::IgnorePackage, args);
             /* TODO we take this route based on data2 being not null? WTF */
-            /*message = QString(tr("%1 requires installing %2 from IgnorePkg/IgnoreGroup.\n Install anyway?")).arg(alpm_pkg_get_name((pmpkg_t *)data1)).
-                      arg(alpm_pkg_get_name((pmpkg_t *)data2));*/
         } else {
             args["FirstPackage"] = alpm_pkg_get_name((pmpkg_t *)data1);
             emit streamTransQuestion((int) Aqpm::Globals::IgnorePackage, args);
-            //message = QString(tr("%1 is in IgnorePkg/IgnoreGroup.\n Install anyway?")).arg(alpm_pkg_get_name((pmpkg_t *)data1));
         }
         break;
     case PM_TRANS_CONV_REPLACE_PKG:
@@ -271,27 +269,20 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
         args["NewPackage"] = alpm_pkg_get_name((pmpkg_t *)data2);
         args["NewPackageRepo"] = QString((char *)data3);
         emit streamTransQuestion((int) Aqpm::Globals::ReplacePackage, args);
-        /*message = QString(tr("Replace %1 with %2/%3?")).arg(alpm_pkg_get_name((pmpkg_t *)data1)).
-                  arg((char *)data3).arg(alpm_pkg_get_name((pmpkg_t *)data2));*/
         break;
     case PM_TRANS_CONV_CONFLICT_PKG:
         args["NewPackage"] = QString((char *)data1);
         args["OldPackage"] = QString((char *)data2);
         emit streamTransQuestion((int) Aqpm::Globals::PackageConflict, args);
-        /*message = QString(tr("%1 conflicts with %2.\nRemove %3?")).arg((char *)data1).
-                  arg((char *)data2).arg((char *)data2);*/
         break;
     case PM_TRANS_CONV_LOCAL_NEWER:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t *)data1);
         args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t *)data1);
         emit streamTransQuestion((int) Aqpm::Globals::NewerLocalPackage, args);
-        /*message = QString(tr("%1-%2: local version is newer.\nUpgrade anyway?")).arg(alpm_pkg_get_name((pmpkg_t *)data1)).
-                  arg(alpm_pkg_get_version((pmpkg_t *)data1));*/
         break;
     case PM_TRANS_CONV_CORRUPTED_PKG:
         args["Filename"] = QString((char *)data1);
         emit streamTransQuestion((int) Aqpm::Globals::CorruptedPackage, args);
-        /*message = QString(tr("File %1 is corrupted.\nDo you want to delete it?")).arg((char *)data1);*/
         break;
     }
 

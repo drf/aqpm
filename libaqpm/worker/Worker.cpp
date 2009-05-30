@@ -55,13 +55,13 @@ Worker::Worker(QObject *parent)
 
     if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmworker")) {
         qDebug() << "another helper is already running";
-        QTimer::singleShot(0, this, SLOT(quit()));
+        QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
     }
 
     if (!QDBusConnection::systemBus().registerObject("/Worker", this)) {
         qDebug() << "unable to register service interface to dbus";
-        QTimer::singleShot(0, this, SLOT(quit()));
+        QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
     }
 
