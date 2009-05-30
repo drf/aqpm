@@ -47,6 +47,7 @@ public Q_SLOTS:
 
 private:
     void setUpAlpm();
+    void operationPerformed(bool result);
 
 Q_SIGNALS:
     void workerReady();

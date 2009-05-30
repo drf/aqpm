@@ -185,7 +185,7 @@ void Worker::updateDatabase()
 
     if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, AqpmWorker::cb_trans_evt,
                         AqpmWorker::cb_trans_conv, AqpmWorker::cb_trans_progress) == -1) {
-        emit workerResult(false);
+        operationPerformed(false);
         qDebug() << "Error!";
         return;
     }
@@ -232,13 +232,13 @@ void Worker::updateDatabase()
 
     if (alpm_trans_release() == -1) {
         if (alpm_trans_interrupt() == -1) {
-            emit workerResult(false);
+            operationPerformed(false);
         }
     }
 
     qDebug() << "Database Update Performed";
 
-    emit workerResult(true);
+    operationPerformed(true);
 
     QCoreApplication::instance()->quit();
 }
@@ -320,7 +320,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -335,7 +335,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
             if (res == -1) {
                 emit errorOccurred(Aqpm::Backend::AddTargetError);
-                emit workerResult(false);
+                operationPerformed(false);
                 return;
             }
         }
@@ -347,7 +347,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not prepare transaction";
             emit errorOccurred(Aqpm::Backend::PrepareError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -356,7 +356,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not commit transaction";
             emit errorOccurred(Aqpm::Backend::CommitError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
         qDebug() << "Done";
@@ -373,7 +373,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -387,11 +387,11 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Adding " << itm.name;
             int res = alpm_trans_addtarget(qstrdup(itm.name.toUtf8()));
 
-            /*if (res == -1) {
+            if (res == -1) {
                 emit errorOccurred(Aqpm::Backend::AddTargetError);
-                emit workerResult(false);
+                operationPerformed(false);
                 return;
-            }*/
+            }
         }
 
         alpm_list_t *data = NULL;
@@ -401,7 +401,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not prepare transaction";
             emit errorOccurred(Aqpm::Backend::PrepareError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -410,7 +410,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not commit transaction";
             emit errorOccurred(Aqpm::Backend::CommitError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
         qDebug() << "Done";
@@ -427,7 +427,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -435,7 +435,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Creating a sysupgrade transaction failed!!";
             emit errorOccurred(Aqpm::Backend::CreateSysUpgradeError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -446,7 +446,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not prepare transaction";
             emit errorOccurred(Aqpm::Backend::PrepareError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -455,7 +455,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not commit transaction";
             emit errorOccurred(Aqpm::Backend::CommitError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
         qDebug() << "Done";
@@ -472,7 +472,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             emit errorOccurred(Aqpm::Backend::InitTransactionError);
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -487,7 +487,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
             if (res == -1) {
                 emit errorOccurred(Aqpm::Backend::AddTargetError);
-                emit workerResult(false);
+                operationPerformed(false);
                 return;
             }
         }
@@ -499,7 +499,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not prepare transaction";
             emit errorOccurred(Aqpm::Backend::PrepareError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
 
@@ -508,7 +508,7 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Could not commit transaction";
             emit errorOccurred(Aqpm::Backend::CommitError);
             alpm_trans_release();
-            emit workerResult(false);
+            operationPerformed(false);
             return;
         }
         qDebug() << "Done";
@@ -520,12 +520,18 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
         alpm_trans_release();
     }
 
-    emit workerResult(true);
+    operationPerformed(true);
 }
 
 void Worker::setAnswer(int answer)
 {
     emit streamAnswer(answer);
+}
+
+void Worker::operationPerformed(bool result)
+{
+    emit workerResult(result);
+    QTimer::singleShot(2000, QCoreApplication::instance(), SLOT(quit()));
 }
 
 }
