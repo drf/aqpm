@@ -164,6 +164,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         break;
     case PM_TRANS_EVT_REMOVE_DONE:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t*)data1);
         emit streamTransEvent((int) Aqpm::Globals::RemoveDone, args);
         //alpm_logaction( remTxt.toUtf8().data() );
         break;
