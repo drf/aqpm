@@ -20,6 +20,8 @@
 
 #include "w_callbacks.h"
 
+#include "../Globals.h"
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <QWaitCondition>
@@ -131,10 +133,104 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
 {
     Q_D(CallBacks);
 
-    emit streamTransEvent(event, data1, data2);
+    QVariantMap args;
 
-    if (event == PM_TRANS_EVT_RETRIEVE_START && d->averageRateTime.isNull()) {
-        d->averageRateTime = QDateTime::currentDateTime();
+    switch ( event ) {
+    case PM_TRANS_EVT_CHECKDEPS_START:
+        emit streamTransEvent((int) Aqpm::Globals::CheckDepsStart, QVariantMap());
+        break;
+    case PM_TRANS_EVT_FILECONFLICTS_START:
+        emit streamTransEvent((int) Aqpm::Globals::FileConflictsStart, QVariantMap());
+        break;
+    case PM_TRANS_EVT_RESOLVEDEPS_START:
+        emit streamTransEvent((int) Aqpm::Globals::ResolveDepsStart, QVariantMap());
+        break;
+    case PM_TRANS_EVT_INTERCONFLICTS_START:
+        emit streamTransEvent((int) Aqpm::Globals::InterConflictsStart, QVariantMap());
+        break;
+    case PM_TRANS_EVT_ADD_START:
+        args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        emit streamTransEvent((int) Aqpm::Globals::AddStart, args);
+        break;
+    case PM_TRANS_EVT_ADD_DONE:
+        args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        emit streamTransEvent((int) Aqpm::Globals::AddDone, args);
+        //alpm_logaction( addTxt.toUtf8().data() );
+        break;
+    case PM_TRANS_EVT_REMOVE_START:
+        args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        emit streamTransEvent((int) Aqpm::Globals::RemoveStart, args);
+        break;
+    case PM_TRANS_EVT_REMOVE_DONE:
+        args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        emit streamTransEvent((int) Aqpm::Globals::RemoveDone, args);
+        //alpm_logaction( remTxt.toUtf8().data() );
+        break;
+    case PM_TRANS_EVT_UPGRADE_START:
+        args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        emit streamTransEvent((int) Aqpm::Globals::UpgradeStart, args);
+        break;
+    case PM_TRANS_EVT_UPGRADE_DONE:
+        args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
+        args["OldVersion"] = QString((char*)alpm_pkg_get_version((pmpkg_t*)data2));
+        args["NewVersion"] = QString((char*)alpm_pkg_get_version((pmpkg_t*)data1));
+        emit streamTransEvent((int) Aqpm::Globals::UpgradeDone, args);
+        //alpm_logaction( upgTxt.toUtf8().data() );
+        break;
+    case PM_TRANS_EVT_INTEGRITY_START:
+        emit streamTransEvent((int) Aqpm::Globals::IntegrityStart, QVariantMap());
+        break;
+    case PM_TRANS_EVT_DELTA_INTEGRITY_START:
+        emit streamTransEvent((int) Aqpm::Globals::DeltaIntegrityStart, QVariantMap());
+        break;
+    case PM_TRANS_EVT_DELTA_PATCHES_START:
+        emit streamTransEvent((int) Aqpm::Globals::DeltaPatchesStart, QVariantMap());
+        break;
+    case PM_TRANS_EVT_DELTA_PATCH_START:
+        args["From"] = QString((char*)data1);
+        args["To"] = QString((char*)data2);
+        emit streamTransEvent((int) Aqpm::Globals::DeltaPatchStart, args);
+        break;
+    case PM_TRANS_EVT_DELTA_PATCH_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::DeltaPatchDone, QVariantMap());
+        break;
+    case PM_TRANS_EVT_DELTA_PATCH_FAILED:
+        emit streamTransEvent((int) Aqpm::Globals::DeltaPatchFailed, QVariantMap());
+        break;
+    case PM_TRANS_EVT_SCRIPTLET_INFO:
+        args["Text"] = QString((char*)data1);
+        emit streamTransEvent((int) Aqpm::Globals::ScriptletInfo, args);
+        break;
+    case PM_TRANS_EVT_RETRIEVE_START:
+        args["Repo"] = QString((char*)data1);
+        if (d->averageRateTime.isNull()) {
+            d->averageRateTime = QDateTime::currentDateTime();
+        }
+        emit streamTransEvent((int) Aqpm::Globals::RetrieveStart, args);
+        break;
+    case PM_TRANS_EVT_FILECONFLICTS_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::FileConflictsDone, QVariantMap());
+        break;
+    case PM_TRANS_EVT_CHECKDEPS_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::CheckDepsDone, QVariantMap());
+        break;
+    case PM_TRANS_EVT_RESOLVEDEPS_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::ResolveDepsDone, QVariantMap());
+        break;
+    case PM_TRANS_EVT_INTERCONFLICTS_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::InterConflictsDone, QVariantMap());
+        break;
+    case PM_TRANS_EVT_INTEGRITY_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::IntegrityDone, QVariantMap());
+        break;
+    case PM_TRANS_EVT_DELTA_INTEGRITY_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::DeltaIntegrityDone, QVariantMap());
+        break;
+    case PM_TRANS_EVT_DELTA_PATCHES_DONE:
+        emit streamTransEvent((int) Aqpm::Globals::DeltaPatchesDone, QVariantMap());
+        break;
+    default:
+        break;
     }
 }
 

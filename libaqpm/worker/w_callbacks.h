@@ -27,6 +27,7 @@
 #include <sys/types.h>
 
 #include <QObject>
+#include <QVariantMap>
 
 namespace AqpmWorker
 {
@@ -62,7 +63,7 @@ private Q_SLOTS:
     void computeDownloadProgress(qint64 downloaded, qint64 total);
 
 signals:
-    void streamTransEvent(int event, void *data1, void *data2);
+    void streamTransEvent(int event, QVariantMap args);
     void streamTransQuestion(int event, void *data1, void *data2,
                              void *data3);
     void streamTransProgress(int event, const QString &pkgname, int percent,

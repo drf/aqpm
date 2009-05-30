@@ -13,6 +13,7 @@ SET(aqpm_HEADERS
 	Backend.h
 	ConfigurationParser.h
 	QueueItem.h
+	Globals.h
 )
                       
 automoc4_add_library(aqpm SHARED
