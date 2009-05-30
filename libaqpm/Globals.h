@@ -66,6 +66,14 @@ public:
         NewerLocalPackage = 5,
     };
 
+    enum TransactionProgress {
+        InvalidProgress = 0,
+        AddRoutineStart = 1,
+        ConflictsRoutineStart = 2,
+        UpgradeRoutineStart = 3,
+        RemoveRoutineStart = 4
+    };
+
 };
 }
 

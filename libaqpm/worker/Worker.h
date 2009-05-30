@@ -58,12 +58,12 @@ Q_SIGNALS:
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
-    void streamTransEvent(int event, void *data1, void *data2);
+    void streamTransEvent(int event, QVariantMap args);
+
+    void streamTransQuestion(int event, QVariantMap args);
 
     void streamDlProg(const QString &pkg, int package_done, int package_total,
                           int rate, int list_done, int list_total);
-
-    void questionStreamed(const QString &msg);
 
     void errorOccurred(int code);
 

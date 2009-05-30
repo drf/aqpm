@@ -411,6 +411,8 @@ void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int 
 {
     Q_D(CallBacks);
 
+    Aqpm::Globals::TransactionProgress evt;
+
     if (d->updateTimer.isActive()) {
         return;
     } else {
@@ -420,9 +422,24 @@ void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int 
     if (percent > 0 && percent < 100)
         return;
 
+    switch (event) {
+    case PM_TRANS_PROGRESS_ADD_START:
+        evt = Aqpm::Globals::AddRoutineStart;
+        break;
+    case PM_TRANS_PROGRESS_CONFLICTS_START:
+        evt = Aqpm::Globals::ConflictsRoutineStart;
+        break;
+    case PM_TRANS_PROGRESS_REMOVE_START:
+        evt = Aqpm::Globals::RemoveRoutineStart;
+        break;
+    case PM_TRANS_PROGRESS_UPGRADE_START:
+        evt = Aqpm::Globals::UpgradeRoutineStart;
+        break;
+    }
+
     qDebug() << "Streaming trans progress";
 
-    emit streamTransProgress((int)event, QString(pkgname), percent, howmany, remain);
+    emit streamTransProgress((int)evt, QString(pkgname), percent, howmany, remain);
 }
 
 

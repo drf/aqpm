@@ -71,10 +71,10 @@ Worker::Worker(QObject *parent)
             this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int, void*, void*)),
-            this, SIGNAL(streamTransEvent(int, void*, void*)));
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(questionStreamed(const QString&)),
-            this, SIGNAL(questionStreamed(const QString&)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransQuestion(int,QVariantMap)),
+            this, SIGNAL(streamTransQuestion(int,QVariantMap)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int,QVariantMap)),
+            this, SIGNAL(streamTransEvent(int,QVariantMap)));
     connect(this, SIGNAL(streamAnswer(int)),
             AqpmWorker::CallBacks::instance(), SLOT(setAnswer(int)));
 

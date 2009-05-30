@@ -41,8 +41,15 @@
 			<arg type="i" direction="out" />
 			<arg type="i" direction="out" />
 		</signal>
-		<signal name="questionStreamed">
-			<arg type="s" direction="out" />
+		<signal name="streamTransQuestion">
+			<arg type="i" direction="out" />
+                        <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+                        <arg type="a{sv}" direction="out" />
 		</signal>
+                <signal name="streamTransEvent">
+                        <arg type="i" direction="out" />
+			<annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+                        <arg type="a{sv}" direction="out" />
+                </signal>
 	</interface>
 </node>
