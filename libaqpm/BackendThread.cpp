@@ -289,12 +289,9 @@ alpm_list_t *BackendThread::getUpgradeablePackages()
     alpm_list_t *syncdbs = alpm_option_get_syncdbs();
     alpm_list_t *retlist = NULL;
 
-    qDebug() << "Beginning upgradeable routine";
-
     while (syncpkgs) {
         if (alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs) != NULL) {
             alpm_list_add(retlist, alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs));
-            qDebug() << "Upgradeable found";
         }
         syncpkgs = alpm_list_next(syncpkgs);
     }
