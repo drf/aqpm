@@ -285,36 +285,27 @@ QStringList BackendThread::getInstalledPackagesAsStringList()
 
 alpm_list_t *BackendThread::getUpgradeablePackages()
 {
-    alpm_list_t *syncpkgs = NULL;
-    alpm_list_t *syncdbs = alpm_list_first(alpm_option_get_syncdbs());
+    alpm_list_t *syncpkgs = alpm_db_get_pkgcache(d->db_local);
+    alpm_list_t *syncdbs = alpm_option_get_syncdbs();
+    alpm_list_t *retlist = NULL;
 
-    alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, NULL, NULL, NULL);
+    qDebug() << "Beginning upgradeable routine";
 
-    if (alpm_trans_sysupgrade() == -1) {
-        return NULL;
+    while (syncpkgs) {
+        if (alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs) != NULL) {
+            alpm_list_add(retlist, alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs));
+            qDebug() << "Upgradeable found";
+        }
+        syncpkgs = alpm_list_next(syncpkgs);
     }
 
-    syncpkgs = alpm_trans_get_pkgs();
-    alpm_trans_release();
-    return alpm_list_first(syncpkgs);
+    return alpm_list_first(retlist);
 }
 
 QStringList BackendThread::getUpgradeablePackagesAsStringList()
 {
-    alpm_list_t *syncpkgs = NULL;
+    alpm_list_t *syncpkgs = getUpgradeablePackages();
     QStringList retlist;
-    alpm_list_t *syncdbs;
-
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
-
-    alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, NULL, NULL, NULL);
-
-    if (alpm_trans_sysupgrade() == -1) {
-        return QStringList();
-    }
-
-    syncpkgs = alpm_trans_get_pkgs();
-    alpm_trans_release();
 
     if (!syncpkgs) {
         return retlist;
