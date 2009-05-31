@@ -290,8 +290,9 @@ alpm_list_t *BackendThread::getUpgradeablePackages()
     alpm_list_t *retlist = NULL;
 
     while (syncpkgs) {
-        if (alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs) != NULL) {
-            alpm_list_add(retlist, alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs));
+        pmpkg_t *pkg = alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs);
+        if (pkg != NULL) {
+            retlist = alpm_list_add(retlist, pkg);
         }
         syncpkgs = alpm_list_next(syncpkgs);
     }
