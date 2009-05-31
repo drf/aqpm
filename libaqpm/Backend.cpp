@@ -334,9 +334,10 @@ bool Backend::updateDatabase()
     return true;
 }
 
-bool Backend::fullSystemUpgrade()
+void Backend::fullSystemUpgrade()
 {
-    return d->thread->fullSystemUpgrade();
+    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(SystemUpgrade)));
+    qDebug() << "Thread is running";
 }
 
 void Backend::clearQueue()

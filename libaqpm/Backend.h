@@ -81,7 +81,8 @@ public:
     enum BackendEvent {
         UpdateDatabase = 1001,
         ProcessQueue = 1002,
-        Initialization = 1003
+        Initialization = 1003,
+        SystemUpgrade = 1004
     };
 
     static Backend *instance();
@@ -143,7 +144,7 @@ public:
     bool isInstalled(const QString &pkg);
 
     bool updateDatabase();
-    bool fullSystemUpgrade();
+    void fullSystemUpgrade();
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 

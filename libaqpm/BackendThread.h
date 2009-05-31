@@ -94,7 +94,7 @@ public Q_SLOTS:
     bool isInstalled(const QString &pkg);
 
     bool updateDatabase();
-    bool fullSystemUpgrade();
+    void fullSystemUpgrade();
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 

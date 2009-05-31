@@ -43,6 +43,7 @@ public:
 public Q_SLOTS:
     void processQueue(QVariantList packages, QVariantList flags);
     void updateDatabase();
+    void systemUpgrade();
     void setAnswer(int answer);
 
 private:

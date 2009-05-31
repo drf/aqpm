@@ -3,6 +3,8 @@
 	<interface name="org.chakraproject.aqpmworker">
 		<method name="updateDatabase">
 		</method>
+		<method name="systemUpgrade">
+                </method>
 		<method name="processQueue">
 			<arg type="av" direction="in" />
 			<arg type="av" direction="in" />

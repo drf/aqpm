@@ -305,10 +305,6 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
             qDebug() << "Remove action";
             remove = true;
             break;
-        case Aqpm::QueueItem::FullUpgrade:
-            qDebug() << "Upgrade action";
-            sysupgrade = true;
-            break;
         default:
             qDebug() << "What is that?";
             break;
@@ -422,51 +418,6 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
         alpm_trans_release();
     }
 
-    if (sysupgrade) {
-        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
-                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
-                            AqpmWorker::cb_trans_progress) == -1) {
-            emit errorOccurred(Aqpm::Backend::InitTransactionError);
-            operationPerformed(false);
-            return;
-        }
-
-        if (alpm_trans_sysupgrade() == -1) {
-            qDebug() << "Creating a sysupgrade transaction failed!!";
-            emit errorOccurred(Aqpm::Backend::CreateSysUpgradeError);
-            alpm_trans_release();
-            operationPerformed(false);
-            return;
-        }
-
-        alpm_list_t *data = NULL;
-
-        qDebug() << "Preparing...";
-        if (alpm_trans_prepare(&data) == -1) {
-            qDebug() << "Could not prepare transaction";
-            emit errorOccurred(Aqpm::Backend::PrepareError);
-            alpm_trans_release();
-            operationPerformed(false);
-            return;
-        }
-
-        qDebug() << "Committing...";
-        if (alpm_trans_commit(&data) == -1) {
-            qDebug() << "Could not commit transaction";
-            emit errorOccurred(Aqpm::Backend::CommitError);
-            alpm_trans_release();
-            operationPerformed(false);
-            return;
-        }
-        qDebug() << "Done";
-
-        if (data) {
-            FREELIST(data);
-        }
-
-        alpm_trans_release();
-    }
-
     if (file) {
         if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
@@ -519,6 +470,68 @@ void Worker::processQueue(QVariantList packages, QVariantList flags)
 
         alpm_trans_release();
     }
+
+    operationPerformed(true);
+}
+
+void Worker::systemUpgrade()
+{
+    qDebug() << "Starting System Upgrade";
+
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.systemupgrade",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        QCoreApplication::instance()->quit();
+        return;
+    }
+
+    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS,
+                        AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                        AqpmWorker::cb_trans_progress) == -1) {
+        emit errorOccurred(Aqpm::Backend::InitTransactionError);
+        operationPerformed(false);
+        return;
+    }
+
+    if (alpm_trans_sysupgrade() == -1) {
+        qDebug() << "Creating a sysupgrade transaction failed!!";
+        emit errorOccurred(Aqpm::Backend::CreateSysUpgradeError);
+        alpm_trans_release();
+        operationPerformed(false);
+        return;
+    }
+
+    alpm_list_t *data = NULL;
+
+    qDebug() << "Preparing...";
+    if (alpm_trans_prepare(&data) == -1) {
+        qDebug() << "Could not prepare transaction";
+        emit errorOccurred(Aqpm::Backend::PrepareError);
+        alpm_trans_release();
+        operationPerformed(false);
+        return;
+    }
+
+    qDebug() << "Committing...";
+    if (alpm_trans_commit(&data) == -1) {
+        qDebug() << "Could not commit transaction";
+        emit errorOccurred(Aqpm::Backend::CommitError);
+        alpm_trans_release();
+        operationPerformed(false);
+        return;
+    }
+    qDebug() << "Done";
+
+    if (data) {
+        FREELIST(data);
+    }
+
+    alpm_trans_release();
 
     operationPerformed(true);
 }
