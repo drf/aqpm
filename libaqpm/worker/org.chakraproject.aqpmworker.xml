@@ -4,6 +4,7 @@
 		<method name="updateDatabase">
 		</method>
 		<method name="systemUpgrade">
+			<arg type="av" direction="in" />
                 </method>
 		<method name="processQueue">
 			<arg type="av" direction="in" />

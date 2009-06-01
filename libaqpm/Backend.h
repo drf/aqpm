@@ -120,7 +120,7 @@ public:
     bool isInstalled(const QString &pkg);
 
     bool updateDatabase();
-    void fullSystemUpgrade();
+    void fullSystemUpgrade(const QList<pmtransflag_t> &flags);
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 

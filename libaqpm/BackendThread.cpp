@@ -795,6 +795,12 @@ bool BackendThread::updateDatabase()
 
 void BackendThread::fullSystemUpgrade()
 {
+    QVariantList flags;
+
+    foreach(const pmtransflag_t &ent, d->flags) {
+        flags.append(ent);
+    }
+
     QDBusMessage message;
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
@@ -837,6 +843,9 @@ void BackendThread::fullSystemUpgrade()
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("systemUpgrade"));
+    QList<QVariant> argumentList;
+    argumentList << qVariantFromValue(flags);
+    message.setArguments(argumentList);
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }
 

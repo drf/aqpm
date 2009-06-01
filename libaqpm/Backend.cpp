@@ -81,6 +81,7 @@ Backend::Backend()
     d->events[Initialization] = (QEvent::Type)QEvent::registerEventType();
     d->events[UpdateDatabase] = (QEvent::Type)QEvent::registerEventType();
     d->events[ProcessQueue] = (QEvent::Type)QEvent::registerEventType();
+    d->events[SystemUpgrade] = (QEvent::Type)QEvent::registerEventType();
 
     qDebug() << d->events;
 
@@ -336,8 +337,9 @@ bool Backend::updateDatabase()
     return true;
 }
 
-void Backend::fullSystemUpgrade()
+void Backend::fullSystemUpgrade(const QList<pmtransflag_t> &flags)
 {
+    d->thread->setFlags(flags);
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(SystemUpgrade)));
     qDebug() << "Thread is running";
 }

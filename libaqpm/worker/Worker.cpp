@@ -402,7 +402,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
     operationPerformed(true);
 }
 
-void Worker::systemUpgrade()
+void Worker::systemUpgrade(const QVariantList &flags)
 {
     qDebug() << "Starting System Upgrade";
 
@@ -418,7 +418,21 @@ void Worker::systemUpgrade()
         return;
     }
 
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS,
+    pmtransflag_t alpmflags;
+
+    if (flags.isEmpty()) {
+        alpmflags = PM_TRANS_FLAG_ALLDEPS;
+    } else {
+        alpmflags = (pmtransflag_t)flags.at(0).toUInt();
+
+        for (int i = 1; i < flags.count(); ++i) {
+            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)flags.at(i).toUInt());
+        }
+    }
+
+    qDebug() << alpmflags;
+
+    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
                         AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                         AqpmWorker::cb_trans_progress) == -1) {
         QVariantMap args;
@@ -511,6 +525,7 @@ bool Worker::performTransaction()
                     innerdata[alpm_fileconflict_get_file(conflict)] =
                             QStringList() << alpm_fileconflict_get_target(conflict)
                             << alpm_fileconflict_get_ctarget(conflict);
+                    qDebug() << innerdata;
                     args["ConflictingTargets"] = innerdata;
                     emit errorOccurred(Aqpm::Globals::CommitError | Aqpm::Globals::FileConflictTarget, args);
                     break;
