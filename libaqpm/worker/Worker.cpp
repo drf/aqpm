@@ -243,7 +243,7 @@ void Worker::updateDatabase()
     QCoreApplication::instance()->quit();
 }
 
-void Worker::processQueue(QVariantList packages, QVariantList flags)
+void Worker::processQueue(const QVariantList &packages, const QVariantList &flags)
 {
     qDebug() << "Starting Queue Processing";
 

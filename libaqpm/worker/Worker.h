@@ -41,7 +41,7 @@ public:
     bool isWorkerReady();
 
 public Q_SLOTS:
-    void processQueue(QVariantList packages, QVariantList flags);
+    void processQueue(const QVariantList &packages, const QVariantList &flags);
     void updateDatabase();
     void systemUpgrade();
     void setAnswer(int answer);
@@ -62,14 +62,14 @@ Q_SIGNALS:
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
-    void streamTransEvent(int event, QVariantMap args);
+    void streamTransEvent(int event, const QVariantMap &args);
 
-    void streamTransQuestion(int event, QVariantMap args);
+    void streamTransQuestion(int event, const QVariantMap &args);
 
     void streamDlProg(const QString &pkg, int package_done, int package_total,
                           int rate, int list_done, int list_total);
 
-    void errorOccurred(int code, QVariantMap details);
+    void errorOccurred(int code, const QVariantMap &details);
 
     void streamAnswer(int answer);
 
