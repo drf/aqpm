@@ -134,6 +134,8 @@ Q_SIGNALS:
 
     void errorOccurred(int code, const QVariantMap &args);
 
+    void logMessageStreamed(const QString &msg);
+
     void operationFinished(bool success);
 
     void threadInitialized();

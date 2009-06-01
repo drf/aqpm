@@ -196,6 +196,8 @@ Q_SIGNALS:
 
     void errorOccurred(Errors code, const QVariantMap &args);
 
+    void logMessageStreamed(const QString &msg);
+
     void operationFinished(bool success);
 
     void backendReady();

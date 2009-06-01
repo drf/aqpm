@@ -58,5 +58,8 @@
                         <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
                         <arg type="a{sv}" direction="out" />
                 </signal>
+		<signal name="logMessageStreamed">
+                        <arg type="s" direction="out" />
+                </signal>
 	</interface>
 </node>

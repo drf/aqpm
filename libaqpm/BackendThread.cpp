@@ -778,6 +778,8 @@ bool BackendThread::updateDatabase()
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "Starting update";
@@ -824,6 +826,8 @@ void BackendThread::fullSystemUpgrade()
                                          "streamTransQuestion", this, SIGNAL(streamTransQuestion(int, QVariantMap)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", this, SLOT(workerResult(bool)));
 
@@ -902,6 +906,8 @@ void BackendThread::processQueue()
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "Process queue started";
@@ -943,6 +949,8 @@ void BackendThread::workerResult(bool result)
                                             "streamTransQuestion", this, SIGNAL(streamTransQuestion(int, QVariantMap)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                            "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "workerResult", this, SLOT(workerResult(bool)));
 

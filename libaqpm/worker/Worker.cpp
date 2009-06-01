@@ -75,6 +75,8 @@ Worker::Worker(QObject *parent)
             this, SIGNAL(streamTransQuestion(int,QVariantMap)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int,QVariantMap)),
             this, SIGNAL(streamTransEvent(int,QVariantMap)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(logMessageStreamed(QString)),
+            this, SIGNAL(logMessageStreamed(QString)));
     connect(this, SIGNAL(streamAnswer(int)),
             AqpmWorker::CallBacks::instance(), SLOT(setAnswer(int)));
 

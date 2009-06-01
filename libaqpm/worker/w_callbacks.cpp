@@ -134,6 +134,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
     Q_D(CallBacks);
 
     QVariantMap args;
+    QString logmsg;
 
     switch ( event ) {
     case PM_TRANS_EVT_CHECKDEPS_START:
@@ -156,7 +157,9 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
         args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t*)data1);
         emit streamTransEvent((int) Aqpm::Globals::AddDone, args);
-        //alpm_logaction( addTxt.toUtf8().data() );
+        logmsg = QString("%1 (%2) installed successfully").arg(args["PackageName"].toString())
+                 .arg(args["PackageVersion"].toString());
+        alpm_logaction( logmsg.toUtf8().data() );
         break;
     case PM_TRANS_EVT_REMOVE_START:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
@@ -166,7 +169,9 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
         args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t*)data1);
         emit streamTransEvent((int) Aqpm::Globals::RemoveDone, args);
-        //alpm_logaction( remTxt.toUtf8().data() );
+        logmsg = QString("%1 (%2) removed successfully").arg(args["PackageName"].toString())
+                 .arg(args["PackageVersion"].toString());
+        alpm_logaction( logmsg.toUtf8().data() );
         break;
     case PM_TRANS_EVT_UPGRADE_START:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
@@ -177,7 +182,9 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         args["OldVersion"] = QString((char*)alpm_pkg_get_version((pmpkg_t*)data2));
         args["NewVersion"] = QString((char*)alpm_pkg_get_version((pmpkg_t*)data1));
         emit streamTransEvent((int) Aqpm::Globals::UpgradeDone, args);
-        //alpm_logaction( upgTxt.toUtf8().data() );
+        logmsg = QString("Upgraded %1 successfully (%2 -> %3)").arg(args["PackageName"].toString())
+                 .arg(args["OldVersion"].toString()).arg(args["NewVersion"].toString() );
+        alpm_logaction(logmsg.toUtf8().data());
         break;
     case PM_TRANS_EVT_INTEGRITY_START:
         emit streamTransEvent((int) Aqpm::Globals::IntegrityStart, QVariantMap());
@@ -202,6 +209,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
     case PM_TRANS_EVT_SCRIPTLET_INFO:
         args["Text"] = QString((char*)data1);
         emit streamTransEvent((int) Aqpm::Globals::ScriptletInfo, args);
+        alpm_logaction((char*)data1);
         break;
     case PM_TRANS_EVT_RETRIEVE_START:
         args["Repo"] = QString((char*)data1);
@@ -443,12 +451,17 @@ void CallBacks::cb_log(pmloglevel_t level, char *fmt, va_list args)
     }
 
     char *string = NULL;
-    if (pm_vasprintf(&string, level, fmt, args) == -1)
+    if (pm_vasprintf(&string, level, fmt, args) == -1) {
         return;
+    }
 
     if (string != NULL) {
         QString msg = QString::fromLocal8Bit(string);
-        emit logMsgStreamed(msg);
+        emit logMessageStreamed(msg);
+
+        if (level == PM_LOG_ERROR) {
+            alpm_logaction(string);
+        }
     }
 }
 

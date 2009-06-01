@@ -71,6 +71,8 @@ Q_SIGNALS:
 
     void errorOccurred(int code, const QVariantMap &details);
 
+    void logMessageStreamed(const QString &msg);
+
     void streamAnswer(int answer);
 
 private:

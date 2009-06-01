@@ -128,6 +128,8 @@ void Backend::setUpSelf(BackendThread *t)
             this, SIGNAL(streamTransEvent(int, QVariantMap)));
     connect(d->thread, SIGNAL(errorOccurred(int,QVariantMap)),
             this, SLOT(streamError(int,QVariantMap)));
+    connect(d->thread, SIGNAL(logMessageStreamed(QString)),
+            this, SIGNAL(logMessageStreamed(QString)));
     connect(d->thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
             this, SIGNAL(streamTransQuestion(int, QVariantMap)));
 
