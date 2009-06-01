@@ -122,15 +122,15 @@ void Backend::setUpSelf(BackendThread *t)
     connect(d->thread, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
             this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
-            this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
+            this, SLOT(doStreamTransProgress(int, const QString&, int, int, int)));
     connect(d->thread, SIGNAL(streamTransEvent(int, QVariantMap)),
-            this, SIGNAL(streamTransEvent(int, QVariantMap)));
+            this, SLOT(doStreamTransEvent(int, QVariantMap)));
     connect(d->thread, SIGNAL(errorOccurred(int,QVariantMap)),
             this, SLOT(streamError(int,QVariantMap)));
     connect(d->thread, SIGNAL(logMessageStreamed(QString)),
             this, SIGNAL(logMessageStreamed(QString)));
     connect(d->thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
-            this, SIGNAL(streamTransQuestion(int, QVariantMap)));
+            this, SLOT(doStreamTransQuestion(int, QVariantMap)));
 
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }
@@ -384,6 +384,22 @@ void Backend::setAnswer(int answer)
 void Backend::streamError(int code, const QVariantMap &args)
 {
     emit errorOccurred((Globals::Errors) code, args);
+}
+
+void Backend::doStreamTransProgress(int event, const QString &pkgname, int percent,
+                           int howmany, int remain)
+{
+    emit streamTransProgress((Aqpm::Globals::TransactionProgress)event, pkgname, percent, howmany, remain);
+}
+
+void Backend::doStreamTransEvent(int event, const QVariantMap &args)
+{
+    emit streamTransEvent((Aqpm::Globals::TransactionEvent) event, args);
+}
+
+void Backend::doStreamTransQuestion(int event, const QVariantMap &args)
+{
+    emit streamTransQuestion((Aqpm::Globals::TransactionQuestion) event, args);
 }
 
 }

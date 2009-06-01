@@ -176,6 +176,10 @@ Q_SIGNALS:
 private Q_SLOTS:
     void setUpSelf(BackendThread *t);
     void streamError(int code, const QVariantMap &args);
+    void doStreamTransProgress(int event, const QString &pkgname, int percent,
+                             int howmany, int remain);
+    void doStreamTransEvent(int event, const QVariantMap &args);
+    void doStreamTransQuestion(int event, const QVariantMap &args);
 
 private:
     class Private;
