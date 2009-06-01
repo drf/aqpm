@@ -181,14 +181,17 @@ void Worker::updateDatabase()
         qDebug() << message().service() << QString(" authorized");
     } else {
         qDebug() << QString("Not authorized");
-        QCoreApplication::instance()->quit();
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        operationPerformed(false);
         return;
     }
 
     if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, AqpmWorker::cb_trans_evt,
                         AqpmWorker::cb_trans_conv, AqpmWorker::cb_trans_progress) == -1) {
+        QVariantMap args;
+        args["ErrorString"] = QString(alpm_strerrorlast());
+        emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
         operationPerformed(false);
-        qDebug() << "Error!";
         return;
     }
 
@@ -235,14 +238,13 @@ void Worker::updateDatabase()
     if (alpm_trans_release() == -1) {
         if (alpm_trans_interrupt() == -1) {
             operationPerformed(false);
+            return;
         }
     }
 
     qDebug() << "Database Update Performed";
 
     operationPerformed(true);
-
-    QCoreApplication::instance()->quit();
 }
 
 void Worker::processQueue(const QVariantList &packages, const QVariantList &flags)
@@ -257,7 +259,8 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
         qDebug() << message().service() << QString(" authorized");
     } else {
         qDebug() << QString("Not authorized");
-        QCoreApplication::instance()->quit();
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        operationPerformed(false);
         return;
     }
 
@@ -414,7 +417,8 @@ void Worker::systemUpgrade(const QVariantList &flags)
         qDebug() << message().service() << QString(" authorized");
     } else {
         qDebug() << QString("Not authorized");
-        QCoreApplication::instance()->quit();
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        operationPerformed(false);
         return;
     }
 

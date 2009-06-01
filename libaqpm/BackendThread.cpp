@@ -793,6 +793,7 @@ bool BackendThread::updateDatabase()
     emit transactionStarted();
 
     if (!d->initWorker("org.chakraproject.aqpm.updatedatabase")) {
+        emit errorOccurred((int) Aqpm::Globals::WorkerInitializationFailed, QVariantMap());
         workerResult(false);
     }
 
@@ -818,6 +819,7 @@ void BackendThread::fullSystemUpgrade()
     }
 
     if (!d->initWorker("org.chakraproject.aqpm.systemupgrade")) {
+        emit errorOccurred((int) Aqpm::Globals::WorkerInitializationFailed, QVariantMap());
         workerResult(false);
     }
 
@@ -870,6 +872,7 @@ void BackendThread::processQueue()
     }
 
     if (!d->initWorker("org.chakraproject.aqpm.processqueue")) {
+        emit errorOccurred((int) Aqpm::Globals::WorkerInitializationFailed, QVariantMap());
         workerResult(false);
     }
 
@@ -921,6 +924,7 @@ void BackendThread::workerResult(bool result)
     reloadPacmanConfiguration();
     clearQueue();
 
+    emit transactionReleased();
     emit operationFinished(result);
 }
 

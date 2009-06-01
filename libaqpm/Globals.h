@@ -90,7 +90,9 @@ public:
         ConflictingDependencies = 1024,
         FileConflictTarget = 2048,
         FileConflictFilesystem = 4096,
-        CorruptedFile = 8192
+        CorruptedFile = 8192,
+        WorkerInitializationFailed = 16384,
+        AuthorizationNotGranted = 32768
     };
 
     Q_DECLARE_FLAGS(Errors, ErrorCode)
