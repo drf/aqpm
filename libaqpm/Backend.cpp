@@ -126,6 +126,8 @@ void Backend::setUpSelf(BackendThread *t)
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     connect(d->thread, SIGNAL(streamTransEvent(int, QVariantMap)),
             this, SIGNAL(streamTransEvent(int, QVariantMap)));
+    connect(d->thread, SIGNAL(errorOccurred(int,QVariantMap)),
+            this, SLOT(streamError(int,QVariantMap)));
     connect(d->thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
             this, SIGNAL(streamTransQuestion(int, QVariantMap)));
 
@@ -355,7 +357,7 @@ QueueItem::List Backend::queue()
     return d->thread->queue();
 }
 
-void Backend::processQueue(QList<pmtransflag_t> flags)
+void Backend::processQueue(const QList<pmtransflag_t> &flags)
 {
     d->thread->setFlags(flags);
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(ProcessQueue)));
@@ -375,6 +377,11 @@ bool Backend::shouldHandleAuthorization() const
 void Backend::setAnswer(int answer)
 {
     d->thread->setAnswer(answer);
+}
+
+void Backend::streamError(int code, const QVariantMap &args)
+{
+    emit errorOccurred((Errors) code, args);
 }
 
 }

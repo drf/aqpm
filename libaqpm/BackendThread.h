@@ -106,7 +106,7 @@ public Q_SLOTS:
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
-    void setFlags(QList<pmtransflag_t> flags);
+    void setFlags(const QList<pmtransflag_t> &flags);
     void processQueue();
     QueueItem::List queue();
 
@@ -128,11 +128,11 @@ Q_SIGNALS:
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
-    void streamTransEvent(int event, QVariantMap args);
+    void streamTransEvent(int event, const QVariantMap &args);
 
-    void streamTransQuestion(int event, QVariantMap args);
+    void streamTransQuestion(int event, const QVariantMap &args);
 
-    void errorOccurred(int code);
+    void errorOccurred(int code, const QVariantMap &args);
 
     void operationFinished(bool success);
 

@@ -166,7 +166,7 @@ public:
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
-    void processQueue(QList<pmtransflag_t> flags);
+    void processQueue(const QList<pmtransflag_t> &flags);
     QueueItem::List queue();
 
     void setShouldHandleAuthorization(bool should);
@@ -190,11 +190,11 @@ Q_SIGNALS:
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
-    void streamTransEvent(int event, QVariantMap args);
+    void streamTransEvent(int event, const QVariantMap &args);
 
-    void streamTransQuestion(int event, QVariantMap args);
+    void streamTransQuestion(int event, const QVariantMap &args);
 
-    void errorOccurred(int code);
+    void errorOccurred(Errors code, const QVariantMap &args);
 
     void operationFinished(bool success);
 
@@ -207,6 +207,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void setUpSelf(BackendThread *t);
+    void streamError(int code, const QVariantMap &args);
 
 private:
     class Private;
