@@ -49,6 +49,8 @@ public Q_SLOTS:
 private:
     void setUpAlpm();
     void operationPerformed(bool result);
+    bool addTransTarget(const QString &target);
+    bool performTransaction();
 
 Q_SIGNALS:
     void workerReady();
@@ -67,7 +69,7 @@ Q_SIGNALS:
     void streamDlProg(const QString &pkg, int package_done, int package_total,
                           int rate, int list_done, int list_total);
 
-    void errorOccurred(int code);
+    void errorOccurred(int code, QVariantMap details);
 
     void streamAnswer(int answer);
 

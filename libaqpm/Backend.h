@@ -60,8 +60,18 @@ public:
         InitTransactionError = 4,
         ReleaseTransactionError = 8,
         AddTargetError = 16,
-        CreateSysUpgradeError = 32
+        CreateSysUpgradeError = 32,
+        DuplicateTarget = 64,
+        PackageIgnored = 128,
+        PackageNotFound = 256,
+        UnsatisfiedDependencies = 512,
+        ConflictingDependencies = 1024,
+        FileConflictTarget = 2048,
+        FileConflictFilesystem = 4096,
+        CorruptedFile = 8192
     };
+
+    Q_DECLARE_FLAGS(Errors, ErrorCode)
 
     enum DatabaseState {
         Checking = 1,
