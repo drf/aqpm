@@ -153,12 +153,12 @@ Q_SIGNALS:
     void streamDlProg(const QString &c, int bytedone, int bytetotal, int speed,
                       int listdone, int listtotal);
 
-    void streamTransProgress(int event, const QString &pkgname, int percent,
+    void streamTransProgress(Aqpm::Globals::TransactionProgress event, const QString &pkgname, int percent,
                              int howmany, int remain);
 
-    void streamTransEvent(int event, const QVariantMap &args);
+    void streamTransEvent(Aqpm::Globals::TransactionEvent event, const QVariantMap &args);
 
-    void streamTransQuestion(int event, const QVariantMap &args);
+    void streamTransQuestion(Aqpm::Globals::TransactionQuestion event, const QVariantMap &args);
 
     void errorOccurred(Aqpm::Globals::Errors code, const QVariantMap &args);
 
