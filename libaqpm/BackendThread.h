@@ -76,7 +76,7 @@ public Q_SLOTS:
     QStringList getPackageFiles(pmpkg_t *package);
     QStringList getPackageFiles(const QString &name);
 
-    int countPackages(Backend::PackageStatus status);
+    int countPackages(Globals::PackageStatus status);
 
     QStringList getProviders(const QString &name, const QString &repo);
     QStringList getProviders(pmpkg_t *pkg);

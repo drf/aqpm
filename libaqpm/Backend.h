@@ -25,6 +25,7 @@
 
 #include "Visibility.h"
 #include "QueueItem.h"
+#include "Globals.h"
 
 #include <QThread>
 #include <QPointer>
@@ -53,41 +54,6 @@ class AQPM_EXPORT Backend : public QObject
     Q_OBJECT
 
 public:
-
-    enum ErrorCode {
-        PrepareError = 1,
-        CommitError = 2,
-        InitTransactionError = 4,
-        ReleaseTransactionError = 8,
-        AddTargetError = 16,
-        CreateSysUpgradeError = 32,
-        DuplicateTarget = 64,
-        PackageIgnored = 128,
-        PackageNotFound = 256,
-        UnsatisfiedDependencies = 512,
-        ConflictingDependencies = 1024,
-        FileConflictTarget = 2048,
-        FileConflictFilesystem = 4096,
-        CorruptedFile = 8192
-    };
-
-    Q_DECLARE_FLAGS(Errors, ErrorCode)
-
-    enum DatabaseState {
-        Checking = 1,
-        Downloading = 2,
-        Updating = 4,
-        Updated = 8,
-        Unchanged = 16,
-        DatabaseError = 32
-    };
-
-    enum PackageStatus {
-        AllPackages,
-        InstalledPackages,
-        UpgradeablePackages
-    };
-
     enum BackendEvent {
         UpdateDatabase = 1001,
         ProcessQueue = 1002,
@@ -136,7 +102,7 @@ public:
     QStringList getPackageFiles(pmpkg_t *package);
     QStringList getPackageFiles(const QString &name);
 
-    int countPackages(PackageStatus status);
+    int countPackages(Globals::PackageStatus status);
 
     QStringList getProviders(const QString &name, const QString &repo);
     QStringList getProviders(pmpkg_t *pkg);
@@ -194,7 +160,7 @@ Q_SIGNALS:
 
     void streamTransQuestion(int event, const QVariantMap &args);
 
-    void errorOccurred(Errors code, const QVariantMap &args);
+    void errorOccurred(Aqpm::Globals::Errors code, const QVariantMap &args);
 
     void logMessageStreamed(const QString &msg);
 

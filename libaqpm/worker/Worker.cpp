@@ -217,16 +217,16 @@ void Worker::updateDatabase()
         pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(syncdbs);
         QString curdbname((char *)alpm_db_get_name(dbcrnt));
 
-        emit dbStatusChanged(curdbname, Aqpm::Backend::Checking);
+        emit dbStatusChanged(curdbname, Aqpm::Globals::Checking);
 
         r = alpm_db_update(0, dbcrnt);
 
         if (r == 1) {
-            emit dbStatusChanged(curdbname, Aqpm::Backend::Unchanged);
+            emit dbStatusChanged(curdbname, Aqpm::Globals::Unchanged);
         } else if (r < 0) {
-            emit dbStatusChanged(curdbname, Aqpm::Backend::DatabaseError);
+            emit dbStatusChanged(curdbname, Aqpm::Globals::DatabaseError);
         } else {
-            emit dbStatusChanged(curdbname, Aqpm::Backend::Updated);
+            emit dbStatusChanged(curdbname, Aqpm::Globals::Updated);
         }
 
         syncdbs = alpm_list_next(syncdbs);
@@ -318,7 +318,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
             args["ErrorString"] = QString(alpm_strerrorlast());
-            emit errorOccurred(Aqpm::Backend::InitTransactionError, args);
+            emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
             operationPerformed(false);
             return;
         }
@@ -347,7 +347,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
             args["ErrorString"] = QString(alpm_strerrorlast());
-            emit errorOccurred(Aqpm::Backend::InitTransactionError, args);
+            emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
             operationPerformed(false);
             return;
         }
@@ -377,7 +377,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
             args["ErrorString"] = QString(alpm_strerrorlast());
-            emit errorOccurred(Aqpm::Backend::InitTransactionError, args);
+            emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
             operationPerformed(false);
             return;
         }
@@ -423,7 +423,7 @@ void Worker::systemUpgrade()
                         AqpmWorker::cb_trans_progress) == -1) {
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());
-        emit errorOccurred(Aqpm::Backend::InitTransactionError, args);
+        emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
         operationPerformed(false);
         return;
     }
@@ -432,7 +432,7 @@ void Worker::systemUpgrade()
         qDebug() << "Creating a sysupgrade transaction failed!!";
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());
-        emit errorOccurred(Aqpm::Backend::CreateSysUpgradeError, args);
+        emit errorOccurred(Aqpm::Globals::CreateSysUpgradeError, args);
         alpm_trans_release();
         operationPerformed(false);
         return;
@@ -478,7 +478,7 @@ bool Worker::performTransaction()
                 //free(depstring);
             }
             args["UnsatisfiedDeps"] = innerdata;
-            emit errorOccurred(Aqpm::Backend::PrepareError | Aqpm::Backend::UnsatisfiedDependencies, args);
+            emit errorOccurred(Aqpm::Globals::PrepareError | Aqpm::Globals::UnsatisfiedDependencies, args);
             break;
         case PM_ERR_CONFLICTING_DEPS:
             for(i = data; i; i = alpm_list_next(i)) {
@@ -486,11 +486,11 @@ bool Worker::performTransaction()
                 innerdata[alpm_conflict_get_package1(conflict)] = alpm_conflict_get_package2(conflict);
             }
             args["ConflictingDeps"] = innerdata;
-            emit errorOccurred(Aqpm::Backend::PrepareError | Aqpm::Backend::ConflictingDependencies, args);
+            emit errorOccurred(Aqpm::Globals::PrepareError | Aqpm::Globals::ConflictingDependencies, args);
             break;
         default:
             args["ErrorString"] = alpm_strerrorlast();
-            emit errorOccurred(Aqpm::Backend::PrepareError, args);
+            emit errorOccurred(Aqpm::Globals::PrepareError, args);
             break;
         }
         qDebug() << "Could not prepare transaction";
@@ -512,16 +512,16 @@ bool Worker::performTransaction()
                             QStringList() << alpm_fileconflict_get_target(conflict)
                             << alpm_fileconflict_get_ctarget(conflict);
                     args["ConflictingTargets"] = innerdata;
-                    emit errorOccurred(Aqpm::Backend::CommitError | Aqpm::Backend::FileConflictTarget, args);
+                    emit errorOccurred(Aqpm::Globals::CommitError | Aqpm::Globals::FileConflictTarget, args);
                     break;
                 case PM_FILECONFLICT_FILESYSTEM:
                     innerdata[alpm_fileconflict_get_target(conflict)] = alpm_fileconflict_get_file(conflict);
                     args["ConflictingFiles"] = innerdata;
-                    emit errorOccurred(Aqpm::Backend::CommitError | Aqpm::Backend::FileConflictFilesystem, args);
+                    emit errorOccurred(Aqpm::Globals::CommitError | Aqpm::Globals::FileConflictFilesystem, args);
                     break;
                 default:
                     args["ErrorString"] = alpm_strerrorlast();
-                    emit errorOccurred(Aqpm::Backend::CommitError, args);
+                    emit errorOccurred(Aqpm::Globals::CommitError, args);
                     break;
                 }
             }
@@ -532,11 +532,11 @@ bool Worker::performTransaction()
                 files << QString((char*) alpm_list_getdata(i));
             }
             args["Filenames"] = files;
-            emit errorOccurred(Aqpm::Backend::CommitError | Aqpm::Backend::CorruptedFile, args);
+            emit errorOccurred(Aqpm::Globals::CommitError | Aqpm::Globals::CorruptedFile, args);
             break;
         default:
             args["ErrorString"] = alpm_strerrorlast();
-            emit errorOccurred(Aqpm::Backend::CommitError, args);
+            emit errorOccurred(Aqpm::Globals::CommitError, args);
             break;
         }
         qDebug() << "Could not commit transaction";
@@ -563,19 +563,19 @@ bool Worker::addTransTarget(const QString &target)
         if (pm_errno == PM_ERR_TRANS_DUP_TARGET) {
             QVariantMap args;
             args["PackageName"] = target;
-            emit errorOccurred(Aqpm::Backend::AddTargetError | Aqpm::Backend::DuplicateTarget, args);
+            emit errorOccurred(Aqpm::Globals::AddTargetError | Aqpm::Globals::DuplicateTarget, args);
         } else if (pm_errno == PM_ERR_PKG_IGNORED) {
             QVariantMap args;
             args["PackageName"] = target;
-            emit errorOccurred(Aqpm::Backend::AddTargetError | Aqpm::Backend::PackageIgnored, args);
+            emit errorOccurred(Aqpm::Globals::AddTargetError | Aqpm::Globals::PackageIgnored, args);
         } else if (pm_errno == PM_ERR_PKG_NOT_FOUND) {
             QVariantMap args;
             args["PackageName"] = target;
-            emit errorOccurred(Aqpm::Backend::AddTargetError | Aqpm::Backend::PackageNotFound, args);
+            emit errorOccurred(Aqpm::Globals::AddTargetError | Aqpm::Globals::PackageNotFound, args);
         } else {
             QVariantMap args;
             args["ErrorString"] = alpm_strerrorlast();
-            emit errorOccurred(Aqpm::Backend::AddTargetError, args);
+            emit errorOccurred(Aqpm::Globals::AddTargetError, args);
         }
 
         operationPerformed(false);

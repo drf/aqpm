@@ -661,9 +661,9 @@ QStringList BackendThread::getPackagesFromRepoAsStringList(const QString &repona
     return retlist;
 }
 
-int BackendThread::countPackages(Backend::PackageStatus status)
+int BackendThread::countPackages(Globals::PackageStatus status)
 {
-    if (status == Backend::AllPackages) {
+    if (status == Globals::AllPackages) {
         int retvalue = 0;
 
         alpm_list_t *databases = getAvailableRepos();
@@ -681,9 +681,9 @@ int BackendThread::countPackages(Backend::PackageStatus status)
         }
 
         return retvalue;
-    } else if (status == Backend::UpgradeablePackages) {
+    } else if (status == Globals::UpgradeablePackages) {
         return getUpgradeablePackagesAsStringList().count();
-    } else if (status == Backend::InstalledPackages) {
+    } else if (status == Globals::InstalledPackages) {
         alpm_list_t *currentpkgs = alpm_db_get_pkgcache(d->db_local);
 
         return alpm_list_count(currentpkgs);

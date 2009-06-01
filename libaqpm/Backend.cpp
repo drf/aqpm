@@ -114,8 +114,6 @@ void Backend::setUpSelf(BackendThread *t)
             this, SIGNAL(transactionStarted()));
     connect(d->thread, SIGNAL(transactionReleased()),
             this, SIGNAL(transactionReleased()));
-    connect(d->thread, SIGNAL(errorOccurred(int)),
-            this, SIGNAL(errorOccurred(int)));
     connect(d->thread, SIGNAL(operationFinished(bool)),
             this, SIGNAL(operationFinished(bool)));
     connect(d->thread, SIGNAL(threadInitialized()),
@@ -306,7 +304,7 @@ QStringList Backend::getPackagesFromRepoAsStringList(const QString &reponame)
     return d->thread->getPackagesFromRepoAsStringList(reponame);
 }
 
-int Backend::countPackages(PackageStatus status)
+int Backend::countPackages(Globals::PackageStatus status)
 {
     return d->thread->countPackages(status);
 }
@@ -383,7 +381,7 @@ void Backend::setAnswer(int answer)
 
 void Backend::streamError(int code, const QVariantMap &args)
 {
-    emit errorOccurred((Errors) code, args);
+    emit errorOccurred((Globals::Errors) code, args);
 }
 
 }

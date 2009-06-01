@@ -21,6 +21,8 @@
 #ifndef GLOBALSH
 #define GLOBALSH
 
+#include <QFlags>
+
 namespace Aqpm
 {
 
@@ -72,6 +74,40 @@ public:
         ConflictsRoutineStart = 2,
         UpgradeRoutineStart = 3,
         RemoveRoutineStart = 4
+    };
+
+    enum ErrorCode {
+        PrepareError = 1,
+        CommitError = 2,
+        InitTransactionError = 4,
+        ReleaseTransactionError = 8,
+        AddTargetError = 16,
+        CreateSysUpgradeError = 32,
+        DuplicateTarget = 64,
+        PackageIgnored = 128,
+        PackageNotFound = 256,
+        UnsatisfiedDependencies = 512,
+        ConflictingDependencies = 1024,
+        FileConflictTarget = 2048,
+        FileConflictFilesystem = 4096,
+        CorruptedFile = 8192
+    };
+
+    Q_DECLARE_FLAGS(Errors, ErrorCode)
+
+    enum DatabaseState {
+        Checking = 1,
+        Downloading = 2,
+        Updating = 4,
+        Updated = 8,
+        Unchanged = 16,
+        DatabaseError = 32
+    };
+
+    enum PackageStatus {
+        AllPackages,
+        InstalledPackages,
+        UpgradeablePackages
     };
 
 };
