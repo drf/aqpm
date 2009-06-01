@@ -1,3 +1,4 @@
+
 /***************************************************************************
  *   Copyright (C) 2008 by Dario Freddi                                    *
  *   drf54321@yahoo.it                                                     *
@@ -48,10 +49,13 @@ void ContainerThread::run()
 class BackendThread::Private
 {
 public:
-
     Private() : handleAuth(true) {}
 
     void waitForWorkerReady();
+    bool initWorker(const QString &polkitAction);
+
+    Q_DECLARE_PUBLIC(BackendThread)
+    BackendThread *q_ptr;
 
     pmdb_t *db_local;
     pmdb_t *dbs_sync;
@@ -86,10 +90,58 @@ void BackendThread::Private::waitForWorkerReady()
     qDebug() << "Ready, here we go";
 }
 
+bool BackendThread::Private::initWorker(const QString &polkitAction)
+{
+    Q_Q(BackendThread);
+
+    QDBusMessage message;
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("isWorkerReady"));
+    QDBusMessage reply = QDBusConnection::systemBus().call(message);
+    if (reply.type() == QDBusMessage::ReplyMessage
+            && reply.arguments().size() == 1) {
+        qDebug() << reply.arguments().first().toBool();
+    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
+        qWarning() << "Message did not receive a reply (timeout by message bus)";
+        return false;
+    }
+
+    if (handleAuth) {
+        if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
+            qDebug() << "User unauthorized";
+            return false;
+        }
+    }
+
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "dbQty", q, SIGNAL(dbQty(const QStringList&)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "dbStatusChanged", q, SIGNAL(dbStatusChanged(const QString&, int)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "streamDlProg", q, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "streamTransProgress", q, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "streamTransEvent", q, SIGNAL(streamTransEvent(int, QVariantMap)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "streamTransQuestion", q, SIGNAL(streamTransQuestion(int, QVariantMap)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "errorOccurred", q, SIGNAL(errorOccurred(int, QVariantMap)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "logMessageStreamed", q, SIGNAL(logMessageStreamed(QString)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "workerResult", q, SLOT(workerResult(bool)));
+
+    return true;
+}
+
 BackendThread::BackendThread(QObject *parent)
         : QObject(parent),
         d(new Private())
 {
+    d->q_ptr = this;
     qDebug() << "Handling libalpm in a separate Thread";
     connect(this, SIGNAL(operationFinished(bool)), SIGNAL(transactionReleased()));
 }
@@ -136,7 +188,6 @@ bool BackendThread::reloadPacmanConfiguration()
 {
     PacmanConf pdata;
 
-    alpm_db_unregister(d->db_local);
     alpm_db_unregister_all();
 
     //pdata.HoldPkg = alpmListToStringList(alpm_option_get_holdpkgs());
@@ -214,13 +265,6 @@ void BackendThread::setUpAlpm()
             qDebug() << "Failed to add" << pdata.syncdbs.at(i) << "!!";
         }
     }
-
-    if (!pdata.xferCommand.isEmpty()) {
-        qDebug() << "XFerCommand is:" << pdata.xferCommand;
-        alpm_option_set_xfercommand(pdata.xferCommand.toAscii().data());
-    }
-
-    alpm_option_set_nopassiveftp(pdata.noPassiveFTP);
 
     /*foreach(const QString &str, pdata.HoldPkg) {
         alpm_option_add_holdpkg(str.toAscii().data());
@@ -748,43 +792,13 @@ bool BackendThread::updateDatabase()
 {
     emit transactionStarted();
 
-    QDBusMessage message;
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("isWorkerReady"));
-    QDBusMessage reply = QDBusConnection::systemBus().call(message);
-    if (reply.type() == QDBusMessage::ReplyMessage
-            && reply.arguments().size() == 1) {
-        qDebug() << reply.arguments().first().toBool();
-    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
-        qWarning() << "Message did not receive a reply (timeout by message bus)";
-        return false;
+    if (!d->initWorker("org.chakraproject.aqpm.updatedatabase")) {
+        workerResult(false);
     }
-
-    if (d->handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.updatedatabase")) {
-            qDebug() << "User unauthorized";
-            return false;
-        }
-    }
-
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "dbQty", this, SIGNAL(dbQty(const QStringList&)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransQuestion", this, SIGNAL(streamTransQuestion(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "Starting update";
 
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("updateDatabase"));
@@ -795,51 +809,21 @@ bool BackendThread::updateDatabase()
 
 void BackendThread::fullSystemUpgrade()
 {
+    emit transactionStarted();
+
     QVariantList flags;
 
     foreach(const pmtransflag_t &ent, d->flags) {
         flags.append(ent);
     }
 
-    QDBusMessage message;
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("isWorkerReady"));
-    QDBusMessage reply = QDBusConnection::systemBus().call(message);
-    if (reply.type() == QDBusMessage::ReplyMessage
-            && reply.arguments().size() == 1) {
-        qDebug() << reply.arguments().first().toBool();
-    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
-        qWarning() << "Message did not receive a reply (timeout by message bus)";
-        return;
+    if (!d->initWorker("org.chakraproject.aqpm.systemupgrade")) {
+        workerResult(false);
     }
-
-    if (d->handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.systemupgrade")) {
-            qDebug() << "User unauthorized";
-            return;
-        }
-    }
-
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamDlProg", this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransProgress", this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransEvent", this, SIGNAL(streamTransEvent(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransQuestion", this, SIGNAL(streamTransQuestion(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "System upgrade started";
 
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("systemUpgrade"));
@@ -871,6 +855,8 @@ void BackendThread::setFlags(const QList<pmtransflag_t> &flags)
 
 void BackendThread::processQueue()
 {
+    emit transactionStarted();
+
     QVariantList flags;
     QVariantList packages;
 
@@ -883,45 +869,13 @@ void BackendThread::processQueue()
         packages.append(QVariant::fromValue(ent));
     }
 
-    QDBusMessage message;
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("isWorkerReady"));
-    QDBusMessage reply = QDBusConnection::systemBus().call(message);
-    if (reply.type() == QDBusMessage::ReplyMessage
-            && reply.arguments().size() == 1) {
-        qDebug() << reply.arguments().first().toBool();
-    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
-        qWarning() << "Message did not receive a reply (timeout by message bus)";
-        return;
+    if (!d->initWorker("org.chakraproject.aqpm.processqueue")) {
+        workerResult(false);
     }
-
-    if (d->handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.processqueue")) {
-            qDebug() << "User unauthorized";
-            return;
-        }
-    }
-
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamDlProg", this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransProgress", this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransEvent", this, SIGNAL(streamTransEvent(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamTransQuestion", this, SIGNAL(streamTransQuestion(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "workerResult", this, SLOT(workerResult(bool)));
 
     qDebug() << "Process queue started";
 
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("processQueue"));
@@ -962,6 +916,10 @@ void BackendThread::workerResult(bool result)
                                             "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "workerResult", this, SLOT(workerResult(bool)));
+
+    // After a worker operation ends, reload Alpm and clear the queue
+    reloadPacmanConfiguration();
+    clearQueue();
 
     emit operationFinished(result);
 }
