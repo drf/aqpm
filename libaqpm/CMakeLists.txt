@@ -7,6 +7,7 @@ SET(aqpm_SRCS
     ConfigurationParser.cpp
 #    callbacks.cpp
     QueueItem.cpp
+    Package.cpp
 )
 
 SET(aqpm_HEADERS
@@ -14,6 +15,7 @@ SET(aqpm_HEADERS
 	ConfigurationParser.h
 	QueueItem.h
 	Globals.h
+	Package.h
 )
                       
 automoc4_add_library(aqpm SHARED
