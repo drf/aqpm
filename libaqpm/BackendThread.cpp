@@ -290,101 +290,57 @@ void BackendThread::setUpAlpm()
     alpm_option_set_usesyslog(pdata.useSysLog);
 }
 
-alpm_list_t *BackendThread::getAvailableRepos()
-{
-    return alpm_option_get_syncdbs();
-}
-
-QStringList BackendThread::getAvailableReposAsStringList()
+Database::List BackendThread::getAvailableDatabases() const
 {
     alpm_list_t *dbs = alpm_option_get_syncdbs();
-    QStringList retlist;
+    Database::List retlist;
 
-    retlist.clear();
     dbs = alpm_list_first(dbs);
 
     while (dbs != NULL) {
-        retlist.append(alpm_db_get_name((pmdb_t *) alpm_list_getdata(dbs)));
+        retlist.append(Database((pmdb_t *) alpm_list_getdata(dbs)));
         dbs = alpm_list_next(dbs);
     }
 
     return retlist;
 }
 
-alpm_list_t *BackendThread::getInstalledPackages()
+Package::List BackendThread::getInstalledPackages() const
 {
-    return alpm_db_get_pkgcache(d->db_local);
-}
-
-QStringList BackendThread::getInstalledPackagesAsStringList()
-{
-    QStringList retlist;
-    alpm_list_t *pkgs = alpm_list_first(getInstalledPackages());
+    Package::List retlist;
+    alpm_list_t *pkgs = alpm_list_first(alpm_db_get_pkgcache(d->db_local));
 
     while (pkgs) {
-        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
+        retlist.append(Package((pmpkg_t *)alpm_list_getdata(pkgs)));
         pkgs = alpm_list_next(pkgs);
     }
 
     return retlist;
 }
 
-alpm_list_t *BackendThread::getUpgradeablePackages()
+Package::List BackendThread::getUpgradeablePackages() const
 {
     alpm_list_t *syncpkgs = alpm_db_get_pkgcache(d->db_local);
     alpm_list_t *syncdbs = alpm_option_get_syncdbs();
-    alpm_list_t *retlist = NULL;
+    Package::List retlist;
 
     while (syncpkgs) {
         pmpkg_t *pkg = alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs);
+
         if (pkg != NULL) {
-            retlist = alpm_list_add(retlist, pkg);
+            retlist.append(Package(pkg));
         }
+
         syncpkgs = alpm_list_next(syncpkgs);
     }
 
-    return alpm_list_first(retlist);
+    return retlist;
 }
 
-QStringList BackendThread::getUpgradeablePackagesAsStringList()
-{
-    alpm_list_t *syncpkgs = getUpgradeablePackages();
-    QStringList retlist;
-
-    if (!syncpkgs) {
-        return retlist;
-    } else {
-        qDebug() << "Upgradeable packages:";
-        while (syncpkgs != NULL) {
-            QString tmp(alpm_pkg_get_name((pmpkg_t *) alpm_list_getdata(syncpkgs)));
-            qDebug() << tmp;
-            retlist.append(tmp);
-            syncpkgs = alpm_list_next(syncpkgs);
-        }
-        return retlist;
-    }
-}
-
-alpm_list_t *BackendThread::getAvailableGroups()
+Group::List BackendThread::getAvailableGroups() const
 {
     alpm_list_t *grps = NULL, *syncdbs;
-
-    syncdbs = alpm_list_first(alpm_option_get_syncdbs());
-
-    while (syncdbs != NULL) {
-        grps = alpm_list_join(grps, alpm_db_get_grpcache((pmdb_t *)alpm_list_getdata(syncdbs)));
-
-        syncdbs = alpm_list_next(syncdbs);
-    }
-
-    return grps;
-}
-
-QStringList BackendThread::getAvailableGroupsAsStringList()
-{
-    alpm_list_t *grps = NULL, *syncdbs;
-    QStringList retlist;
-    retlist.clear();
+    Group::List retlist;
 
     syncdbs = alpm_list_first(alpm_option_get_syncdbs());
 
@@ -393,7 +349,7 @@ QStringList BackendThread::getAvailableGroupsAsStringList()
         grps = alpm_list_first(grps);
 
         while (grps != NULL) {
-            retlist.append(alpm_grp_get_name((pmgrp_t *)alpm_list_getdata(grps)));
+            retlist.append(Group((pmgrp_t *)alpm_list_getdata(grps)));
             grps = alpm_list_next(grps);
         }
 
@@ -403,12 +359,12 @@ QStringList BackendThread::getAvailableGroupsAsStringList()
     return retlist;
 }
 
-QStringList BackendThread::getPackageDependencies(pmpkg_t *package)
+Package::List BackendThread::getPackageDependencies(const Package &package) const
 {
     alpm_list_t *deps;
-    QStringList retlist;
+    Package::List retlist;
 
-    deps = alpm_pkg_get_depends(package);
+    deps = alpm_pkg_get_depends(package.alpmPackage());
 
     while (deps != NULL) {
         retlist.append(QString(alpm_dep_get_name((pmdepend_t *)alpm_list_getdata(deps))));
@@ -616,90 +572,47 @@ QString BackendThread::getPackageRepo(const QString &name, bool checkver)
     return QString();
 }
 
-alpm_list_t *BackendThread::getPackagesFromGroup(const QString &groupname)
+Group::List BackendThread::getPackagesFromGroup(const Group &group) const
 {
-    alpm_list_t *grps = alpm_list_first(getAvailableGroups());
-    pmgrp_t *group = NULL;
+    Group::List retlist;
+    alpm_list_t *pkgs = alpm_grp_get_pkgs(group.alpmGroup());
 
-    while (grps) {
-        if (alpm_grp_get_name((pmgrp_t *)alpm_list_getdata(grps)) == groupname) {
-            group = (pmgrp_t *)alpm_list_getdata(grps);
-            break;
-        }
-
-        grps = alpm_list_next(grps);
-    }
-
-    if (group == NULL) {
-        return NULL;
-    }
-
-    return alpm_grp_get_pkgs(group);
-}
-
-QStringList BackendThread::getPackagesFromGroupAsStringList(const QString &groupname)
-{
-    QStringList retlist;
-    alpm_list_t *pkgs = alpm_list_first(getPackagesFromGroup(groupname));
-
-    while (pkgs) {
-        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
+    while (pkgs != NULL) {
+        retlist.append((pmpkg_t *) alpm_list_getdata(pkgs));
         pkgs = alpm_list_next(pkgs);
     }
 
     return retlist;
 }
 
-alpm_list_t *BackendThread::getPackagesFromRepo(const QString &reponame)
+Package::List BackendThread::getPackagesFromDatabase(const Database &db) const
 {
     /* Since here local would be right the same of calling
      * getInstalledPackages(), here by local we mean packages that
      * don't belong to any other repo.
      */
 
-    alpm_list_t *retlist;
+    Package::List retlist;
 
-    retlist = NULL;
-
-    if (reponame == "local") {
+    if (db.name() == "local") {
         alpm_list_t *pkglist = alpm_db_get_pkgcache(d->db_local);
 
         pkglist = alpm_list_first(pkglist);
 
         while (pkglist != NULL) {
-            if (getPackageRepo(alpm_pkg_get_name((pmpkg_t *) alpm_list_getdata(pkglist))).isEmpty())
-                retlist = alpm_list_add(retlist, alpm_list_getdata(pkglist));
+            if (getPackageRepo(alpm_pkg_get_name((pmpkg_t *) alpm_list_getdata(pkglist))).isEmpty()) {
+                retlist.append((pmpkg_t *) alpm_list_getdata(pkglist));
+            }
 
             pkglist = alpm_list_next(pkglist);
         }
     } else {
-        alpm_list_t *syncdbs = alpm_option_get_syncdbs();
+        alpm_list_t *pkgs = alpm_db_get_pkgcache(db.alpmDatabase());
 
-        syncdbs = alpm_list_first(syncdbs);
-
-        while (syncdbs != NULL) {
-            if (!reponame.compare(alpm_db_get_name((pmdb_t *) alpm_list_getdata(syncdbs)))) {
-                retlist = alpm_db_get_pkgcache((pmdb_t *) alpm_list_getdata(syncdbs));
-                break;
-            }
-
-            syncdbs = alpm_list_next(syncdbs);
+        while (pkgs != NULL) {
+            retlist.append((pmpkg_t *) alpm_list_getdata(pkgs));
+            pkgs = alpm_list_next(pkgs);
         }
-
-        syncdbs = alpm_list_first(syncdbs);
-    }
-
-    return retlist;
-}
-
-QStringList BackendThread::getPackagesFromRepoAsStringList(const QString &reponame)
-{
-    QStringList retlist;
-    alpm_list_t *pkgs = alpm_list_first(getPackagesFromRepo(reponame));
-
-    while (pkgs) {
-        retlist.append(QString(alpm_pkg_get_name((pmpkg_t *)alpm_list_getdata(pkgs))));
-        pkgs = alpm_list_next(pkgs);
     }
 
     return retlist;

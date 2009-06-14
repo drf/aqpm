@@ -46,26 +46,19 @@ public Q_SLOTS:
     bool testLibrary();
     bool isOnTransaction();
 
-    alpm_list_t *getAvailableRepos();
-    QStringList getAvailableReposAsStringList();
+    Database::List getAvailableDatabases() const;
 
-    alpm_list_t *getAvailableGroups();
-    QStringList getAvailableGroupsAsStringList();
+    Group::List getAvailableGroups() const;
 
-    alpm_list_t *getPackagesFromRepo(const QString &reponame);
-    QStringList getPackagesFromRepoAsStringList(const QString &reponame);
+    Package::List getPackagesFromDatabase(const Database &db) const;
 
-    alpm_list_t *getPackagesFromGroup(const QString &groupname);
-    QStringList getPackagesFromGroupAsStringList(const QString &groupname);
+    Package::List getPackagesFromGroup(const Group &group) const;
 
-    alpm_list_t *getUpgradeablePackages();
-    QStringList getUpgradeablePackagesAsStringList();
+    Package::List getUpgradeablePackages() const;
 
-    alpm_list_t *getInstalledPackages();
-    QStringList getInstalledPackagesAsStringList();
+    Package::List getInstalledPackages() const;
 
-    QStringList getPackageDependencies(pmpkg_t *package);
-    QStringList getPackageDependencies(const QString &name, const QString &repo);
+    Package::List getPackageDependencies(const Package &package);
 
     alpm_list_t *getPackageGroups(pmpkg_t *package);
     QStringList getPackageGroupsAsStringList(pmpkg_t *package);

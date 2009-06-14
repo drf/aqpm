@@ -21,17 +21,20 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
-#include <alpm.h>
-
 #include "Visibility.h"
 #include "QueueItem.h"
 #include "Globals.h"
 #include "Package.h"
+#include "Database.h"
+#include "Group.h"
 
 #include <QThread>
 #include <QStringList>
 #include <QEvent>
 #include <QMetaType>
+
+typedef struct __alpm_list_t alpm_list_t;
+enum pmtransflag_t;
 
 namespace Aqpm
 {
@@ -66,15 +69,13 @@ public:
     bool testLibrary();
     bool isOnTransaction();
 
-    alpm_list_t *getAvailableRepos();
-    QStringList getAvailableReposAsStringList();
+    Database::List getAvailableDatabases() const;
 
-    alpm_list_t *getAvailableGroups();
-    QStringList getAvailableGroupsAsStringList();
+    Group::List getAvailableGroups();
 
-    Package::List getPackagesFromRepo(const QString &reponame);
+    Package::List getPackagesFromDatabase(const Database &db);
 
-    Package::List getPackagesFromGroup(const QString &groupname);
+    Package::List getPackagesFromGroup(const Group &group);
 
     Package::List getUpgradeablePackages();
 
@@ -84,13 +85,13 @@ public:
 
     Package::List getPackageGroups(Package package);
 
-    QStringList getDependenciesOnPackage(Package package);
+    Package::List getDependenciesOnPackage(Package package);
 
     QStringList getPackageFiles(Package package);
 
     int countPackages(Globals::PackageStatus status);
 
-    QStringList getProviders(Package pkg);
+    Package::List getProviders(Package pkg);
     bool isProviderInstalled(const QString &provider);
 
     QString getPackageRepo(const QString &name, bool checkver = false);
@@ -115,6 +116,10 @@ public:
     bool shouldHandleAuthorization() const;
 
     void setAnswer(int answer);
+
+    Package getPackage(const QString &name, const QString &repo) const;
+    Group getGroup(const QString &name) const;
+    Database getGroup(const QString &name) const;
 
 public Q_SLOTS:
     void setUpAlpm();

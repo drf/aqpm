@@ -21,10 +21,27 @@
 #ifndef GROUP_H
 #define GROUP_H
 
+#include <QString>
+
+typedef struct __pmgrp_t pmgrp_t;
+
+namespace Aqpm {
+
 class Group
 {
 public:
-    Group();
+    typedef QList<Group> List;
+
+    Group(pmgrp_t *grp);
+
+    QString name() const;
+    pmgrp_t *alpmGroup() const;
+
+private:
+    class Private;
+    Private *d;
 };
+
+}
 
 #endif // GROUP_H

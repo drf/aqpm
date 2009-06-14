@@ -40,8 +40,6 @@ public:
 
     QString name() const;
     QString path() const;
-    Package::List packages() const;
-    Group::List groups() const;
     QStringList servers() const;
     pmdb_t *alpmDatabase() const;
 

@@ -20,6 +20,29 @@
 
 #include "Group.h"
 
-Group::Group()
+#include <alpm.h>
+
+using namespace Aqpm;
+
+class Group::Private
 {
+    public:
+    Group(pmgrp_t *grp) : underlying(grp) {}
+
+    pmgrp_t *underlying;
+};
+
+Group::Group(pmgrp_t *grp)
+        : d(new Private(grp))
+{
+}
+
+QString Group::name() const
+{
+    return alpm_grp_get_name(d->underlying);
+}
+
+pmgrp_t *Group::alpmGroup() const
+{
+    return d->underlying;
 }

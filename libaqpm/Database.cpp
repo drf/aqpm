@@ -38,8 +38,17 @@ Database::Private::Private(pmdb_t *db)
 {
 }
 
-Database::Database()
+QString Database::name() const
 {
+    return alpm_db_get_name(d->underlying);
 }
 
+QString Database::path() const
+{
+    return alpm_db_get_url(d->underlying);
+}
 
+pmdb_t *Database::alpmDatabase() const
+{
+    return d->underlying;
+}
