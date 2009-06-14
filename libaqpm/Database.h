@@ -18,39 +18,32 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef PACKAGE_H
-#define PACKAGE_H
+#ifndef DATABASE_H
+#define DATABASE_H
 
-#include <QString>
-#include <QDateTime>
+#include <QList>
 
-typedef struct __pmpkg_t pmpkg_t;
+#include "Package.h"
+#include "Group.h"
+
+typedef struct __pmdb_t pmdb_t;
 
 namespace Aqpm {
 
-class Package
+class Database
 {
 public:
 
-    typedef QList<Package> List;
+    typedef QList<Database> List;
 
-    Package();
-    Package(pmpkg_t *pkg);
-    Package(const QString &name, const QString &repo);
+    Database();
 
     QString name() const;
-    QString filename() const;
-    QString version() const;
-    QString desc() const;
-    QString url() const;
-    QDateTime installdate() const;
-    QDateTime builddate() const;
-    QString packager() const;
-    QString md5sum() const;
-    QString arch() const;
-    qint32 size();
-    qint32 isize();
-    pmpkg_t *alpmPackage() const;
+    QString path() const;
+    Package::List packages() const;
+    Group::List groups() const;
+    QStringList servers() const;
+    pmdb_t *alpmDatabase() const;
 
 private:
     class Private;
@@ -59,4 +52,4 @@ private:
 
 }
 
-#endif // PACKAGE_H
+#endif // DATABASE_H

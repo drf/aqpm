@@ -72,11 +72,10 @@ Backend::Backend()
 
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
+    qRegisterMetaType<Package>();
+    qDBusRegisterMetaType<Package>();
 
-    qDebug() << "Construction Backend singleton";
-
-    qRegisterMetaType<pmtransevt_t>("pmtransevt_t");
-    qRegisterMetaType<pmtransprog_t>("pmtransprog_t");
+    qDebug() << "Constructing Backend singleton";
 
     d->events[Initialization] = (QEvent::Type)QEvent::registerEventType();
     d->events[UpdateDatabase] = (QEvent::Type)QEvent::registerEventType();

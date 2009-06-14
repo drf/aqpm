@@ -8,6 +8,8 @@ SET(aqpm_SRCS
 #    callbacks.cpp
     QueueItem.cpp
     Package.cpp
+    Group.cpp
+    Database.cpp
 )
 
 SET(aqpm_HEADERS
@@ -16,6 +18,8 @@ SET(aqpm_HEADERS
 	QueueItem.h
 	Globals.h
 	Package.h
+	Group.h
+	Database.h
 )
                       
 automoc4_add_library(aqpm SHARED

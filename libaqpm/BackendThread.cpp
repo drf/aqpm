@@ -751,8 +751,9 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
 
 pmpkg_t *BackendThread::getPackageFromName(const QString &name, const QString &repo)
 {
-    if (!repo.compare("local"))
+    if (!repo.compare("local")) {
         return alpm_db_get_pkg(d->db_local, name.toAscii().data());
+    }
 
     alpm_list_t *dbsync = alpm_list_first(alpm_option_get_syncdbs());
 

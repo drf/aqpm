@@ -37,6 +37,29 @@ Package::Private::Private(pmpkg_t *pkg)
     underlying = pkg;
 }
 
+Package::Private::Private(const QString &name, const QString &repo)
+{
+    if (!repo.compare("local")) {
+        return alpm_db_get_pkg(alpm_option_get_localdb(), name.toAscii().data());
+    }
+
+    alpm_list_t *dbsync = alpm_list_first(alpm_option_get_syncdbs());
+
+    while (dbsync != NULL) {
+        pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(dbsync);
+
+        if (!repo.compare(QString((char *)alpm_db_get_name(dbcrnt)))) {
+            dbsync = alpm_list_first(dbsync);
+            underlying = alpm_db_get_pkg(dbcrnt, name.toAscii().data());
+            return;
+        }
+
+        dbsync = alpm_list_next(dbsync);
+    }
+
+    underlying = NULL;
+}
+
 Package::Package()
         : d(new Private)
 {
@@ -44,6 +67,11 @@ Package::Package()
 
 Package::Package(pmpkg_t *pkg)
         : d(new Private(pkg))
+{
+}
+
+Package::Private(const QString &name, const QString &repo)
+        : d(new Private(name, repo))
 {
 }
 

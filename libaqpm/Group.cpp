@@ -18,45 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef PACKAGE_H
-#define PACKAGE_H
+#include "Group.h"
 
-#include <QString>
-#include <QDateTime>
-
-typedef struct __pmpkg_t pmpkg_t;
-
-namespace Aqpm {
-
-class Package
+Group::Group()
 {
-public:
-
-    typedef QList<Package> List;
-
-    Package();
-    Package(pmpkg_t *pkg);
-    Package(const QString &name, const QString &repo);
-
-    QString name() const;
-    QString filename() const;
-    QString version() const;
-    QString desc() const;
-    QString url() const;
-    QDateTime installdate() const;
-    QDateTime builddate() const;
-    QString packager() const;
-    QString md5sum() const;
-    QString arch() const;
-    qint32 size();
-    qint32 isize();
-    pmpkg_t *alpmPackage() const;
-
-private:
-    class Private;
-    Private *d;
-};
-
 }
-
-#endif // PACKAGE_H

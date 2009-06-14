@@ -26,17 +26,12 @@
 #include "Visibility.h"
 #include "QueueItem.h"
 #include "Globals.h"
+#include "Package.h"
 
 #include <QThread>
-#include <QPointer>
-#include <QTextStream>
-#include <QMutex>
-#include <QMutexLocker>
-#include <QWaitCondition>
 #include <QStringList>
 #include <QEvent>
 #include <QMetaType>
-#include <QDBusArgument>
 
 namespace Aqpm
 {
@@ -64,7 +59,6 @@ public:
     static Backend *instance();
     static QString version();
 
-    Backend();
     virtual ~Backend();
 
     QEvent::Type getEventTypeFor(BackendEvent event);
@@ -78,53 +72,35 @@ public:
     alpm_list_t *getAvailableGroups();
     QStringList getAvailableGroupsAsStringList();
 
-    alpm_list_t *getPackagesFromRepo(const QString &reponame);
-    QStringList getPackagesFromRepoAsStringList(const QString &reponame);
+    Package::List getPackagesFromRepo(const QString &reponame);
 
-    alpm_list_t *getPackagesFromGroup(const QString &groupname);
-    QStringList getPackagesFromGroupAsStringList(const QString &groupname);
+    Package::List getPackagesFromGroup(const QString &groupname);
 
-    alpm_list_t *getUpgradeablePackages();
-    QStringList getUpgradeablePackagesAsStringList();
+    Package::List getUpgradeablePackages();
 
-    alpm_list_t *getInstalledPackages();
-    QStringList getInstalledPackagesAsStringList();
+    Package::List getInstalledPackages();
 
-    QStringList getPackageDependencies(pmpkg_t *package);
-    QStringList getPackageDependencies(const QString &name, const QString &repo);
+    QStringList getPackageDependencies(Package package);
 
-    alpm_list_t *getPackageGroups(pmpkg_t *package);
-    QStringList getPackageGroupsAsStringList(pmpkg_t *package);
+    Package::List getPackageGroups(Package package);
 
-    QStringList getDependenciesOnPackage(pmpkg_t *package);
-    QStringList getDependenciesOnPackage(const QString &name, const QString &repo);
+    QStringList getDependenciesOnPackage(Package package);
 
-    QStringList getPackageFiles(pmpkg_t *package);
-    QStringList getPackageFiles(const QString &name);
+    QStringList getPackageFiles(Package package);
 
     int countPackages(Globals::PackageStatus status);
 
-    QStringList getProviders(const QString &name, const QString &repo);
-    QStringList getProviders(pmpkg_t *pkg);
+    QStringList getProviders(Package pkg);
     bool isProviderInstalled(const QString &provider);
-
-    unsigned long getPackageSize(const QString &name, const QString &repo);
-    unsigned long getPackageSize(pmpkg_t *package);
-
-    QString getPackageVersion(const QString &name, const QString &repo) const;
-    QString getPackageVersion(pmpkg_t *package) const;
 
     QString getPackageRepo(const QString &name, bool checkver = false);
 
-    bool isInstalled(pmpkg_t *pkg);
-    bool isInstalled(const QString &pkg);
+    bool isInstalled(Package package);
 
     bool updateDatabase();
     void fullSystemUpgrade(const QList<pmtransflag_t> &flags);
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
-
-    pmpkg_t *getPackageFromName(const QString &name, const QString &repo);
 
     QStringList alpmListToStringList(alpm_list_t *list);
 
@@ -182,6 +158,8 @@ private Q_SLOTS:
     void doStreamTransQuestion(int event, const QVariantMap &args);
 
 private:
+    Backend();
+
     class Private;
     Private *d;
 };
