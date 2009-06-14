@@ -20,6 +20,26 @@
 
 #include "Database.h"
 
+#include <alpm.h>
+
+using namespace Aqpm;
+
+class Database::Private
+{
+    public:
+    Private(pmdb_t *db);
+
+    pmdb_t *underlying;
+
+};
+
+Database::Private::Private(pmdb_t *db)
+        : underlying(db)
+{
+}
+
 Database::Database()
 {
 }
+
+

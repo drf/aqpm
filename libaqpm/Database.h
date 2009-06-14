@@ -36,7 +36,7 @@ public:
 
     typedef QList<Database> List;
 
-    Database();
+    Database(pmdb_t *db);
 
     QString name() const;
     QString path() const;
