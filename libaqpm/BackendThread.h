@@ -60,38 +60,29 @@ public Q_SLOTS:
 
     Package::List getPackageDependencies(const Package &package);
 
-    alpm_list_t *getPackageGroups(pmpkg_t *package);
-    QStringList getPackageGroupsAsStringList(pmpkg_t *package);
+    Group::List getPackageGroups(const Package &package);
 
-    QStringList getDependenciesOnPackage(pmpkg_t *package);
-    QStringList getDependenciesOnPackage(const QString &name, const QString &repo);
+    Package::List getDependenciesOnPackage(const Package &package);
 
-    QStringList getPackageFiles(pmpkg_t *package);
-    QStringList getPackageFiles(const QString &name);
+    QStringList getPackageFiles(const Package &package);
 
     int countPackages(Globals::PackageStatus status);
 
-    QStringList getProviders(const QString &name, const QString &repo);
-    QStringList getProviders(pmpkg_t *pkg);
+    QStringList getProviders(const Package &package);
     bool isProviderInstalled(const QString &provider);
 
-    unsigned long getPackageSize(const QString &name, const QString &repo);
-    unsigned long getPackageSize(pmpkg_t *package);
+    Database getPackageDatabase(const QString &name, bool checkver = false) const;
 
-    QString getPackageVersion(const QString &name, const QString &repo);
-    QString getPackageVersion(pmpkg_t *package);
+    Package getPackage(const QString &name, const QString &repo) const;
+    Group getGroup(const QString &name) const;
+    Database getDatabase(const QString &name) const;
 
-    QString getPackageRepo(const QString &name, bool checkver = false);
-
-    bool isInstalled(pmpkg_t *pkg);
-    bool isInstalled(const QString &pkg);
+    bool isInstalled(const Package &package);
 
     bool updateDatabase();
     void fullSystemUpgrade();
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
-
-    pmpkg_t *getPackageFromName(const QString &name, const QString &repo);
 
     QStringList alpmListToStringList(alpm_list_t *list);
 

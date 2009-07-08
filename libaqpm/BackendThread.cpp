@@ -389,44 +389,27 @@ QStringList BackendThread::getPackageDependencies(const QString &name, const QSt
     return retlist;
 }
 
-QStringList BackendThread::getDependenciesOnPackage(pmpkg_t *package)
+Package::List BackendThread::getDependenciesOnPackage(const Package &package)
 {
-    if (package == NULL)
-        return QStringList();
-
     alpm_list_t *deps;
-    QStringList retlist;
+    Package::List retlist;
 
     deps = alpm_pkg_compute_requiredby(package);
 
     while (deps != NULL) {
-        retlist.append(QString((char *)alpm_list_getdata(deps)));
+        retlist.append(getPackage((char *)alpm_list_getdata(deps), QString()));
         deps = alpm_list_next(deps);
     }
 
     return retlist;
 }
 
-QStringList BackendThread::getDependenciesOnPackage(const QString &name, const QString &repo)
+bool BackendThread::isInstalled(const Package &package)
 {
-    alpm_list_t *deps;
-    QStringList retlist;
-
-    deps = alpm_pkg_compute_requiredby(getPackageFromName(name, repo));
-
-    while (deps != NULL) {
-        retlist.append(QString((char *)alpm_list_getdata(deps)));
-        deps = alpm_list_next(deps);
-    }
-
-    return retlist;
-}
-
-bool BackendThread::isInstalled(pmpkg_t *pkg)
-{
-    pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(pkg));
-    if (localpackage == NULL)
+    pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, package.name());
+    if (localpackage == NULL) {
         return false;
+    }
 
     return true;
 }
@@ -440,12 +423,12 @@ bool BackendThread::isInstalled(const QString &pkg)
     return true;
 }
 
-QStringList BackendThread::getPackageFiles(pmpkg_t *package)
+QStringList BackendThread::getPackageFiles(const Package &package)
 {
     alpm_list_t *files;
     QStringList retlist;
 
-    files = alpm_pkg_get_files(alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(package)));
+    files = alpm_pkg_get_files(alpm_db_get_pkg(d->db_local, package.name()));
 
     while (files != NULL) {
         retlist.append(QString((char*)alpm_list_getdata(files)).prepend(alpm_option_get_root()));
@@ -455,42 +438,12 @@ QStringList BackendThread::getPackageFiles(pmpkg_t *package)
     return retlist;
 }
 
-QStringList BackendThread::getPackageFiles(const QString &name)
-{
-    alpm_list_t *files;
-    QStringList retlist;
-
-    files = alpm_pkg_get_files(alpm_db_get_pkg(d->db_local, name.toAscii().data()));
-
-    while (files != NULL) {
-        retlist.append(QString((char*)alpm_list_getdata(files)).prepend(alpm_option_get_root()));
-        files = alpm_list_next(files);
-    }
-
-    return retlist;
-}
-
-QStringList BackendThread::getProviders(const QString &name, const QString &repo)
+QStringList BackendThread::getProviders(const Package &package)
 {
     alpm_list_t *provides;
     QStringList retlist;
 
-    provides = alpm_pkg_get_provides(getPackageFromName(name, repo));
-
-    while (provides != NULL) {
-        retlist.append(QString((char *)alpm_list_getdata(provides)));
-        provides = alpm_list_next(provides);
-    }
-
-    return retlist;
-}
-
-QStringList BackendThread::getProviders(pmpkg_t *pkg)
-{
-    alpm_list_t *provides;
-    QStringList retlist;
-
-    provides = alpm_pkg_get_provides(pkg);
+    provides = alpm_pkg_get_provides(package.alpmPackage());
 
     while (provides != NULL) {
         retlist.append(QString((char *)alpm_list_getdata(provides)));
@@ -533,11 +486,6 @@ unsigned long BackendThread::getPackageSize(pmpkg_t *package)
     return alpm_pkg_get_size(package);
 }
 
-unsigned long BackendThread::getPackageSize(const QString &name, const QString &repo)
-{
-    return getPackageSize(getPackageFromName(name, repo));
-}
-
 QString BackendThread::getAlpmVersion()
 {
     return QString(alpm_version());
@@ -553,23 +501,26 @@ QString BackendThread::getPackageVersion(const QString &name, const QString &rep
     return getPackageVersion(getPackageFromName(name, repo));
 }
 
-QString BackendThread::getPackageRepo(const QString &name, bool checkver)
+Database BackendThread::getPackageDatabase(const QString &name, bool checkver) const
 {
     alpm_list_t *syncdbs = alpm_option_get_syncdbs();
+
     for (alpm_list_t *i = syncdbs; i; i = alpm_list_next(i)) {
         pmdb_t *db = (pmdb_t *)alpm_list_getdata(i);
         pmpkg_t *pkg;
         pkg = alpm_db_get_pkg(db, name.toAscii().data());
-        if (pkg == NULL)
+        if (pkg == NULL) {
             continue;
+        }
 
-        if (checkver && (alpm_pkg_get_version(pkg) == getPackageVersion(alpm_pkg_get_name(pkg), "local")))
+        if (checkver && (alpm_pkg_get_version(pkg) == getPackageVersion(alpm_pkg_get_name(pkg), "local"))) {
             continue;
+        }
 
-        return alpm_db_get_name(db);
+        return Database(db);
     }
 
-    return QString();
+    return 0;
 }
 
 Group::List BackendThread::getPackagesFromGroup(const Group &group) const
@@ -662,7 +613,7 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
     return retlist;
 }
 
-pmpkg_t *BackendThread::getPackageFromName(const QString &name, const QString &repo)
+Package BackendThread::getPackage(const QString &name, const QString &repo) const
 {
     if (!repo.compare("local")) {
         return alpm_db_get_pkg(d->db_local, name.toAscii().data());
@@ -673,29 +624,50 @@ pmpkg_t *BackendThread::getPackageFromName(const QString &name, const QString &r
     while (dbsync != NULL) {
         pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(dbsync);
 
-        if (!repo.compare(QString((char *)alpm_db_get_name(dbcrnt)))) {
+        if (!repo.compare(QString((char *)alpm_db_get_name(dbcrnt))) || repo.isEmpty()) {
             dbsync = alpm_list_first(dbsync);
-            return alpm_db_get_pkg(dbcrnt, name.toAscii().data());
+            pmpkg_t *pack = alpm_db_get_pkg(dbcrnt, name.toAscii().data());
+            if (pack != 0 || !repo.isEmpty()) {
+                return Package(pack);
+            }
         }
 
         dbsync = alpm_list_next(dbsync);
     }
 
-    return NULL;
+    return 0;
 }
 
-alpm_list_t *BackendThread::getPackageGroups(pmpkg_t *package)
+Group BackendThread::getGroup(const QString &name) const
 {
-    return alpm_pkg_get_groups(package);
+    foreach (Group g, getAvailableGroups()) {
+        if (g.name() == name) {
+            return g;
+        }
+    }
 }
 
-QStringList BackendThread::getPackageGroupsAsStringList(pmpkg_t *package)
+Database BackendThread::getDatabase(const QString &name) const
 {
-    alpm_list_t *list = alpm_pkg_get_groups(package);
-    QStringList retlist;
+    foreach (Database d, getAvailableDatabases()) {
+        if (d.name() == name) {
+            return d;
+        }
+    }
+}
+
+Group::List BackendThread::getPackageGroups(const Package &package)
+{
+    alpm_list_t *list = alpm_pkg_get_groups(package.alpmPackage());
+    Group::List retlist;
+    Group::List groups = getAvailableGroups();
 
     while (list != NULL) {
-        retlist.append((char *)alpm_list_getdata(list));
+        foreach (Group g, groups) {
+            if (g.name() == (char*)alpm_list_getdata(list)) {
+                retlist.append(g);
+            }
+        }
         list = alpm_list_next(list);
     }
 

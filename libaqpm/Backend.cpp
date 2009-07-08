@@ -159,94 +159,49 @@ void Backend::setUpAlpm()
     d->thread->setUpAlpm();
 }
 
-alpm_list_t *Backend::getAvailableRepos()
+Database::List Backend::getAvailableDatabases() const
 {
-    return d->thread->getAvailableRepos();
+    return d->thread->getAvailableDatabases();
 }
 
-QStringList Backend::getAvailableReposAsStringList()
-{
-    return d->thread->getAvailableReposAsStringList();
-}
-
-alpm_list_t *Backend::getInstalledPackages()
+Package::List Backend::getInstalledPackages()
 {
     return d->thread->getInstalledPackages();
 }
 
-QStringList Backend::getInstalledPackagesAsStringList()
-{
-    return d->thread->getInstalledPackagesAsStringList();
-}
-
-alpm_list_t *Backend::getUpgradeablePackages()
+Package::List Backend::getUpgradeablePackages()
 {
     return d->thread->getUpgradeablePackages();
 }
 
-QStringList Backend::getUpgradeablePackagesAsStringList()
-{
-    return d->thread->getUpgradeablePackagesAsStringList();
-}
-
-alpm_list_t *Backend::getAvailableGroups()
+Group::List Backend::getAvailableGroups()
 {
     return d->thread->getAvailableGroups();
 }
 
-QStringList Backend::getAvailableGroupsAsStringList()
-{
-    return d->thread->getAvailableGroupsAsStringList();
-}
-
-QStringList Backend::getPackageDependencies(pmpkg_t *package)
+Package::List Backend::getPackageDependencies(const Package &package)
 {
     return d->thread->getPackageDependencies(package);
 }
 
-QStringList Backend::getPackageDependencies(const QString &name, const QString &repo)
-{
-    return d->thread->getPackageDependencies(name, repo);
-}
-
-QStringList Backend::getDependenciesOnPackage(pmpkg_t *package)
+Package::List Backend::getDependenciesOnPackage(const Package &package)
 {
     return d->thread->getDependenciesOnPackage(package);
 }
 
-QStringList Backend::getDependenciesOnPackage(const QString &name, const QString &repo)
+bool Backend::isInstalled(const Package &package)
 {
-    return d->thread->getDependenciesOnPackage(name, repo);
+    return d->thread->isInstalled(package);
 }
 
-bool Backend::isInstalled(pmpkg_t *pkg)
-{
-    return d->thread->isInstalled(pkg);
-}
-
-bool Backend::isInstalled(const QString &pkg)
-{
-    return d->thread->isInstalled(pkg);
-}
-
-QStringList Backend::getPackageFiles(pmpkg_t *package)
+QStringList Backend::getPackageFiles(const Package &package)
 {
     return d->thread->getPackageFiles(package);
 }
 
-QStringList Backend::getPackageFiles(const QString &name)
+QStringList Backend::getProviders(const Package &package)
 {
-    return d->thread->getPackageFiles(name);
-}
-
-QStringList Backend::getProviders(const QString &name, const QString &repo)
-{
-    return d->thread->getProviders(name, repo);
-}
-
-QStringList Backend::getProviders(pmpkg_t *pkg)
-{
-    return d->thread->getProviders(pkg);
+    return d->thread->getProviders(package);
 }
 
 bool Backend::isProviderInstalled(const QString &provider)
@@ -254,54 +209,24 @@ bool Backend::isProviderInstalled(const QString &provider)
     return d->thread->isProviderInstalled(provider);
 }
 
-unsigned long Backend::getPackageSize(pmpkg_t *package)
-{
-    return d->thread->getPackageSize(package);
-}
-
-unsigned long Backend::getPackageSize(const QString &name, const QString &repo)
-{
-    return d->thread->getPackageSize(name, repo);
-}
-
 QString Backend::getAlpmVersion()
 {
     return d->thread->getAlpmVersion();
 }
 
-QString Backend::getPackageVersion(pmpkg_t *package) const
+Database Backend::getPackageDatabase(const QString &name, bool checkver) const
 {
-    return d->thread->getPackageVersion(package);
+    return d->thread->getPackageDatabase(name, checkver);
 }
 
-QString Backend::getPackageVersion(const QString &name, const QString &repo) const
+Package::List Backend::getPackagesFromGroup(const Group &group)
 {
-    return d->thread->getPackageVersion(name, repo);
+    return d->thread->getPackagesFromGroup(group);
 }
 
-QString Backend::getPackageRepo(const QString &name, bool checkver)
+Package::List Backend::getPackagesFromDatabase(const Database &db)
 {
-    return d->thread->getPackageRepo(name, checkver);
-}
-
-alpm_list_t *Backend::getPackagesFromGroup(const QString &groupname)
-{
-    return d->thread->getPackagesFromGroup(groupname);
-}
-
-QStringList Backend::getPackagesFromGroupAsStringList(const QString &groupname)
-{
-    return d->thread->getPackagesFromGroupAsStringList(groupname);
-}
-
-alpm_list_t *Backend::getPackagesFromRepo(const QString &reponame)
-{
-    return d->thread->getPackagesFromRepo(reponame);
-}
-
-QStringList Backend::getPackagesFromRepoAsStringList(const QString &reponame)
-{
-    return d->thread->getPackagesFromRepoAsStringList(reponame);
+    return d->thread->getPackagesFromDatabase(db);
 }
 
 int Backend::countPackages(Globals::PackageStatus status)
@@ -314,19 +239,14 @@ QStringList Backend::alpmListToStringList(alpm_list_t *list)
     return d->thread->alpmListToStringList(list);
 }
 
-pmpkg_t *Backend::getPackageFromName(const QString &name, const QString &repo)
-{
-    return d->thread->getPackageFromName(name, repo);
-}
-
-alpm_list_t *Backend::getPackageGroups(pmpkg_t *package)
+Group::List Backend::getPackageGroups(const Package &package)
 {
     return d->thread->getPackageGroups(package);
 }
 
-QStringList Backend::getPackageGroupsAsStringList(pmpkg_t *package)
+Package Backend::getPackage(const QString &name, const QString &db) const
 {
-    return d->thread->getPackageGroupsAsStringList(package);
+    return d->thread->getPackage(name, db);
 }
 
 bool Backend::updateDatabase()

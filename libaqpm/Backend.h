@@ -33,8 +33,10 @@
 #include <QEvent>
 #include <QMetaType>
 
-typedef struct __alpm_list_t alpm_list_t;
-enum pmtransflag_t;
+#include <alpm.h>
+
+//typedef struct __alpm_list_t alpm_list_t;
+//enum pmtransflag_t;
 
 namespace Aqpm
 {
@@ -81,22 +83,22 @@ public:
 
     Package::List getInstalledPackages();
 
-    QStringList getPackageDependencies(Package package);
+    Package::List getPackageDependencies(const Package &package);
 
-    Package::List getPackageGroups(Package package);
+    Group::List getPackageGroups(const Package &package);
 
-    Package::List getDependenciesOnPackage(Package package);
+    Package::List getDependenciesOnPackage(const Package &package);
 
-    QStringList getPackageFiles(Package package);
+    QStringList getPackageFiles(const Package &package);
 
     int countPackages(Globals::PackageStatus status);
 
-    Package::List getProviders(Package pkg);
+    QStringList getProviders(const Package &package);
     bool isProviderInstalled(const QString &provider);
 
-    QString getPackageRepo(const QString &name, bool checkver = false);
+    Database getPackageDatabase(const QString &name, bool checkver = false) const;
 
-    bool isInstalled(Package package);
+    bool isInstalled(const Package &package);
 
     bool updateDatabase();
     void fullSystemUpgrade(const QList<pmtransflag_t> &flags);
@@ -119,7 +121,7 @@ public:
 
     Package getPackage(const QString &name, const QString &repo) const;
     Group getGroup(const QString &name) const;
-    Database getGroup(const QString &name) const;
+    Database getDatabase(const QString &name) const;
 
 public Q_SLOTS:
     void setUpAlpm();
