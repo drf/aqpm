@@ -42,6 +42,11 @@ Package::Package(pmpkg_t *pkg)
 {
 }
 
+Package::Package()
+        : d(new Private(NULL))
+{
+}
+
 // Marshall the WicdConnectionInfo data into a D-BUS argument
 QDBusArgument &operator<<(QDBusArgument &argument, const Aqpm::Package &item)
 {

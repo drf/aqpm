@@ -39,6 +39,7 @@ public:
     typedef QList<Package> List;
 
     Package(pmpkg_t *pkg);
+    Package();
 
     QString name() const;
     QString filename() const;
