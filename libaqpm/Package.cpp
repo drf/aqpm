@@ -42,6 +42,24 @@ Package::Package(pmpkg_t *pkg)
 {
 }
 
+// Marshall the WicdConnectionInfo data into a D-BUS argument
+QDBusArgument &operator<<(QDBusArgument &argument, const Aqpm::Package &item)
+{
+    argument.beginStructure();
+    argument << (int)(item.action_id) << item.name;
+    argument.endStructure();
+    return argument;
+}
+
+// Retrieve the WicdConnectionInfo data from the D-BUS argument
+const QDBusArgument &operator>>(const QDBusArgument &argument, Aqpm::Package &item)
+{
+    argument.beginStructure();
+    argument >> item.action_id >> item.name;
+    argument.endStructure();
+    return argument;
+}
+
 QString Package::arch() const
 {
     return alpm_pkg_get_arch(d->underlying);

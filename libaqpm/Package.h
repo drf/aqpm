@@ -21,6 +21,10 @@
 #ifndef PACKAGE_H
 #define PACKAGE_H
 
+#include "Visibility.h"
+
+#include <QMetaType>
+#include <QDBusArgument>
 #include <QString>
 #include <QDateTime>
 
@@ -28,7 +32,7 @@ typedef struct __pmpkg_t pmpkg_t;
 
 namespace Aqpm {
 
-class Package
+class AQPM_EXPORT Package
 {
 public:
 
@@ -56,5 +60,10 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Aqpm::Package)
+
+QDBusArgument &operator<<(QDBusArgument &argument, const Aqpm::Package &item);
+const QDBusArgument &operator>>(const QDBusArgument &argument, Aqpm::Package &item);
 
 #endif // PACKAGE_H
