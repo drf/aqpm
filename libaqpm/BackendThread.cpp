@@ -41,6 +41,8 @@
         emit actionPerformed(ty, retmap); \
         return val;
 
+#define PERFORM_RETURN_VOID(ty) emit actionPerformed(ty, QVariantMap());
+
 namespace Aqpm
 {
 
@@ -185,6 +187,8 @@ void BackendThread::customEvent(QEvent *event)
         }
 
         switch (ae->actionType()) {
+            case Backend::SetUpAlpm:
+                setUpAlpm();
             case Backend::GetAvailableDatabases:
                 getAvailableDatabases();
                 break;
@@ -309,6 +313,8 @@ void BackendThread::setUpAlpm()
 
     //alpm_option_set_usedelta(pdata.useDelta); Until a proper implementation is there
     alpm_option_set_usesyslog(pdata.useSysLog);
+
+    PERFORM_RETURN_VOID(Backend::SetUpAlpm)
 }
 
 Database::List BackendThread::getAvailableDatabases()

@@ -162,7 +162,7 @@ bool Backend::reloadPacmanConfiguration()
 
 void Backend::setUpAlpm()
 {
-    d->thread->setUpAlpm();
+    SynchronousLoop s(SetUpAlpm, QVariantMap());
 }
 
 Database::List Backend::getAvailableDatabases() const
@@ -280,7 +280,7 @@ void Backend::addItemToQueue(const QString &name, QueueItem::Action action)
     d->thread->addItemToQueue(name, action);
 }
 
-QueueItem::List Backend::queue()
+QueueItem::List Backend::queue() const
 {
     return d->thread->queue();
 }

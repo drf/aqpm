@@ -71,7 +71,24 @@ public:
         GetInstalledPackages,
         GetPackageDependencies,
         GetPackageGroups,
-        GetDependenciesOnPackage
+        GetDependenciesOnPackage,
+        GetPackageFiles,
+        CountPackages,
+        GetProviders,
+        IsProviderInstalled,
+        GetPackageDatabase,
+        IsInstalled,
+        GetAlpmVersion,
+        ClearQueue,
+        AddItemToQueue,
+        GetQueue,
+        SetShouldHandleAuthorization,
+        ShouldHandleAuthorization,
+        SetAnswer,
+        GetPackage,
+        GetGroup,
+        GetDatabase,
+        SetUpAlpm
     };
 
     static Backend *instance();
@@ -125,7 +142,7 @@ public:
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
     void processQueue(const QList<pmtransflag_t> &flags);
-    QueueItem::List queue();
+    QueueItem::List queue() const;
 
     void setShouldHandleAuthorization(bool should);
     bool shouldHandleAuthorization() const;
