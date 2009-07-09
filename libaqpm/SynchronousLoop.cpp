@@ -20,16 +20,22 @@
 
 #include "SynchronousLoop.h"
 
+#include <QCoreApplication>
+
 #include "BackendThread.h"
+#include "ActionEvent.h"
 
 namespace Aqpm {
 
-SynchronousLoop::SynchronousLoop(Backend::ActionType type)
+SynchronousLoop::SynchronousLoop(Backend::ActionType type, const QVariantMap &args)
         : m_result(QVariantMap())
         , m_type(type)
 {
     connect(Backend::instance()->getInnerThread(), SIGNAL(actionPerformed(Backend::ActionType,QVariantMap)),
             this, SLOT(actionPerformed(Backend::ActionType,QVariantMap)));
+
+    QCoreApplication::postEvent(Backend::instance()->getInnerThread(),
+                                new ActionEvent(Backend::instance()->getEventTypeFor(Backend::PerformAction), type, args));
 
     exec();
 }

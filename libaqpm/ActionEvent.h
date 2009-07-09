@@ -18,30 +18,28 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef SYNCHRONOUSLOOP_H
-#define SYNCHRONOUSLOOP_H
+#ifndef ACTIONEVENT_H
+#define ACTIONEVENT_H
 
-#include <QEventLoop>
+#include <QEvent>
 
 #include "Backend.h"
 
 namespace Aqpm {
 
-class SynchronousLoop : public QEventLoop
+class ActionEvent : public QEvent
 {
 public:
-    SynchronousLoop(Backend::ActionType type, const QVariantMap &args);
+    ActionEvent(Type type, Backend::ActionType actiontype, const QVariantMap &args);
 
-    QVariantMap result() const;
-
-public Q_SLOTS:
-    void actionPerformed(Backend::ActionType type, const QVariantMap &result);
+    Backend::ActionType actionType() const;
+    QVariantMap args() const;
 
 private:
-    QVariantMap m_result;
-    Backend::ActionType m_type;
+    Backend::ActionType m_actionType;
+    QVariantMap m_args;
 };
 
 }
 
-#endif // SYNCHRONOUSLOOP_H
+#endif // ACTIONEVENT_H

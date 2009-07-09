@@ -86,6 +86,7 @@ Backend::Backend()
     d->events[UpdateDatabase] = (QEvent::Type)QEvent::registerEventType();
     d->events[ProcessQueue] = (QEvent::Type)QEvent::registerEventType();
     d->events[SystemUpgrade] = (QEvent::Type)QEvent::registerEventType();
+    d->events[PerformAction] = (QEvent::Type)QEvent::registerEventType();
 
     qDebug() << d->events;
 
@@ -166,7 +167,7 @@ void Backend::setUpAlpm()
 
 Database::List Backend::getAvailableDatabases() const
 {
-    SynchronousLoop s(GetAvailableDatabases);
+    SynchronousLoop s(GetAvailableDatabases, QVariantMap());
     return s.result()["retvalue"].value<Database::List>();
 }
 
@@ -333,4 +334,3 @@ BackendThread *Backend::getInnerThread()
 }
 
 }
-

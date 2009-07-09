@@ -46,38 +46,38 @@ public Q_SLOTS:
     bool testLibrary();
     bool isOnTransaction();
 
-    Database::List getAvailableDatabases() const;
+    Database::List getAvailableDatabases();
 
-    Group::List getAvailableGroups() const;
+    Group::List getAvailableGroups();
 
-    Package::List getPackagesFromDatabase(const Database &db) const;
+    Package::List getPackagesFromDatabase(const Database &db);
 
-    Package::List getPackagesFromGroup(const Group &group) const;
+    Package::List getPackagesFromGroup(const Group &group);
 
-    Package::List getUpgradeablePackages() const;
+    Package::List getUpgradeablePackages();
 
-    Package::List getInstalledPackages() const;
+    Package::List getInstalledPackages();
 
-    Package::List getPackageDependencies(const Package &package) const;
+    Package::List getPackageDependencies(const Package &package);
 
-    Group::List getPackageGroups(const Package &package) const;
+    Group::List getPackageGroups(const Package &package);
 
-    Package::List getDependenciesOnPackage(const Package &package) const;
+    Package::List getDependenciesOnPackage(const Package &package);
 
-    QStringList getPackageFiles(const Package &package) const;
+    QStringList getPackageFiles(const Package &package);
 
-    int countPackages(Globals::PackageStatus status) const;
+    int countPackages(Globals::PackageStatus status);
 
-    QStringList getProviders(const Package &package) const;
-    bool isProviderInstalled(const QString &provider) const;
+    QStringList getProviders(const Package &package);
+    bool isProviderInstalled(const QString &provider);
 
-    Database getPackageDatabase(const Package &package, bool checkver = false) const;
+    Database getPackageDatabase(const Package &package, bool checkver = false);
 
-    Package getPackage(const QString &name, const QString &repo) const;
-    Group getGroup(const QString &name) const;
-    Database getDatabase(const QString &name) const;
+    Package getPackage(const QString &name, const QString &repo);
+    Group getGroup(const QString &name);
+    Database getDatabase(const QString &name);
 
-    bool isInstalled(const Package &package) const;
+    bool isInstalled(const Package &package);
 
     bool updateDatabase();
     void fullSystemUpgrade();
@@ -86,16 +86,16 @@ public Q_SLOTS:
 
     QStringList alpmListToStringList(alpm_list_t *list);
 
-    QString getAlpmVersion() const;
+    QString getAlpmVersion();
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
     void setFlags(const QList<pmtransflag_t> &flags);
     void processQueue();
-    QueueItem::List queue() const;
+    QueueItem::List queue();
 
     void setShouldHandleAuthorization(bool should);
-    bool shouldHandleAuthorization() const;
+    bool shouldHandleAuthorization();
 
     void setAnswer(int answer);
 

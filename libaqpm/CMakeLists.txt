@@ -11,6 +11,7 @@ SET(aqpm_SRCS
     Group.cpp
     Database.cpp
     SynchronousLoop.cpp
+    ActionEvent.cpp
 )
 
 SET(aqpm_HEADERS

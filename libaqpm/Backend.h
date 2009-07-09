@@ -58,7 +58,8 @@ public:
         UpdateDatabase = 1001,
         ProcessQueue = 1002,
         Initialization = 1003,
-        SystemUpgrade = 1004
+        SystemUpgrade = 1004,
+        PerformAction = 1005
     };
 
     enum ActionType {

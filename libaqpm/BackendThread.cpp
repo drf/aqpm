@@ -1,4 +1,3 @@
-
 /***************************************************************************
  *   Copyright (C) 2008 by Dario Freddi                                    *
  *   drf54321@yahoo.it                                                     *
@@ -34,6 +33,12 @@
 #include <QtDBus/QDBusConnectionInterface>
 
 #include <Auth>
+
+#define PERFORM_RETURN(ty, val) \
+        QVariantMap retmap; \
+        retmap["retvalue"] = QVariant::fromValue(val); \
+        emit actionPerformed(ty, retmap); \
+        return val;
 
 namespace Aqpm
 {
@@ -290,7 +295,7 @@ void BackendThread::setUpAlpm()
     alpm_option_set_usesyslog(pdata.useSysLog);
 }
 
-Database::List BackendThread::getAvailableDatabases() const
+Database::List BackendThread::getAvailableDatabases()
 {
     alpm_list_t *dbs = alpm_option_get_syncdbs();
     Database::List retlist;
@@ -302,10 +307,10 @@ Database::List BackendThread::getAvailableDatabases() const
         dbs = alpm_list_next(dbs);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetAvailableDatabases, retlist);
 }
 
-Package::List BackendThread::getInstalledPackages() const
+Package::List BackendThread::getInstalledPackages()
 {
     Package::List retlist;
     alpm_list_t *pkgs = alpm_list_first(alpm_db_get_pkgcache(d->db_local));
@@ -318,7 +323,7 @@ Package::List BackendThread::getInstalledPackages() const
     return retlist;
 }
 
-Package::List BackendThread::getUpgradeablePackages() const
+Package::List BackendThread::getUpgradeablePackages()
 {
     alpm_list_t *syncpkgs = alpm_db_get_pkgcache(d->db_local);
     alpm_list_t *syncdbs = alpm_option_get_syncdbs();
@@ -337,7 +342,7 @@ Package::List BackendThread::getUpgradeablePackages() const
     return retlist;
 }
 
-Group::List BackendThread::getAvailableGroups() const
+Group::List BackendThread::getAvailableGroups()
 {
     alpm_list_t *grps = NULL, *syncdbs;
     Group::List retlist;
@@ -359,7 +364,7 @@ Group::List BackendThread::getAvailableGroups() const
     return retlist;
 }
 
-Package::List BackendThread::getPackageDependencies(const Package &package) const
+Package::List BackendThread::getPackageDependencies(const Package &package)
 {
     alpm_list_t *deps;
     Package::List retlist;
@@ -374,7 +379,7 @@ Package::List BackendThread::getPackageDependencies(const Package &package) cons
     return retlist;
 }
 
-Package::List BackendThread::getDependenciesOnPackage(const Package &package) const
+Package::List BackendThread::getDependenciesOnPackage(const Package &package)
 {
     alpm_list_t *deps;
     Package::List retlist;
@@ -389,7 +394,7 @@ Package::List BackendThread::getDependenciesOnPackage(const Package &package) co
     return retlist;
 }
 
-bool BackendThread::isInstalled(const Package &package) const
+bool BackendThread::isInstalled(const Package &package)
 {
     pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(package.alpmPackage()));
 
@@ -400,7 +405,7 @@ bool BackendThread::isInstalled(const Package &package) const
     return true;
 }
 
-QStringList BackendThread::getPackageFiles(const Package &package) const
+QStringList BackendThread::getPackageFiles(const Package &package)
 {
     alpm_list_t *files;
     QStringList retlist;
@@ -415,7 +420,7 @@ QStringList BackendThread::getPackageFiles(const Package &package) const
     return retlist;
 }
 
-QStringList BackendThread::getProviders(const Package &package) const
+QStringList BackendThread::getProviders(const Package &package)
 {
     alpm_list_t *provides;
     QStringList retlist;
@@ -430,7 +435,7 @@ QStringList BackendThread::getProviders(const Package &package) const
     return retlist;
 }
 
-bool BackendThread::isProviderInstalled(const QString &provider) const
+bool BackendThread::isProviderInstalled(const QString &provider)
 {
     /* Here's what we need to do: iterate the installed
      * packages, and find if something between them provides
@@ -452,12 +457,12 @@ bool BackendThread::isProviderInstalled(const QString &provider) const
     return false;
 }
 
-QString BackendThread::getAlpmVersion() const
+QString BackendThread::getAlpmVersion()
 {
     return QString(alpm_version());
 }
 
-Database BackendThread::getPackageDatabase(const Package &package, bool checkver) const
+Database BackendThread::getPackageDatabase(const Package &package, bool checkver)
 {
     Database db(alpm_pkg_get_db(package.alpmPackage()));
 
@@ -469,7 +474,7 @@ Database BackendThread::getPackageDatabase(const Package &package, bool checkver
     return db;
 }
 
-Package::List BackendThread::getPackagesFromGroup(const Group &group) const
+Package::List BackendThread::getPackagesFromGroup(const Group &group)
 {
     Package::List retlist;
     alpm_list_t *pkgs = alpm_grp_get_pkgs(group.alpmGroup());
@@ -482,7 +487,7 @@ Package::List BackendThread::getPackagesFromGroup(const Group &group) const
     return retlist;
 }
 
-Package::List BackendThread::getPackagesFromDatabase(const Database &db) const
+Package::List BackendThread::getPackagesFromDatabase(const Database &db)
 {
     /* Since here local would be right the same of calling
      * getInstalledPackages(), here by local we mean packages that
@@ -515,7 +520,7 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db) const
     return retlist;
 }
 
-int BackendThread::countPackages(Globals::PackageStatus status) const
+int BackendThread::countPackages(Globals::PackageStatus status)
 {
     if (status == Globals::AllPackages) {
         int retvalue = 0;
@@ -550,7 +555,7 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
     return retlist;
 }
 
-Package BackendThread::getPackage(const QString &name, const QString &repo) const
+Package BackendThread::getPackage(const QString &name, const QString &repo)
 {
     if (!repo.compare("local")) {
         return alpm_db_get_pkg(d->db_local, name.toAscii().data());
@@ -575,7 +580,7 @@ Package BackendThread::getPackage(const QString &name, const QString &repo) cons
     return 0;
 }
 
-Group BackendThread::getGroup(const QString &name) const
+Group BackendThread::getGroup(const QString &name)
 {
     foreach (Group g, getAvailableGroups()) {
         if (g.name() == name) {
@@ -584,7 +589,7 @@ Group BackendThread::getGroup(const QString &name) const
     }
 }
 
-Database BackendThread::getDatabase(const QString &name) const
+Database BackendThread::getDatabase(const QString &name)
 {
     foreach (Database d, getAvailableDatabases()) {
         if (d.name() == name) {
@@ -593,7 +598,7 @@ Database BackendThread::getDatabase(const QString &name) const
     }
 }
 
-Group::List BackendThread::getPackageGroups(const Package &package) const
+Group::List BackendThread::getPackageGroups(const Package &package)
 {
     alpm_list_t *list = alpm_pkg_get_groups(package.alpmPackage());
     Group::List retlist;
@@ -668,7 +673,7 @@ void BackendThread::addItemToQueue(const QString &name, QueueItem::Action action
     d->queue.append(QueueItem(name, action));
 }
 
-QueueItem::List BackendThread::queue() const
+QueueItem::List BackendThread::queue()
 {
     return d->queue;
 }
@@ -717,7 +722,7 @@ void BackendThread::setShouldHandleAuthorization(bool should)
     d->handleAuth = should;
 }
 
-bool BackendThread::shouldHandleAuthorization() const
+bool BackendThread::shouldHandleAuthorization()
 {
     return d->handleAuth;
 }
