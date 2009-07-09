@@ -106,8 +106,7 @@ Backend::~Backend()
 
 QString Backend::version()
 {
-    //TODO
-    return "1.0.0";
+    return "1.3.3-alpha1";
 }
 
 void Backend::setUpSelf(BackendThread *t)

@@ -9,9 +9,9 @@ endif(COMMAND cmake_policy)
 
 include(InstallSettings)
 
-set(MAJOR_AQPM_VERSION "0")
-set(MINOR_AQPM_VERSION "2")
-set(PATCH_AQPM_VERSION "0")
+set(MAJOR_AQPM_VERSION "1")
+set(MINOR_AQPM_VERSION "3")
+set(PATCH_AQPM_VERSION "3")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
