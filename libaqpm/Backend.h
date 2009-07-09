@@ -36,18 +36,12 @@
 #include <alpm.h>
 
 //typedef struct __alpm_list_t alpm_list_t;
-//enum pmtransflag_t;
+//typedef enum __pmtransflag_t pmtransflag_t;
 
 namespace Aqpm
 {
 
 class BackendThread;
-
-/**
- * This class represent an item in the queue. To enqueue items in
- * Aqpm, you have to create an instance of this class and populate it.
- */
-
 
 class AQPM_EXPORT Backend : public QObject
 {

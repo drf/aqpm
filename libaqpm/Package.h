@@ -54,6 +54,8 @@ public:
     qint32 isize();
     pmpkg_t *alpmPackage() const;
 
+    bool operator ==(const Package &pkg);
+
 private:
     class Private;
     Private *d;

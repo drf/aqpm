@@ -113,3 +113,8 @@ pmpkg_t *Package::alpmPackage() const
 {
     return d->underlying;
 }
+
+bool Package::operator==(const Package &pkg)
+{
+    return pkg.alpmPackage() == d->underlying;
+}

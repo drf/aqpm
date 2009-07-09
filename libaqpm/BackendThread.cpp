@@ -168,7 +168,7 @@ void BackendThread::init()
 
 void BackendThread::customEvent(QEvent *event)
 {
-    qDebug() << "Received event of type" << event->type();
+    //qDebug() << "Received event of type" << event->type();
 
     if (event->type() == Backend::instance()->getEventTypeFor(Backend::UpdateDatabase)) {
         updateDatabase();
@@ -613,7 +613,7 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
 
     Package::List retlist;
 
-    if (db.name() == "local") {
+    if (db.alpmDatabase() == d->db_local) {
         alpm_list_t *pkglist = alpm_db_get_pkgcache(d->db_local);
 
         pkglist = alpm_list_first(pkglist);
