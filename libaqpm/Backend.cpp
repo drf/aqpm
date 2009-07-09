@@ -202,27 +202,42 @@ Package::List Backend::getPackageDependencies(const Package &package)
 
 Package::List Backend::getDependenciesOnPackage(const Package &package)
 {
-    return d->thread->getDependenciesOnPackage(package);
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(package);
+    SynchronousLoop s(GetDependenciesOnPackage, args);
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 bool Backend::isInstalled(const Package &package)
 {
-    return d->thread->isInstalled(package);
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(package);
+    SynchronousLoop s(IsInstalled, args);
+    return s.result()["retvalue"].toBool();
 }
 
 QStringList Backend::getPackageFiles(const Package &package)
 {
-    return d->thread->getPackageFiles(package);
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(package);
+    SynchronousLoop s(GetPackageFiles, args);
+    return s.result()["retvalue"].toStringList();
 }
 
 QStringList Backend::getProviders(const Package &package)
 {
-    return d->thread->getProviders(package);
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(package);
+    SynchronousLoop s(GetProviders, args);
+    return s.result()["retvalue"].toStringList();
 }
 
 bool Backend::isProviderInstalled(const QString &provider)
 {
-    return d->thread->isProviderInstalled(provider);
+    QVariantMap args;
+    args["provider"] = QVariant::fromValue(provider);
+    SynchronousLoop s(IsProviderInstalled, args);
+    return s.result()["retvalue"].toBool();
 }
 
 QString Backend::getAlpmVersion()
@@ -233,22 +248,35 @@ QString Backend::getAlpmVersion()
 
 Database Backend::getPackageDatabase(const Package &package, bool checkver) const
 {
-    return d->thread->getPackageDatabase(package, checkver);
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(package);
+    args["checkver"] = QVariant::fromValue(checkver);
+    SynchronousLoop s(GetPackageDatabase, args);
+    return s.result()["retvalue"].value<Database>();
 }
 
 Package::List Backend::getPackagesFromGroup(const Group &group)
 {
-    return d->thread->getPackagesFromGroup(group);
+    QVariantMap args;
+    args["group"] = QVariant::fromValue(group);
+    SynchronousLoop s(GetPackagesFromGroup, args);
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 Package::List Backend::getPackagesFromDatabase(const Database &db)
 {
-    return d->thread->getPackagesFromDatabase(db);
+    QVariantMap args;
+    args["db"] = QVariant::fromValue(db);
+    SynchronousLoop s(GetPackagesFromDatabase, args);
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 int Backend::countPackages(Globals::PackageStatus status)
 {
-    return d->thread->countPackages(status);
+    QVariantMap args;
+    args["status"] = QVariant::fromValue((int)status);
+    SynchronousLoop s(CountPackages, args);
+    return s.result()["retvalue"].toInt();
 }
 
 QStringList Backend::alpmListToStringList(alpm_list_t *list)
@@ -258,12 +286,35 @@ QStringList Backend::alpmListToStringList(alpm_list_t *list)
 
 Group::List Backend::getPackageGroups(const Package &package)
 {
-    return d->thread->getPackageGroups(package);
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(package);
+    SynchronousLoop s(GetPackageGroups, args);
+    return s.result()["retvalue"].value<Group::List>();
 }
 
 Package Backend::getPackage(const QString &name, const QString &db) const
 {
-    return d->thread->getPackage(name, db);
+    QVariantMap args;
+    args["name"] = QVariant::fromValue(name);
+    args["db"] = QVariant::fromValue(db);
+    SynchronousLoop s(GetPackage, args);
+    return s.result()["retvalue"].value<Package>();
+}
+
+Group Backend::getGroup(const QString &name) const
+{
+    QVariantMap args;
+    args["name"] = QVariant::fromValue(name);
+    SynchronousLoop s(GetGroup, args);
+    return s.result()["retvalue"].value<Group>();
+}
+
+Database Backend::getDatabase(const QString &name) const
+{
+    QVariantMap args;
+    args["name"] = QVariant::fromValue(name);
+    SynchronousLoop s(GetDatabase, args);
+    return s.result()["retvalue"].value<Database>();
 }
 
 bool Backend::updateDatabase()
