@@ -599,7 +599,7 @@ Package BackendThread::getPackage(const QString &name, const QString &repo)
         dbsync = alpm_list_next(dbsync);
     }
 
-    return 0;
+    PERFORM_RETURN(Backend::GetPackage, Package())
 }
 
 Group BackendThread::getGroup(const QString &name)
