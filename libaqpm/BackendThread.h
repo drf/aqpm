@@ -66,7 +66,7 @@ public Q_SLOTS:
 
     QStringList getPackageFiles(const Package &package);
 
-    int countPackages(Globals::PackageStatus status);
+    int countPackages(int status);
 
     QStringList getProviders(const Package &package);
     bool isProviderInstalled(const QString &provider);
@@ -152,5 +152,7 @@ Q_SIGNALS:
 };
 
 }
+
+Q_DECLARE_METATYPE(QList<pmtransflag_t>)
 
 #endif /* BACKENDTHREAD_H */

@@ -192,6 +192,87 @@ void BackendThread::customEvent(QEvent *event)
             case Backend::GetAvailableDatabases:
                 getAvailableDatabases();
                 break;
+            case Backend::GetAvailableGroups:
+                getAvailableGroups();
+                break;
+            case Backend::GetPackagesFromDatabase:
+                getPackagesFromDatabase(ae->args()["db"].value<Database>());
+                break;
+            case Backend::GetPackagesFromGroup:
+                getPackagesFromGroup(ae->args()["group"].value<Group>());
+                break;
+            case Backend::GetUpgradeablePackages:
+                getUpgradeablePackages();
+                break;
+            case Backend::GetInstalledPackages:
+                getInstalledPackages();
+                break;
+            case Backend::GetPackageDependencies:
+                getPackageDependencies(ae->args()["package"].value<Package>());
+                break;
+            case Backend::GetPackageGroups:
+                getPackageGroups(ae->args()["package"].value<Package>());
+                break;
+            case Backend::GetDependenciesOnPackage:
+                getDependenciesOnPackage(ae->args()["package"].value<Package>());
+                break;
+            case Backend::GetPackageFiles:
+                getPackageFiles(ae->args()["package"].value<Package>());
+                break;
+            case Backend::CountPackages:
+                countPackages(ae->args()["status"].toInt());
+                break;
+            case Backend::GetProviders:
+                getProviders(ae->args()["package"].value<Package>());
+                break;
+            case Backend::IsProviderInstalled:
+                isProviderInstalled(ae->args()["provider"].toString());
+                break;
+            case Backend::GetPackageDatabase:
+                getPackageDatabase(ae->args()["package"].value<Package>(), ae->args()["checkver"].toBool());
+                break;
+            case Backend::IsInstalled:
+                isInstalled(ae->args()["package"].value<Package>());
+                break;
+            case Backend::GetAlpmVersion:
+                getAlpmVersion();
+                break;
+            case Backend::ClearQueue:
+                clearQueue();
+                break;
+            case Backend::AddItemToQueue:
+                addItemToQueue(ae->args()["name"].toString(), ae->args()["action"].value<QueueItem::Action>());
+                break;
+            case Backend::GetQueue:
+                queue();
+                break;
+            case Backend::SetShouldHandleAuthorization:
+                setShouldHandleAuthorization(ae->args()["should"].toBool());
+                break;
+            case Backend::ShouldHandleAuthorization:
+                shouldHandleAuthorization();
+                break;
+            case Backend::SetAnswer:
+                setAnswer(ae->args()["answer"].toInt());
+                break;
+            case Backend::GetPackage:
+                getPackage(ae->args()["name"].toString(), ae->args()["database"].toString());
+                break;
+            case Backend::GetGroup:
+                getGroup(ae->args()["name"].toString());
+                break;
+            case Backend::GetDatabase:
+                getDatabase(ae->args()["name"].toString());
+                break;
+            case Backend::TestLibrary:
+                testLibrary();
+                break;
+            case Backend::IsOnTransaction:
+                isOnTransaction();
+                break;
+            case Backend::SetFlags:
+                setFlags(ae->args()["flags"].value<QList<pmtransflag_t> >());
+                break;
             default:
                 qDebug() << "Implement me!!";
         }
@@ -541,8 +622,10 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
     PERFORM_RETURN(Backend::GetPackagesFromDatabase, retlist)
 }
 
-int BackendThread::countPackages(Globals::PackageStatus status)
+int BackendThread::countPackages(int st)
 {
+    Globals::PackageStatus status = (Globals::PackageStatus)st;
+
     if (status == Globals::AllPackages) {
         int retvalue = 0;
 
