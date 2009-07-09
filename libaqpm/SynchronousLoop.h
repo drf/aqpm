@@ -29,13 +29,15 @@ namespace Aqpm {
 
 class SynchronousLoop : public QEventLoop
 {
+    Q_OBJECT
+
 public:
     SynchronousLoop(Backend::ActionType type, const QVariantMap &args);
 
     QVariantMap result() const;
 
 public Q_SLOTS:
-    void actionPerformed(Backend::ActionType type, const QVariantMap &result);
+    void actionPerformed(int type, const QVariantMap &result);
 
 private:
     QVariantMap m_result;

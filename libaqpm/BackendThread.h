@@ -122,7 +122,7 @@ Q_SIGNALS:
 
     void operationFinished(bool success);
 
-    void actionPerformed(Backend::ActionType type, QVariantMap result);
+    void actionPerformed(int type, QVariantMap result);
 
     void threadInitialized();
 

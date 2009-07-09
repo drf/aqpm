@@ -1,6 +1,7 @@
+// This is an example not a library
 /***************************************************************************
- *   Copyright (C) 2008 by Dario Freddi                                    *
- *   drf54321@yahoo.it                                                     *
+ *   Copyright (C) 2009 by Dario Freddi                                    *
+ *   drf@kde.org                                                           *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -15,44 +16,30 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
+ *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
  ***************************************************************************/
 
-#include "SynchronousLoop.h"
-
-#include <QCoreApplication>
+#include <QApplication>
+#include <QEventLoop>
 #include <QDebug>
 
-#include "BackendThread.h"
-#include "ActionEvent.h"
+#include "../Backend.h"
+#include "../Database.h"
 
-namespace Aqpm {
-
-SynchronousLoop::SynchronousLoop(Backend::ActionType type, const QVariantMap &args)
-        : QEventLoop(0)
-        , m_result(QVariantMap())
-        , m_type(type)
+int main(int argc, char *argv[])
 {
-    connect(Backend::instance()->getInnerThread(), SIGNAL(actionPerformed(int,QVariantMap)),
-            this, SLOT(actionPerformed(int,QVariantMap)));
-
-    QCoreApplication::postEvent(Backend::instance()->getInnerThread(),
-                                new ActionEvent(Backend::instance()->getEventTypeFor(Backend::PerformAction), type, args));
-
-    exec();
-}
-
-void SynchronousLoop::actionPerformed(int type, const QVariantMap &result)
-{
-    if ((Backend::ActionType)type == m_type) {
-        m_result = result;
-        exit();
+    QCoreApplication app(argc, argv);
+    
+    QEventLoop e;
+    
+    e.connect(Aqpm::Backend::instance(), SIGNAL(backendReady()), &e, SLOT(quit()));
+    e.exec();
+    
+    Aqpm::Backend::instance()->setUpAlpm();
+    
+    foreach(const Aqpm::Database &db, Aqpm::Backend::instance()->getAvailableDatabases()) {
+        qDebug() << db.name();
     }
-}
-
-QVariantMap SynchronousLoop::result() const
-{
-    return m_result;
-}
-
+    
+    return 0;
 }
