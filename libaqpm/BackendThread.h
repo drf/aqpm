@@ -58,26 +58,26 @@ public Q_SLOTS:
 
     Package::List getInstalledPackages() const;
 
-    Package::List getPackageDependencies(const Package &package);
+    Package::List getPackageDependencies(const Package &package) const;
 
-    Group::List getPackageGroups(const Package &package);
+    Group::List getPackageGroups(const Package &package) const;
 
-    Package::List getDependenciesOnPackage(const Package &package);
+    Package::List getDependenciesOnPackage(const Package &package) const;
 
-    QStringList getPackageFiles(const Package &package);
+    QStringList getPackageFiles(const Package &package) const;
 
-    int countPackages(Globals::PackageStatus status);
+    int countPackages(Globals::PackageStatus status) const;
 
-    QStringList getProviders(const Package &package);
-    bool isProviderInstalled(const QString &provider);
+    QStringList getProviders(const Package &package) const;
+    bool isProviderInstalled(const QString &provider) const;
 
-    Database getPackageDatabase(const QString &name, bool checkver = false) const;
+    Database getPackageDatabase(const Package &package, bool checkver = false) const;
 
     Package getPackage(const QString &name, const QString &repo) const;
     Group getGroup(const QString &name) const;
     Database getDatabase(const QString &name) const;
 
-    bool isInstalled(const Package &package);
+    bool isInstalled(const Package &package) const;
 
     bool updateDatabase();
     void fullSystemUpgrade();
@@ -86,13 +86,13 @@ public Q_SLOTS:
 
     QStringList alpmListToStringList(alpm_list_t *list);
 
-    QString getAlpmVersion();
+    QString getAlpmVersion() const;
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
     void setFlags(const QList<pmtransflag_t> &flags);
     void processQueue();
-    QueueItem::List queue();
+    QueueItem::List queue() const;
 
     void setShouldHandleAuthorization(bool should);
     bool shouldHandleAuthorization() const;

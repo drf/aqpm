@@ -73,7 +73,6 @@ Backend::Backend()
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
     qRegisterMetaType<Package>();
-    qDBusRegisterMetaType<Package>();
 
     qDebug() << "Constructing Backend singleton";
 
@@ -214,9 +213,9 @@ QString Backend::getAlpmVersion()
     return d->thread->getAlpmVersion();
 }
 
-Database Backend::getPackageDatabase(const QString &name, bool checkver) const
+Database Backend::getPackageDatabase(const Package &package, bool checkver) const
 {
-    return d->thread->getPackageDatabase(name, checkver);
+    return d->thread->getPackageDatabase(package, checkver);
 }
 
 Package::List Backend::getPackagesFromGroup(const Group &group)

@@ -38,6 +38,16 @@ Database::Private::Private(pmdb_t *db)
 {
 }
 
+Database::Database()
+        : d(new Private(NULL))
+{
+}
+
+Database::Database(pmdb_t *db)
+        : d(new Private(db))
+{
+}
+
 QString Database::name() const
 {
     return alpm_db_get_name(d->underlying);
@@ -51,4 +61,9 @@ QString Database::path() const
 pmdb_t *Database::alpmDatabase() const
 {
     return d->underlying;
+}
+
+bool Database::isValid() const
+{
+    return d->underlying != NULL;
 }

@@ -36,12 +36,14 @@ public:
 
     typedef QList<Database> List;
 
+    Database();
     Database(pmdb_t *db);
 
     QString name() const;
     QString path() const;
     QStringList servers() const;
     pmdb_t *alpmDatabase() const;
+    bool isValid() const;
 
 private:
     class Private;

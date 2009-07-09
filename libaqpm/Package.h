@@ -64,7 +64,5 @@ private:
 
 Q_DECLARE_METATYPE(Aqpm::Package)
 
-QDBusArgument &operator<<(QDBusArgument &argument, const Aqpm::Package &item);
-const QDBusArgument &operator>>(const QDBusArgument &argument, Aqpm::Package &item);
 
 #endif // PACKAGE_H

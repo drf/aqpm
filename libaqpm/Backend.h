@@ -96,7 +96,7 @@ public:
     QStringList getProviders(const Package &package);
     bool isProviderInstalled(const QString &provider);
 
-    Database getPackageDatabase(const QString &name, bool checkver = false) const;
+    Database getPackageDatabase(const Package &package, bool checkver = false) const;
 
     bool isInstalled(const Package &package);
 
