@@ -181,6 +181,12 @@ Database::List Backend::getAvailableDatabases() const
     return s.result()["retvalue"].value<Database::List>();
 }
 
+Database Backend::getLocalDatabase() const
+{
+    SynchronousLoop s(GetLocalDatabase, QVariantMap());
+    return s.result()["retvalue"].value<Database>();
+}
+
 Package::List Backend::getInstalledPackages()
 {
     SynchronousLoop s(GetInstalledPackages, QVariantMap());

@@ -66,6 +66,7 @@ public:
         GetAvailableDatabases,
         GetAvailableGroups,
         GetPackagesFromDatabase,
+        GetLocalDatabase,
         GetPackagesFromGroup,
         GetUpgradeablePackages,
         GetInstalledPackages,
@@ -109,6 +110,7 @@ public:
     void performAsyncAction(ActionType type, const QVariantMap &args);
 
     Database::List getAvailableDatabases() const;
+    Database getLocalDatabase() const;
 
     Group::List getAvailableGroups();
 

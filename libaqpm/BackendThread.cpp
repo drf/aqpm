@@ -192,6 +192,9 @@ void BackendThread::customEvent(QEvent *event)
             case Backend::GetAvailableDatabases:
                 getAvailableDatabases();
                 break;
+            case Backend::GetLocalDatabase:
+                getLocalDatabase();
+                break;
             case Backend::GetAvailableGroups:
                 getAvailableGroups();
                 break;
@@ -417,6 +420,11 @@ Database::List BackendThread::getAvailableDatabases()
     }
 
     PERFORM_RETURN(Backend::GetAvailableDatabases, retlist);
+}
+
+Database BackendThread::getLocalDatabase()
+{
+    PERFORM_RETURN(Backend::GetLocalDatabase, Database(d->db_local))
 }
 
 Package::List BackendThread::getInstalledPackages()

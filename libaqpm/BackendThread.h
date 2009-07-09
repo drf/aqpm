@@ -47,6 +47,7 @@ private:
     bool isOnTransaction();
 
     Database::List getAvailableDatabases();
+    Database getLocalDatabase();
 
     Group::List getAvailableGroups();
 
