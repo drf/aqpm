@@ -22,6 +22,7 @@
 
 #include "ConfigurationParser.h"
 #include "BackendThread.h"
+#include "SynchronousLoop.h"
 
 #include <QMetaType>
 #include <QDebug>
@@ -73,6 +74,11 @@ Backend::Backend()
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
     qRegisterMetaType<Package>();
+    qRegisterMetaType<Group>();
+    qRegisterMetaType<Database>();
+    qRegisterMetaType<Package::List>();
+    qRegisterMetaType<Group::List>();
+    qRegisterMetaType<Database::List>();
 
     qDebug() << "Constructing Backend singleton";
 
@@ -160,7 +166,8 @@ void Backend::setUpAlpm()
 
 Database::List Backend::getAvailableDatabases() const
 {
-    return d->thread->getAvailableDatabases();
+    SynchronousLoop s(GetAvailableDatabases);
+    return s.result()["retvalue"].value<Database::List>();
 }
 
 Package::List Backend::getInstalledPackages()
@@ -318,6 +325,11 @@ void Backend::doStreamTransEvent(int event, const QVariantMap &args)
 void Backend::doStreamTransQuestion(int event, const QVariantMap &args)
 {
     emit streamTransQuestion((Aqpm::Globals::TransactionQuestion) event, args);
+}
+
+BackendThread *Backend::getInnerThread()
+{
+    return d->thread;
 }
 
 }

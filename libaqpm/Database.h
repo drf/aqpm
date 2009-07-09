@@ -22,9 +22,9 @@
 #define DATABASE_H
 
 #include <QList>
+#include <QMetaType>
 
 #include "Package.h"
-#include "Group.h"
 
 typedef struct __pmdb_t pmdb_t;
 
@@ -51,5 +51,8 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Aqpm::Database)
+Q_DECLARE_METATYPE(Aqpm::Database::List)
 
 #endif // DATABASE_H

@@ -10,6 +10,7 @@ SET(aqpm_SRCS
     Package.cpp
     Group.cpp
     Database.cpp
+    SynchronousLoop.cpp
 )
 
 SET(aqpm_HEADERS

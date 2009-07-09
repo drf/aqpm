@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Dario Freddi                                    *
- *   drf54321@gmail.com                                                    *
+ *   Copyright (C) 2008 by Dario Freddi                                    *
+ *   drf54321@yahoo.it                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,50 +18,30 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef PACKAGE_H
-#define PACKAGE_H
+#ifndef SYNCHRONOUSLOOP_H
+#define SYNCHRONOUSLOOP_H
 
-#include "Visibility.h"
+#include <QEventLoop>
 
-#include <QMetaType>
-#include <QString>
-#include <QDateTime>
-
-typedef struct __pmpkg_t pmpkg_t;
+#include "Backend.h"
 
 namespace Aqpm {
 
-class AQPM_EXPORT Package
+class SynchronousLoop : public QEventLoop
 {
 public:
+    SynchronousLoop(Backend::ActionType type);
 
-    typedef QList<Package> List;
+    QVariantMap result() const;
 
-    Package(pmpkg_t *pkg);
-    Package();
-
-    QString name() const;
-    QString filename() const;
-    QString version() const;
-    QString desc() const;
-    QString url() const;
-    QDateTime installdate() const;
-    QDateTime builddate() const;
-    QString packager() const;
-    QString md5sum() const;
-    QString arch() const;
-    qint32 size();
-    qint32 isize();
-    pmpkg_t *alpmPackage() const;
+public Q_SLOTS:
+    void actionPerformed(Backend::ActionType type, const QVariantMap &result);
 
 private:
-    class Private;
-    Private *d;
+    QVariantMap m_result;
+    Backend::ActionType m_type;
 };
 
 }
 
-Q_DECLARE_METATYPE(Aqpm::Package)
-Q_DECLARE_METATYPE(Aqpm::Package::List)
-
-#endif // PACKAGE_H
+#endif // SYNCHRONOUSLOOP_H

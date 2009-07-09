@@ -22,6 +22,7 @@
 #define GROUP_H
 
 #include <QString>
+#include <QMetaType>
 
 typedef struct __pmgrp_t pmgrp_t;
 
@@ -33,9 +34,11 @@ public:
     typedef QList<Group> List;
 
     Group(pmgrp_t *grp);
+    Group();
 
     QString name() const;
     pmgrp_t *alpmGroup() const;
+    bool isValid() const;
 
 private:
     class Private;
@@ -43,5 +46,8 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Aqpm::Group)
+Q_DECLARE_METATYPE(Aqpm::Group::List)
 
 #endif // GROUP_H

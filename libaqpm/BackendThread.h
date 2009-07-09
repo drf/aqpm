@@ -122,6 +122,8 @@ Q_SIGNALS:
 
     void operationFinished(bool success);
 
+    void actionPerformed(Backend::ActionType type, QVariantMap result);
+
     void threadInitialized();
 
 private Q_SLOTS:

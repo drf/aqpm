@@ -37,6 +37,11 @@ Group::Group(pmgrp_t *grp)
 {
 }
 
+Group::Group()
+        : d(new Private(NULL))
+{
+}
+
 QString Group::name() const
 {
     return alpm_grp_get_name(d->underlying);
@@ -45,4 +50,9 @@ QString Group::name() const
 pmgrp_t *Group::alpmGroup() const
 {
     return d->underlying;
+}
+
+bool Group::isValid() const
+{
+    return d->underlying != NULL;
 }

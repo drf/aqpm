@@ -61,6 +61,18 @@ public:
         SystemUpgrade = 1004
     };
 
+    enum ActionType {
+        GetAvailableDatabases,
+        GetAvailableGroups,
+        GetPackagesFromDatabase,
+        GetPackagesFromGroup,
+        GetUpgradeablePackages,
+        GetInstalledPackages,
+        GetPackageDependencies,
+        GetPackageGroups,
+        GetDependenciesOnPackage
+    };
+
     static Backend *instance();
     static QString version();
 
@@ -122,6 +134,8 @@ public:
     Package getPackage(const QString &name, const QString &repo) const;
     Group getGroup(const QString &name) const;
     Database getDatabase(const QString &name) const;
+
+    BackendThread *getInnerThread();
 
 public Q_SLOTS:
     void setUpAlpm();
