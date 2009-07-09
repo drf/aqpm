@@ -273,8 +273,15 @@ void BackendThread::customEvent(QEvent *event)
             case Backend::SetFlags:
                 setFlags(ae->args()["flags"].value<QList<pmtransflag_t> >());
                 break;
+            case Backend::AlpmListToStringList:
+                alpmListToStringList(ae->args()["flags"].value<alpm_list_t*>());
+                break;
+            case Backend::ReloadPacmanConfiguration:
+                reloadPacmanConfiguration();
+                break;
             default:
                 qDebug() << "Implement me!!";
+                break;
         }
     }
 }
@@ -329,7 +336,7 @@ bool BackendThread::reloadPacmanConfiguration()
 
     setUpAlpm();
 
-    return true;
+    PERFORM_RETURN(Backend::ReloadPacmanConfiguration, true)
 }
 
 void BackendThread::setUpAlpm()
@@ -657,7 +664,7 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
         list = alpm_list_next(list);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::AlpmListToStringList, retlist)
 }
 
 Package BackendThread::getPackage(const QString &name, const QString &repo)

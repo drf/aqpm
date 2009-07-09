@@ -41,7 +41,7 @@ public:
 
     void init();
 
-public Q_SLOTS:
+private:
     void setUpAlpm();
     bool testLibrary();
     bool isOnTransaction();

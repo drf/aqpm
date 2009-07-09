@@ -160,7 +160,8 @@ bool Backend::isOnTransaction()
 
 bool Backend::reloadPacmanConfiguration()
 {
-    return d->thread->reloadPacmanConfiguration();
+    SynchronousLoop s(ReloadPacmanConfiguration, QVariantMap());
+    return s.result()["retvalue"].toBool();
 }
 
 void Backend::setUpAlpm()
@@ -281,7 +282,10 @@ int Backend::countPackages(Globals::PackageStatus status)
 
 QStringList Backend::alpmListToStringList(alpm_list_t *list)
 {
-    return d->thread->alpmListToStringList(list);
+    QVariantMap args;
+    args["list"] = QVariant::fromValue(list);
+    SynchronousLoop s(AlpmListToStringList, args);
+    return s.result()["retvalue"].toStringList();
 }
 
 Group::List Backend::getPackageGroups(const Package &package)
@@ -326,7 +330,9 @@ bool Backend::updateDatabase()
 
 void Backend::fullSystemUpgrade(const QList<pmtransflag_t> &flags)
 {
-    d->thread->setFlags(flags);
+    QVariantMap args;
+    args["flags"] = QVariant::fromValue(flags);
+    SynchronousLoop s(SetFlags, args);
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(SystemUpgrade)));
     qDebug() << "Thread is running";
 }
@@ -338,7 +344,10 @@ void Backend::clearQueue()
 
 void Backend::addItemToQueue(const QString &name, QueueItem::Action action)
 {
-    d->thread->addItemToQueue(name, action);
+    QVariantMap args;
+    args["name"] = QVariant::fromValue(name);
+    args["action"] = QVariant::fromValue(action);
+    SynchronousLoop s(AddItemToQueue, args);
 }
 
 QueueItem::List Backend::queue() const
@@ -358,7 +367,9 @@ void Backend::processQueue(const QList<pmtransflag_t> &flags)
 
 void Backend::setShouldHandleAuthorization(bool should)
 {
-    d->thread->setShouldHandleAuthorization(should);
+    QVariantMap args;
+    args["should"] = QVariant::fromValue(should);
+    SynchronousLoop s(SetShouldHandleAuthorization, args);
 }
 
 bool Backend::shouldHandleAuthorization() const
@@ -369,7 +380,9 @@ bool Backend::shouldHandleAuthorization() const
 
 void Backend::setAnswer(int answer)
 {
-    d->thread->setAnswer(answer);
+    QVariantMap args;
+    args["answer"] = QVariant::fromValue(answer);
+    SynchronousLoop s(SetAnswer, args);
 }
 
 void Backend::streamError(int code, const QVariantMap &args)

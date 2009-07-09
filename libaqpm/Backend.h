@@ -91,7 +91,9 @@ public:
         SetUpAlpm,
         TestLibrary,
         IsOnTransaction,
-        SetFlags
+        SetFlags,
+        ReloadPacmanConfiguration,
+        AlpmListToStringList
     };
 
     static Backend *instance();
@@ -207,5 +209,7 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(alpm_list_t*)
 
 #endif /* BACKEND_H */
