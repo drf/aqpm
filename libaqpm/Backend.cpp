@@ -148,12 +148,14 @@ QEvent::Type Backend::getEventTypeFor(BackendEvent event)
 
 bool Backend::testLibrary()
 {
-    return d->thread->testLibrary();
+    SynchronousLoop s(TestLibrary, QVariantMap());
+    return s.result()["retvalue"].toBool();
 }
 
 bool Backend::isOnTransaction()
 {
-    return d->thread->isOnTransaction();
+    SynchronousLoop s(IsOnTransaction, QVariantMap());
+    return s.result()["retvalue"].toBool();
 }
 
 bool Backend::reloadPacmanConfiguration()
@@ -174,22 +176,28 @@ Database::List Backend::getAvailableDatabases() const
 
 Package::List Backend::getInstalledPackages()
 {
-    return d->thread->getInstalledPackages();
+    SynchronousLoop s(GetInstalledPackages, QVariantMap());
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 Package::List Backend::getUpgradeablePackages()
 {
-    return d->thread->getUpgradeablePackages();
+    SynchronousLoop s(GetUpgradeablePackages, QVariantMap());
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 Group::List Backend::getAvailableGroups()
 {
-    return d->thread->getAvailableGroups();
+    SynchronousLoop s(GetAvailableGroups, QVariantMap());
+    return s.result()["retvalue"].value<Group::List>();
 }
 
 Package::List Backend::getPackageDependencies(const Package &package)
 {
-    return d->thread->getPackageDependencies(package);
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(package);
+    SynchronousLoop s(GetInstalledPackages, args);
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 Package::List Backend::getDependenciesOnPackage(const Package &package)
@@ -219,7 +227,8 @@ bool Backend::isProviderInstalled(const QString &provider)
 
 QString Backend::getAlpmVersion()
 {
-    return d->thread->getAlpmVersion();
+    SynchronousLoop s(GetAlpmVersion, QVariantMap());
+    return s.result()["retvalue"].toString();
 }
 
 Database Backend::getPackageDatabase(const Package &package, bool checkver) const
@@ -273,7 +282,7 @@ void Backend::fullSystemUpgrade(const QList<pmtransflag_t> &flags)
 
 void Backend::clearQueue()
 {
-    d->thread->clearQueue();
+    SynchronousLoop s(ClearQueue, QVariantMap());
 }
 
 void Backend::addItemToQueue(const QString &name, QueueItem::Action action)
@@ -283,12 +292,15 @@ void Backend::addItemToQueue(const QString &name, QueueItem::Action action)
 
 QueueItem::List Backend::queue() const
 {
-    return d->thread->queue();
+    SynchronousLoop s(GetQueue, QVariantMap());
+    return s.result()["retvalue"].value<QueueItem::List>();
 }
 
 void Backend::processQueue(const QList<pmtransflag_t> &flags)
 {
-    d->thread->setFlags(flags);
+    QVariantMap args;
+    args["flags"] = QVariant::fromValue(flags);
+    SynchronousLoop s(SetFlags, args);
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(ProcessQueue)));
     qDebug() << "Thread is running";
 }
@@ -300,7 +312,8 @@ void Backend::setShouldHandleAuthorization(bool should)
 
 bool Backend::shouldHandleAuthorization() const
 {
-    return d->thread->shouldHandleAuthorization();
+    SynchronousLoop s(ShouldHandleAuthorization, QVariantMap());
+    return s.result()["retvalue"].toBool();
 }
 
 void Backend::setAnswer(int answer)
