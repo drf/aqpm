@@ -209,7 +209,7 @@ Package::List Backend::getPackageDependencies(const Package &package)
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(package);
-    SynchronousLoop s(GetInstalledPackages, args);
+    SynchronousLoop s(GetPackageDependencies, args);
     return s.result()["retvalue"].value<Package::List>();
 }
 
