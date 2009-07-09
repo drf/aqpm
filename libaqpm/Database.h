@@ -30,7 +30,7 @@ typedef struct __pmdb_t pmdb_t;
 
 namespace Aqpm {
 
-class Database
+class AQPM_EXPORT Database
 {
 public:
 

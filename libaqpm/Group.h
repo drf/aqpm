@@ -24,11 +24,13 @@
 #include <QString>
 #include <QMetaType>
 
+#include "Visibility.h"
+
 typedef struct __pmgrp_t pmgrp_t;
 
 namespace Aqpm {
 
-class Group
+class AQPM_EXPORT Group
 {
 public:
     typedef QList<Group> List;

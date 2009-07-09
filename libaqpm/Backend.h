@@ -106,6 +106,8 @@ public:
     bool testLibrary();
     bool isOnTransaction();
 
+    void performAsyncAction(ActionType type, const QVariantMap &args);
+
     Database::List getAvailableDatabases() const;
 
     Group::List getAvailableGroups();

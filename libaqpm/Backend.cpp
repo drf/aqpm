@@ -23,6 +23,7 @@
 #include "ConfigurationParser.h"
 #include "BackendThread.h"
 #include "SynchronousLoop.h"
+#include "ActionEvent.h"
 
 #include <QMetaType>
 #include <QDebug>
@@ -144,6 +145,11 @@ void Backend::setUpSelf(BackendThread *t)
 QEvent::Type Backend::getEventTypeFor(BackendEvent event)
 {
     return d->events[event];
+}
+
+void Backend::performAsyncAction(ActionType type, const QVariantMap &args)
+{
+    QCoreApplication::postEvent(d->thread, new ActionEvent(getEventTypeFor(Backend::PerformAction), type, args));
 }
 
 bool Backend::testLibrary()
