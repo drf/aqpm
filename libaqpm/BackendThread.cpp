@@ -580,7 +580,7 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
 Package BackendThread::getPackage(const QString &name, const QString &repo)
 {
     if (!repo.compare("local")) {
-        return alpm_db_get_pkg(d->db_local, name.toAscii().data());
+        PERFORM_RETURN(Backend::GetPackage, Package(alpm_db_get_pkg(d->db_local, name.toAscii().data())))
     }
 
     alpm_list_t *dbsync = alpm_list_first(alpm_option_get_syncdbs());
@@ -592,7 +592,7 @@ Package BackendThread::getPackage(const QString &name, const QString &repo)
             dbsync = alpm_list_first(dbsync);
             pmpkg_t *pack = alpm_db_get_pkg(dbcrnt, name.toAscii().data());
             if (pack != 0 || !repo.isEmpty()) {
-                return Package(pack);
+                PERFORM_RETURN(Backend::GetPackage, Package(pack))
             }
         }
 
@@ -606,7 +606,7 @@ Group BackendThread::getGroup(const QString &name)
 {
     foreach (Group g, getAvailableGroups()) {
         if (g.name() == name) {
-            return g;
+            PERFORM_RETURN(Backend::GetGroup, g)
         }
     }
 }
@@ -615,7 +615,7 @@ Database BackendThread::getDatabase(const QString &name)
 {
     foreach (Database d, getAvailableDatabases()) {
         if (d.name() == name) {
-            return d;
+            PERFORM_RETURN(Backend::GetDatabase, d)
         }
     }
 }
@@ -635,7 +635,7 @@ Group::List BackendThread::getPackageGroups(const Package &package)
         list = alpm_list_next(list);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetPackageGroups, retlist)
 }
 
 bool BackendThread::updateDatabase()
@@ -688,21 +688,24 @@ void BackendThread::fullSystemUpgrade()
 void BackendThread::clearQueue()
 {
     d->queue.clear();
+    PERFORM_RETURN_VOID(Backend::ClearQueue)
 }
 
 void BackendThread::addItemToQueue(const QString &name, QueueItem::Action action)
 {
     d->queue.append(QueueItem(name, action));
+    PERFORM_RETURN_VOID(Backend::AddItemToQueue)
 }
 
 QueueItem::List BackendThread::queue()
 {
-    return d->queue;
+    PERFORM_RETURN(Backend::GetQueue, d->queue)
 }
 
 void BackendThread::setFlags(const QList<pmtransflag_t> &flags)
 {
     d->flags = flags;
+    PERFORM_RETURN_VOID(Backend::SetFlags)
 }
 
 void BackendThread::processQueue()
@@ -742,11 +745,12 @@ void BackendThread::processQueue()
 void BackendThread::setShouldHandleAuthorization(bool should)
 {
     d->handleAuth = should;
+    PERFORM_RETURN_VOID(Backend::SetShouldHandleAuthorization)
 }
 
 bool BackendThread::shouldHandleAuthorization()
 {
-    return d->handleAuth;
+    PERFORM_RETURN(Backend::ShouldHandleAuthorization, d->handleAuth)
 }
 
 void BackendThread::workerResult(bool result)
@@ -784,6 +788,8 @@ void BackendThread::setAnswer(int answer)
                          "org.chakraproject.aqpmworker", QDBusConnection::systemBus());
 
     iface.call("setAnswer", answer);
+
+    PERFORM_RETURN_VOID(Backend::SetAnswer)
 }
 
 }

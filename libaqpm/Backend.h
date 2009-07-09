@@ -90,7 +90,8 @@ public:
         GetDatabase,
         SetUpAlpm,
         TestLibrary,
-        IsOnTransaction
+        IsOnTransaction,
+        SetFlags
     };
 
     static Backend *instance();

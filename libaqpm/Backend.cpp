@@ -73,6 +73,7 @@ Backend::Backend()
 
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
+    qRegisterMetaType<QueueItem::List>();
     qRegisterMetaType<Package>();
     qRegisterMetaType<Group>();
     qRegisterMetaType<Database>();
