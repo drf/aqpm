@@ -21,6 +21,7 @@
 #include "BackendThread.h"
 
 #include "ConfigurationParser.h"
+#include "ActionEvent.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -175,6 +176,21 @@ void BackendThread::customEvent(QEvent *event)
         init();
     } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::SystemUpgrade)) {
         fullSystemUpgrade();
+    } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::PerformAction)) {
+        ActionEvent *ae = dynamic_cast<ActionEvent*>(event);
+
+        if (!ae) {
+            qDebug() << "Someone just made some shit up";
+            return;
+        }
+
+        switch (ae->actionType()) {
+            case Backend::GetAvailableDatabases:
+                getAvailableDatabases();
+                break;
+            default:
+                qDebug() << "Implement me!!";
+        }
     }
 }
 
