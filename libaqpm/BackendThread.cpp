@@ -200,13 +200,12 @@ void BackendThread::customEvent(QEvent *event)
 
 bool BackendThread::testLibrary()
 {
-    return !QFile::exists("/var/lib/pacman/db.lck");
+    PERFORM_RETURN(Backend::TestLibrary, !QFile::exists("/var/lib/pacman/db.lck"));
 }
 
 bool BackendThread::isOnTransaction()
 {
-    return false;
-
+    PERFORM_RETURN(Backend::IsOnTransaction, false);
 }
 
 bool BackendThread::reloadPacmanConfiguration()
@@ -342,7 +341,7 @@ Package::List BackendThread::getInstalledPackages()
         pkgs = alpm_list_next(pkgs);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetInstalledPackages, retlist)
 }
 
 Package::List BackendThread::getUpgradeablePackages()
@@ -361,7 +360,7 @@ Package::List BackendThread::getUpgradeablePackages()
         syncpkgs = alpm_list_next(syncpkgs);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetUpgradeablePackages, retlist)
 }
 
 Group::List BackendThread::getAvailableGroups()
@@ -383,7 +382,7 @@ Group::List BackendThread::getAvailableGroups()
         syncdbs = alpm_list_next(syncdbs);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetAvailableGroups, retlist)
 }
 
 Package::List BackendThread::getPackageDependencies(const Package &package)
@@ -398,7 +397,7 @@ Package::List BackendThread::getPackageDependencies(const Package &package)
         deps = alpm_list_next(deps);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetPackageDependencies, retlist)
 }
 
 Package::List BackendThread::getDependenciesOnPackage(const Package &package)
@@ -413,7 +412,7 @@ Package::List BackendThread::getDependenciesOnPackage(const Package &package)
         deps = alpm_list_next(deps);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetDependenciesOnPackage, retlist)
 }
 
 bool BackendThread::isInstalled(const Package &package)
@@ -421,10 +420,10 @@ bool BackendThread::isInstalled(const Package &package)
     pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(package.alpmPackage()));
 
     if (localpackage == NULL) {
-        return false;
+        PERFORM_RETURN(Backend::IsInstalled, false)
     }
 
-    return true;
+    PERFORM_RETURN(Backend::IsInstalled, true)
 }
 
 QStringList BackendThread::getPackageFiles(const Package &package)
@@ -439,7 +438,7 @@ QStringList BackendThread::getPackageFiles(const Package &package)
         files = alpm_list_next(files);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetPackageFiles, retlist)
 }
 
 QStringList BackendThread::getProviders(const Package &package)
@@ -454,7 +453,7 @@ QStringList BackendThread::getProviders(const Package &package)
         provides = alpm_list_next(provides);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetProviders, retlist)
 }
 
 bool BackendThread::isProviderInstalled(const QString &provider)
@@ -471,17 +470,17 @@ bool BackendThread::isProviderInstalled(const QString &provider)
             QStringList tmp(prv.at(i).split('='));
             if (!tmp.at(0).compare(provider)) {
                 qDebug() << "Provider is installed and it is" << package.name();
-                return true;
+                PERFORM_RETURN(Backend::IsProviderInstalled, true)
             }
         }
     }
 
-    return false;
+    PERFORM_RETURN(Backend::IsProviderInstalled, false)
 }
 
 QString BackendThread::getAlpmVersion()
 {
-    return QString(alpm_version());
+    PERFORM_RETURN(Backend::GetAlpmVersion, QString(alpm_version()))
 }
 
 Database BackendThread::getPackageDatabase(const Package &package, bool checkver)
@@ -490,10 +489,10 @@ Database BackendThread::getPackageDatabase(const Package &package, bool checkver
 
     if (checkver && (package.version() ==
                      getPackage(alpm_pkg_get_name(package.alpmPackage()), "local").version())) {
-        return Database();
+        PERFORM_RETURN(Backend::GetPackageDatabase, Database())
     }
 
-    return db;
+    PERFORM_RETURN(Backend::GetPackageDatabase, db)
 }
 
 Package::List BackendThread::getPackagesFromGroup(const Group &group)
@@ -506,7 +505,7 @@ Package::List BackendThread::getPackagesFromGroup(const Group &group)
         pkgs = alpm_list_next(pkgs);
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetPackagesFromGroup, retlist)
 }
 
 Package::List BackendThread::getPackagesFromDatabase(const Database &db)
@@ -539,7 +538,7 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
         }
     }
 
-    return retlist;
+    PERFORM_RETURN(Backend::GetPackagesFromDatabase, retlist)
 }
 
 int BackendThread::countPackages(Globals::PackageStatus status)
@@ -552,15 +551,16 @@ int BackendThread::countPackages(Globals::PackageStatus status)
             retvalue += alpm_list_count(currentpkgs);
         }
 
-        return retvalue;
+        PERFORM_RETURN(Backend::CountPackages, retvalue)
     } else if (status == Globals::UpgradeablePackages) {
-        return getUpgradeablePackages().count();
+        PERFORM_RETURN(Backend::CountPackages, getUpgradeablePackages().count())
     } else if (status == Globals::InstalledPackages) {
         alpm_list_t *currentpkgs = alpm_db_get_pkgcache(d->db_local);
 
-        return alpm_list_count(currentpkgs);
-    } else
-        return 0;
+        PERFORM_RETURN(Backend::CountPackages, alpm_list_count(currentpkgs))
+    } else {
+        PERFORM_RETURN(Backend::CountPackages, 0)
+    }
 }
 
 QStringList BackendThread::alpmListToStringList(alpm_list_t *list)

@@ -88,7 +88,9 @@ public:
         GetPackage,
         GetGroup,
         GetDatabase,
-        SetUpAlpm
+        SetUpAlpm,
+        TestLibrary,
+        IsOnTransaction
     };
 
     static Backend *instance();
