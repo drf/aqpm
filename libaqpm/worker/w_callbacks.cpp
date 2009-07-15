@@ -32,6 +32,7 @@
 #include <QFile>
 #include <QTimer>
 #include <QStringList>
+#include <QCoreApplication>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
@@ -242,6 +243,8 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
     default:
         break;
     }
+
+    QCoreApplication::processEvents();
 }
 
 void CallBacks::setAnswer(int answer)

@@ -39,10 +39,11 @@ namespace AqpmWorker
 class Worker::Private
 {
 public:
-    Private() : ready(false) {}
+    Private() : timeout(new QTimer()), ready(false) {}
 
     pmdb_t *db_local;
     pmdb_t *dbs_sync;
+    QTimer *timeout;
 
     bool ready;
 };
@@ -81,6 +82,10 @@ Worker::Worker(QObject *parent)
             AqpmWorker::CallBacks::instance(), SLOT(setAnswer(int)));
 
     setUpAlpm();
+
+    connect(d->timeout, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit()));
+    d->timeout->setInterval(10000);
+    d->timeout->start();
 }
 
 Worker::~Worker()
@@ -171,6 +176,8 @@ void Worker::setUpAlpm()
 
 void Worker::updateDatabase()
 {
+    d->timeout->stop();
+
     qDebug() << "Starting DB Update";
 
     PolkitQt::Auth::Result result;
@@ -249,6 +256,8 @@ void Worker::updateDatabase()
 
 void Worker::processQueue(const QVariantList &packages, const QVariantList &flags)
 {
+    d->timeout->stop();
+
     qDebug() << "Starting Queue Processing";
 
     PolkitQt::Auth::Result result;
@@ -407,6 +416,8 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
 
 void Worker::systemUpgrade(const QVariantList &flags)
 {
+    d->timeout->stop();
+
     qDebug() << "Starting System Upgrade";
 
     PolkitQt::Auth::Result result;
@@ -471,11 +482,13 @@ void Worker::setAnswer(int answer)
 void Worker::operationPerformed(bool result)
 {
     emit workerResult(result);
-    QTimer::singleShot(2000, QCoreApplication::instance(), SLOT(quit()));
+    d->timeout->start();
 }
 
 bool Worker::performTransaction()
 {
+    d->timeout->stop();
+
     alpm_list_t *data = NULL;
 
     qDebug() << "Preparing...";
