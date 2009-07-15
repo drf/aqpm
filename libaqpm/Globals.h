@@ -66,6 +66,7 @@ public:
         PackageConflict = 3,
         CorruptedPackage = 4,
         NewerLocalPackage = 5,
+        UnresolvedDependencies = 6
     };
 
     enum TransactionProgress {

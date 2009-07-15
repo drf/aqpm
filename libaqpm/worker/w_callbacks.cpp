@@ -260,38 +260,54 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
     qDebug() << "Alpm is asking a question.";
 
     QVariantMap args;
+    Aqpm::Globals::TransactionQuestion question;
 
     switch (event) {
     case PM_TRANS_CONV_INSTALL_IGNOREPKG:
         if (data2) {
             args["FirstPackage"] = alpm_pkg_get_name((pmpkg_t *)data1);
             args["SecondPackage"] = alpm_pkg_get_name((pmpkg_t *)data2);
-            emit streamTransQuestion((int) Aqpm::Globals::IgnorePackage, args);
+            question = Aqpm::Globals::IgnorePackage;
             /* TODO we take this route based on data2 being not null? WTF */
         } else {
             args["FirstPackage"] = alpm_pkg_get_name((pmpkg_t *)data1);
-            emit streamTransQuestion((int) Aqpm::Globals::IgnorePackage, args);
+            question = Aqpm::Globals::IgnorePackage;
         }
         break;
     case PM_TRANS_CONV_REPLACE_PKG:
         args["OldPackage"] = alpm_pkg_get_name((pmpkg_t *)data1);
         args["NewPackage"] = alpm_pkg_get_name((pmpkg_t *)data2);
         args["NewPackageRepo"] = QString((char *)data3);
-        emit streamTransQuestion((int) Aqpm::Globals::ReplacePackage, args);
+        question = Aqpm::Globals::ReplacePackage;
         break;
     case PM_TRANS_CONV_CONFLICT_PKG:
         args["NewPackage"] = QString((char *)data1);
         args["OldPackage"] = QString((char *)data2);
-        emit streamTransQuestion((int) Aqpm::Globals::PackageConflict, args);
+        question = Aqpm::Globals::PackageConflict;
+        break;
+    case PM_TRANS_CONV_REMOVE_PKGS:
+        {
+            alpm_list_t *unresolved = (alpm_list_t *) data1;
+            alpm_list_t *i;
+            QStringList pkgs;
+            for (i = unresolved; i; i = i->next) {
+                pkgs.append((char *)alpm_pkg_get_name((pmpkg_t*) (i->data)));
+            }
+            args["Packages"] = pkgs;
+            question = Aqpm::Globals::UnresolvedDependencies;
+        }
         break;
     case PM_TRANS_CONV_LOCAL_NEWER:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t *)data1);
         args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t *)data1);
-        emit streamTransQuestion((int) Aqpm::Globals::NewerLocalPackage, args);
+        question = Aqpm::Globals::NewerLocalPackage;
         break;
     case PM_TRANS_CONV_CORRUPTED_PKG:
         args["Filename"] = QString((char *)data1);
-        emit streamTransQuestion((int) Aqpm::Globals::CorruptedPackage, args);
+        question = Aqpm::Globals::CorruptedPackage;
+        break;
+    default:
+        qDebug() << event;
         break;
     }
 
@@ -299,6 +315,7 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
 
     connect(this, SIGNAL(answerReady()), &e, SLOT(quit()));
 
+    emit streamTransQuestion((int) question, args);
     qDebug() << "Question Streamed, entering in custom event loop, waiting for answer";
 
     e.exec();
