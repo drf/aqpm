@@ -174,14 +174,30 @@ void Configuration::workerResult(bool result)
     emit configurationSaved(result);
 }
 
-void Configuration::setValue(const QString &key, const QString &value)
+void Configuration::setValue(const QString &key, const QString &val)
 {
-    d->settings->setValue(key, value);
+    d->settings->setValue(key, val);
 }
 
 QVariant Configuration::value(const QString &key) const
 {
     return d->settings->value(key);
+}
+
+void Configuration::remove(const QString &key)
+{
+    d->settings->remove(key);
+}
+
+bool Configuration::exists(const QString &key, const QString &val) const
+{
+    bool result = d->settings->contains(key);
+
+    if (!val.isEmpty() && result) {
+        result = value(key).toString() == val;
+    }
+
+    return result;
 }
 
 }

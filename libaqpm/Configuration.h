@@ -38,8 +38,11 @@ public:
     bool saveConfiguration();
     void saveConfigurationAsync();
 
-    void setValue(const QString &key, const QString &value);
+    void setValue(const QString &key, const QString &val);
     QVariant value(const QString &key) const;
+
+    void remove(const QString &key);
+    bool exists(const QString &key, const QString &val = QString()) const;
 
     void reload();
 
