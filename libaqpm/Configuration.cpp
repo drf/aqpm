@@ -174,4 +174,14 @@ void Configuration::workerResult(bool result)
     emit configurationSaved(result);
 }
 
+void Configuration::setValue(const QString &key, const QString &value)
+{
+    d->settings->setValue(key, value);
+}
+
+QVariant Configuration::value(const QString &key) const
+{
+    return d->settings->value(key);
+}
+
 }

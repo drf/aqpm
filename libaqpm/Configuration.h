@@ -38,6 +38,9 @@ public:
     bool saveConfiguration();
     void saveConfigurationAsync();
 
+    void setValue(const QString &key, const QString &value);
+    QVariant value(const QString &key) const;
+
     void reload();
 
 private Q_SLOTS:
