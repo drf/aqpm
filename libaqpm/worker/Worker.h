@@ -45,6 +45,7 @@ public Q_SLOTS:
     void updateDatabase();
     void systemUpgrade(const QVariantList &flags);
     void setAnswer(int answer);
+    void saveConfiguration(const QString &conf);
 
 private:
     void setUpAlpm();

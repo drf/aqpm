@@ -5,10 +5,11 @@
 <policyconfig>
   <vendor>Aqpm - ArchLinux Package Management</vendor>
   <vendor_url>http://chakra-project.org/</vendor_url>
+  <icon_name>shaman</icon_name>
 
   <action id="org.chakraproject.aqpm.updatedatabase">
     <description>Update Database</description>
-    <message>Prevents Package Manager from updating the Database</message>
+    <message>Prevents the Package Manager from updating the Database</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_session</allow_active>
@@ -17,7 +18,7 @@
 
   <action id="org.chakraproject.aqpm.systemupgrade">
     <description>System Upgrade</description>
-    <message>Prevents Package Manager from upgrading the system</message>
+    <message>Prevents the Package Manager from upgrading the system</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_session</allow_active>
@@ -26,7 +27,16 @@
   
   <action id="org.chakraproject.aqpm.processqueue">
     <description>Process queue</description>
-    <message>Prevents Package Manager from processing a package queue</message>
+    <message>Prevents the Package Manager from processing a package queue</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.chakraproject.aqpm.saveconfiguration">
+    <description>Save pacman configuration</description>
+    <message>Prevents the Package Manager from saving the configuration</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>

@@ -12,6 +12,7 @@ SET(aqpm_SRCS
     Database.cpp
     SynchronousLoop.cpp
     ActionEvent.cpp
+    Configuration.cpp
 )
 
 SET(aqpm_HEADERS
@@ -22,6 +23,7 @@ SET(aqpm_HEADERS
 	Package.h
 	Group.h
 	Database.h
+	Configuration.h
 )
                       
 automoc4_add_library(aqpm SHARED

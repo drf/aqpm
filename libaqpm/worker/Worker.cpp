@@ -617,4 +617,38 @@ bool Worker::addTransTarget(const QString &target)
     return true;
 }
 
+void Worker::saveConfiguration(const QString &conf)
+{
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.saveconfiguration",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        operationPerformed(false);
+        return;
+    }
+
+    d->timeout->stop();
+
+    QFile::remove("/etc/pacman.conf");
+    QFile file("/etc/pacman.conf");
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        operationPerformed(false);
+        return;
+    }
+
+    QTextStream out(&file);
+    out << conf;
+
+    file.flush();
+    file.close();
+
+    operationPerformed(true);
+}
+
 }
