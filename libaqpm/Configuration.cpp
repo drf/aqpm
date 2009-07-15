@@ -42,9 +42,8 @@ namespace Aqpm
 class Configuration::Private
 {
 public:
-    Private() : settings(0), tempfile(0) {}
+    Private() : tempfile(0) {}
 
-    QSettings *settings;
     QTemporaryFile *tempfile;
     bool lastResult;
 };
@@ -74,20 +73,20 @@ Configuration::Configuration()
         : QObject(0)
         , d(new Private())
 {
+    Q_ASSERT(!s_globalConfiguration()->q);
+    s_globalConfiguration()->q = this;
+
     reload();
 }
 
 Configuration::~Configuration()
 {
+    delete d;
 }
 
 void Configuration::reload()
 {
     qDebug() << "reloading";
-
-    if (d->settings) {
-        d->settings->deleteLater();
-    }
 
     if (d->tempfile) {
         d->tempfile->close();
@@ -108,9 +107,11 @@ void Configuration::reload()
     QTextStream out(d->tempfile);
     out << file.readAll();
 
-    d->settings = new QSettings(d->tempfile->fileName());
-    qDebug() << "File is at" << d->tempfile->fileName();
-    qDebug() << d->settings;
+    file.close();
+    d->tempfile->close();
+
+    qDebug() << d->tempfile->fileName();
+    exists("test", "test");
 }
 
 bool Configuration::saveConfiguration()
@@ -127,8 +128,6 @@ bool Configuration::saveConfiguration()
 
 void Configuration::saveConfigurationAsync()
 {
-    d->settings->sync();
-
     QDBusMessage message;
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
@@ -182,23 +181,27 @@ void Configuration::workerResult(bool result)
 
 void Configuration::setValue(const QString &key, const QString &val)
 {
-    d->settings->setValue(key, val);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    settings.setValue(key, val);
 }
 
-QVariant Configuration::value(const QString &key) const
+QVariant Configuration::value(const QString &key)
 {
-    return d->settings->value(key);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    return settings.value(key);
 }
 
 void Configuration::remove(const QString &key)
 {
-    d->settings->remove(key);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    settings.remove(key);
 }
 
-bool Configuration::exists(const QString &key, const QString &val) const
+bool Configuration::exists(const QString &key, const QString &val)
 {
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     qDebug() << "Checking" << key << val;
-    bool result = d->settings->contains(key);
+    bool result = settings.contains(key);
     qDebug() << "Done";
 
     if (!val.isEmpty() && result) {
