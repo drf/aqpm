@@ -44,6 +44,8 @@ public:
     void remove(const QString &key);
     bool exists(const QString &key, const QString &val = QString()) const;
 
+    void setOrUnset(bool set, const QString &key, const QString &val = QString());
+
     void reload();
 
 private Q_SLOTS:

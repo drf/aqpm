@@ -42,7 +42,7 @@ namespace Aqpm
 class Configuration::Private
 {
 public:
-    Private() {}
+    Private() : settings(0), tempfile(0) {}
 
     QSettings *settings;
     QTemporaryFile *tempfile;
@@ -74,6 +74,7 @@ Configuration::Configuration()
         : QObject(0)
         , d(new Private())
 {
+    reload();
 }
 
 Configuration::~Configuration()
@@ -82,6 +83,8 @@ Configuration::~Configuration()
 
 void Configuration::reload()
 {
+    qDebug() << "reloading";
+
     if (d->settings) {
         d->settings->deleteLater();
     }
@@ -94,9 +97,10 @@ void Configuration::reload()
     d->tempfile = new QTemporaryFile(this);
     d->tempfile->open();
 
-    QFile file("/tmp/pacman.conf.aqpm.tmp");
+    QFile file("/etc/pacman.conf");
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "prcd!";
         emit configurationSaved(false);
         return;
     }
@@ -104,7 +108,9 @@ void Configuration::reload()
     QTextStream out(d->tempfile);
     out << file.readAll();
 
-    d->settings = new QSettings(QDir::tempPath() + '/' + d->tempfile->fileName(), QSettings::IniFormat, this);
+    d->settings = new QSettings(d->tempfile->fileName());
+    qDebug() << "File is at" << d->tempfile->fileName();
+    qDebug() << d->settings;
 }
 
 bool Configuration::saveConfiguration()
@@ -191,13 +197,27 @@ void Configuration::remove(const QString &key)
 
 bool Configuration::exists(const QString &key, const QString &val) const
 {
+    qDebug() << "Checking" << key << val;
     bool result = d->settings->contains(key);
+    qDebug() << "Done";
 
     if (!val.isEmpty() && result) {
+        qDebug() << "Check";
         result = value(key).toString() == val;
     }
 
+    qDebug() << "Done";
+
     return result;
+}
+
+void Configuration::setOrUnset(bool set, const QString &key, const QString &val)
+{
+    if (set) {
+        setValue(key, val);
+    } else {
+        remove(key);
+    }
 }
 
 }
