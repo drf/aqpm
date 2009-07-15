@@ -105,7 +105,15 @@ void Configuration::reload()
     }
 
     QTextStream out(d->tempfile);
-    out << file.readAll();
+    QTextStream in(&file);
+
+    // Strip out comments
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        if (!line.startsWith('#')) {
+            out << line;
+        }
+    }
 
     file.close();
     d->tempfile->close();
@@ -158,17 +166,20 @@ void Configuration::saveConfigurationAsync()
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("saveConfiguration"));
-    QList<QVariant> argumentList;
 
-    argumentList << d->tempfile->readAll();
-    message.setArguments(argumentList);
-    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+    d->tempfile->open();
+    message << QString(d->tempfile->readAll());
+    QDBusConnection::systemBus().call(message);
+    qDebug() << QDBusConnection::systemBus().lastError();
+    d->tempfile->close();
 }
 
 void Configuration::workerResult(bool result)
 {
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "workerResult", this, SLOT(workerResult(bool)));
+
+    qDebug() << "Got a result:" << result;
 
     if (result) {
         reload();

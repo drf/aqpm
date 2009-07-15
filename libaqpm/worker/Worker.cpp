@@ -634,6 +634,8 @@ void Worker::saveConfiguration(const QString &conf)
 
     d->timeout->stop();
 
+    qDebug() << "About to write:" << conf;
+
     QFile::remove("/etc/pacman.conf");
     QFile file("/etc/pacman.conf");
 
