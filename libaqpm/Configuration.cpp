@@ -74,6 +74,9 @@ Configuration::Configuration()
         : QObject(0)
         , d(new Private())
 {
+    Q_ASSERT(!s_globalConfiguration()->q);
+    s_globalConfiguration()->q = this;
+
     reload();
 }
 

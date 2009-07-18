@@ -141,6 +141,8 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
                                          "logMessageStreamed", q, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", q, SLOT(workerResult(bool)));
+    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceUnregistered(QString)),
+            q, SLOT(serviceUnregistered(QString)));
 
     return true;
 }
@@ -871,6 +873,8 @@ void BackendThread::workerResult(bool result)
                                             "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "workerResult", this, SLOT(workerResult(bool)));
+    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceUnregistered(QString)),
+               this, SLOT(serviceUnregistered(QString)));
 
     // After a worker operation ends, reload Alpm and clear the queue
     reloadPacmanConfiguration();
@@ -888,6 +892,20 @@ void BackendThread::setAnswer(int answer)
     iface.call("setAnswer", answer);
 
     PERFORM_RETURN_VOID(Backend::SetAnswer)
+}
+
+void BackendThread::serviceUnregistered(const QString &service)
+{
+    if (service != "org.chakraproject.aqpmworker") {
+        // We don't give a fuck
+        return;
+    }
+
+    qDebug() << "It looks like our worker got lost";
+
+    // Ok, something got screwed. Report and flee
+    emit errorOccurred((int) Aqpm::Globals::WorkerDisappeared, QVariantMap());
+    workerResult(false);
 }
 
 }

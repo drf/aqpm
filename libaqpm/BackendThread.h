@@ -129,6 +129,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void workerResult(bool success);
+    void serviceUnregistered(const QString &service);
 
 protected:
     void customEvent(QEvent *event);

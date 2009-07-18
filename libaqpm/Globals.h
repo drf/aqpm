@@ -93,7 +93,8 @@ public:
         FileConflictFilesystem = 4096,
         CorruptedFile = 8192,
         WorkerInitializationFailed = 16384,
-        AuthorizationNotGranted = 32768
+        AuthorizationNotGranted = 32768,
+        WorkerDisappeared = 65536
     };
 
     Q_DECLARE_FLAGS(Errors, ErrorCode)

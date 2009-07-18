@@ -43,11 +43,36 @@ namespace Aqpm
 
 class BackendThread;
 
+/**
+ * @brief The main and only entry point for performing operations with Aqpm
+ *
+ * Backend encapsulates all the needed logic to perform each and every operation with Aqpm.
+ * It can work both in synchronous and asynchronous mode, and it provides access to all the most
+ * common functionalities in Alpm. 90% of the features are covered in Aqpm, although some very
+ * advanced and uncommon ones are not present, and you will need them only if you're attempting to
+ * develop a full-fledged frontend.
+ * @par
+ * The class is implemented as a singleton and it spawns an additional thread where Alpm will be jailed.
+ * Since alpm was not designed to support threads, Aqpm implements a queue to avoid accidental concurrent access
+ * to alpm methods. You are free to use Aqpm in multithreaded environments without having to worry.
+ * @par
+ * Aqpm @b _NEEDS_ to work as standard, non-privileged user. Failure in doing so might lead to unsecure behavior.
+ * Aqpm uses privilege escalation with PolicyKit to perform privileged actions. Everything is done for you, even
+ * if you can choose to manage the authentication part by yourself, in case you want more tight integration with
+ * your GUI
+ *
+ * @note All the methods in this class, unless noted otherwise, are thread safe
+ *
+ * @author Dario Freddi
+ */
 class AQPM_EXPORT Backend : public QObject
 {
     Q_OBJECT
 
 public:
+    /**
+     * This enum is used by Aqpm internals
+     */
     enum BackendEvent {
         UpdateDatabase = 1001,
         ProcessQueue = 1002,
@@ -56,6 +81,10 @@ public:
         PerformAction = 1005
     };
 
+    /**
+     * Defines the action type in a synchonous operation. There is a matching entry for
+     * every function available
+     */
     enum ActionType {
         GetAvailableDatabases,
         GetAvailableGroups,
@@ -91,13 +120,27 @@ public:
         AlpmListToStringList
     };
 
+    /**
+     * @return The current instance of the Backend
+     */
     static Backend *instance();
+    /**
+     * @return Aqpm's version
+     */
     static QString version();
 
     virtual ~Backend();
 
+    /**
+     * Internal method
+     */
     QEvent::Type getEventTypeFor(BackendEvent event);
 
+    /**
+     * Performs a test on the library to check if Alpm and Aqpm are ready to be used
+     *
+     * @return \c true if the library is ready, \c false if there was a problem while testing itt
+     */
     bool testLibrary();
     bool isOnTransaction();
 
