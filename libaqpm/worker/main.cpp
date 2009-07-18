@@ -18,14 +18,41 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include <iostream>
-
 #include "Worker.h"
 
 #include <QCoreApplication>
 #include <QStringList>
+#include <QDebug>
 
 #include <alpm.h>
+#include <signal.h>
+#include <stdio.h>
+
+static void cleanup( int signum )
+{
+    if ( signum == SIGSEGV ) {
+        // Try at least to recover
+        alpm_trans_interrupt();
+        alpm_trans_release();
+        exit(signum);
+    } else if ((signum == SIGINT)) {
+        if (alpm_trans_interrupt() == 0) {
+            /* a transaction is being interrupted, don't exit the worker yet. */
+            return;
+        }
+        /* no committing transaction, we can release it now and then exit pacman */
+        alpm_trans_release();
+        /* output a newline to be sure we clear any line we may be on */
+        printf("\n");
+    }
+
+    /* free alpm library resources */
+    if (alpm_release() == -1) {
+        qCritical() << QString::fromLocal8Bit(alpm_strerrorlast());
+    }
+
+    exit(signum);
+}
 
 int main(int argc, char **argv)
 {
@@ -37,6 +64,10 @@ int main(int argc, char **argv)
     QCoreApplication::setApplicationVersion("0.2");
 
     QStringList arguments = app.arguments();
+
+    signal(SIGINT, cleanup);
+    signal(SIGTERM, cleanup);
+    signal(SIGSEGV, cleanup);
 
     AqpmWorker::Worker *w = new AqpmWorker::Worker(0);
 
