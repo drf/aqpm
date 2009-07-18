@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     signal(SIGTERM, cleanup);
     signal(SIGSEGV, cleanup);
 
-    AqpmWorker::Worker *w = new AqpmWorker::Worker(0);
+    AqpmWorker::Worker w;
 
     app.exec();
 }
