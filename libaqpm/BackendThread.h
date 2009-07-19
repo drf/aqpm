@@ -129,7 +129,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void workerResult(bool success);
-    void serviceUnregistered(const QString &service);
+    void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
 
 protected:
     void customEvent(QEvent *event);

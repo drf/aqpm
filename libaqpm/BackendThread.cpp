@@ -141,8 +141,8 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
                                          "logMessageStreamed", q, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", q, SLOT(workerResult(bool)));
-    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceUnregistered(QString)),
-            q, SLOT(serviceUnregistered(QString)));
+    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+            q, SLOT(serviceOwnerChanged(QString,QString,QString)));
 
     return true;
 }
@@ -894,9 +894,11 @@ void BackendThread::setAnswer(int answer)
     PERFORM_RETURN_VOID(Backend::SetAnswer)
 }
 
-void BackendThread::serviceUnregistered(const QString &service)
+void BackendThread::serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)
 {
-    if (service != "org.chakraproject.aqpmworker") {
+    Q_UNUSED(oldOwner)
+
+    if (name != "org.chakraproject.aqpmworker" || !newOwner.isEmpty()) {
         // We don't give a fuck
         return;
     }

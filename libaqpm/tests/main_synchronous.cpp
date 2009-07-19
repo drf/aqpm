@@ -40,6 +40,16 @@ int main(int argc, char *argv[])
     foreach(const Aqpm::Database &db, Aqpm::Backend::instance()->getAvailableDatabases()) {
         qDebug() << db.name();
     }
+
+    qDebug() << "Now updating databases...";
+    Aqpm::Backend::instance()->updateDatabase();
+
+    e.connect(Aqpm::Backend::instance(), SIGNAL(operationFinished(bool)), &e, SLOT(quit()));
+    e.connect(Aqpm::Backend::instance(), SIGNAL(errorOccurred(Aqpm::Globals::Errors,QVariantMap)),
+              QCoreApplication::instance(), SLOT(quit()));
+    e.exec();
+
+    qDebug() << "Done";
     
     return 0;
 }
