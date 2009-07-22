@@ -12,6 +12,7 @@ include(InstallSettings)
 set(MAJOR_AQPM_VERSION "1")
 set(MINOR_AQPM_VERSION "3")
 set(PATCH_AQPM_VERSION "3")
+set(AQPM_VERSION_STRING "${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQPM_VERSION}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
@@ -60,6 +61,9 @@ CONFIGURE_FILE(
        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
        IMMEDIATE @ONLY)
 ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config-aqpm.h.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/config-aqpm.h)
 
 add_subdirectory(libaqpm)
 add_subdirectory(libaqpmabs)

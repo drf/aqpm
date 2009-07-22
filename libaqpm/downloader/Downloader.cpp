@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2008 by Dario Freddi                                    *
- *   drf54321@yahoo.it                                                     *
+ *   Copyright (C) 2009 by Dario Freddi                                    *
+ *   drf@chakra-project.org                                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,6 +22,8 @@
 
 #include "aqpmdownloaderadaptor.h"
 
+#include <config-aqpm.h>
+
 #include <QtDBus/QDBusConnection>
 #include <QTimer>
 #include <QDebug>
@@ -42,13 +44,14 @@ public:
 
     QTimer *timeout;
     QNetworkAccessManager *manager;
+    QList<QNetworkReply*> replies;
 };
 
 QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
 {
     QNetworkRequest request;
     request.setUrl(url);
-    request.setRawHeader("User-Agent", "Aqpm 1.0");
+    request.setRawHeader("User-Agent", ("Aqpm/" + QString(AQPM_VERSION)).toUtf8());
     return request;
 }
 
@@ -92,6 +95,7 @@ void Downloader::download(const QString &url, const QString &to)
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
     qDebug() << "Getting started";
     reply->setProperty("to_FileName_p", to);
+    d->replies.append(reply);
     connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(progress(qint64,qint64)));
 }
 
@@ -105,14 +109,24 @@ void Downloader::downloadFinished(QNetworkReply *reply)
 
     emit finished(reply->url().toString());
 
+    d->replies.removeOne(reply);
+
     reply->deleteLater();
 
-    d->timeout->start();
+    if (d->replies.isEmpty()) {
+        d->timeout->start();
+    }
 }
 
 void Downloader::abortDownload()
 {
-    //TODO
+    foreach (QNetworkReply *r, d->replies) {
+        r->abort();
+        r->deleteLater();
+    }
+
+    d->replies.clear();
+    d->timeout->start();
 }
 
 void Downloader::progress(qint64 done, qint64 total)

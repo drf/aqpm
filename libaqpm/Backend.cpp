@@ -20,6 +20,8 @@
 
 #include "Backend.h"
 
+#include <config-aqpm.h>
+
 #include "ConfigurationParser.h"
 #include "BackendThread.h"
 #include "SynchronousLoop.h"
@@ -106,7 +108,7 @@ Backend::~Backend()
 
 QString Backend::version()
 {
-    return "1.3.3-alpha1";
+    return AQPM_VERSION;
 }
 
 void Backend::setUpSelf(BackendThread *t)
