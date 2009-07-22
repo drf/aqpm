@@ -42,9 +42,8 @@ namespace Aqpm
 class Configuration::Private
 {
 public:
-    Private() : settings(0), tempfile(0) {}
+    Private() : tempfile(0) {}
 
-    QSettings *settings;
     QTemporaryFile *tempfile;
     bool lastResult;
 };
@@ -82,15 +81,12 @@ Configuration::Configuration()
 
 Configuration::~Configuration()
 {
+    delete d;
 }
 
 void Configuration::reload()
 {
     qDebug() << "reloading";
-
-    if (d->settings) {
-        d->settings->deleteLater();
-    }
 
     if (d->tempfile) {
         d->tempfile->close();
@@ -109,11 +105,21 @@ void Configuration::reload()
     }
 
     QTextStream out(d->tempfile);
-    out << file.readAll();
+    QTextStream in(&file);
 
-    d->settings = new QSettings(d->tempfile->fileName());
-    qDebug() << "File is at" << d->tempfile->fileName();
-    qDebug() << d->settings;
+    // Strip out comments
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        if (!line.startsWith('#')) {
+            out << line;
+        }
+    }
+
+    file.close();
+    d->tempfile->close();
+
+    qDebug() << d->tempfile->fileName();
+    exists("test", "test");
 }
 
 bool Configuration::saveConfiguration()
@@ -130,8 +136,6 @@ bool Configuration::saveConfiguration()
 
 void Configuration::saveConfigurationAsync()
 {
-    d->settings->sync();
-
     QDBusMessage message;
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
@@ -162,17 +166,20 @@ void Configuration::saveConfigurationAsync()
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("saveConfiguration"));
-    QList<QVariant> argumentList;
 
-    argumentList << d->tempfile->readAll();
-    message.setArguments(argumentList);
-    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+    d->tempfile->open();
+    message << QString(d->tempfile->readAll());
+    QDBusConnection::systemBus().call(message);
+    qDebug() << QDBusConnection::systemBus().lastError();
+    d->tempfile->close();
 }
 
 void Configuration::workerResult(bool result)
 {
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "workerResult", this, SLOT(workerResult(bool)));
+
+    qDebug() << "Got a result:" << result;
 
     if (result) {
         reload();
@@ -185,23 +192,27 @@ void Configuration::workerResult(bool result)
 
 void Configuration::setValue(const QString &key, const QString &val)
 {
-    d->settings->setValue(key, val);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    settings.setValue(key, val);
 }
 
-QVariant Configuration::value(const QString &key) const
+QVariant Configuration::value(const QString &key)
 {
-    return d->settings->value(key);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    return settings.value(key);
 }
 
 void Configuration::remove(const QString &key)
 {
-    d->settings->remove(key);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    settings.remove(key);
 }
 
-bool Configuration::exists(const QString &key, const QString &val) const
+bool Configuration::exists(const QString &key, const QString &val)
 {
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     qDebug() << "Checking" << key << val;
-    bool result = d->settings->contains(key);
+    bool result = settings.contains(key);
     qDebug() << "Done";
 
     if (!val.isEmpty() && result) {

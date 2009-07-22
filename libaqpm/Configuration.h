@@ -39,10 +39,10 @@ public:
     void saveConfigurationAsync();
 
     void setValue(const QString &key, const QString &val);
-    QVariant value(const QString &key) const;
+    QVariant value(const QString &key);
 
     void remove(const QString &key);
-    bool exists(const QString &key, const QString &val = QString()) const;
+    bool exists(const QString &key, const QString &val = QString());
 
     void setOrUnset(bool set, const QString &key, const QString &val = QString());
 
