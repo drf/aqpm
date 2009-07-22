@@ -60,7 +60,7 @@ public Q_SLOTS:
     void setAnswer(int answer);
 
 private Q_SLOTS:
-    void computeDownloadProgress(qint64 downloaded, qint64 total);
+    void computeDownloadProgress(int downloaded, int total);
 
 signals:
     void streamTransEvent(int event, QVariantMap args);
@@ -90,5 +90,11 @@ int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list 
 
 }
 
+Q_DECLARE_METATYPE(pmtransevt_t)
+Q_DECLARE_METATYPE(void*)
+Q_DECLARE_METATYPE(char*)
+Q_DECLARE_METATYPE(off_t)
+Q_DECLARE_METATYPE(pmtransprog_t)
+Q_DECLARE_METATYPE(pmloglevel_t)
 
 #endif /*W_CALLBACKS_H*/

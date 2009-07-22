@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.chakraproject.aqpmdownloader
+Exec=@AQPM_HELPER_INSTALL_DIR@/aqpmdownloader
+User=root
+

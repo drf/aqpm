@@ -24,7 +24,8 @@
 
 #include "../ConfigurationParser.h"
 #include "w_callbacks.h"
-#include "../Backend.h"
+#include "../Globals.h"
+#include "../QueueItem.h"
 
 #include <QtDBus/QDBusConnection>
 #include <QTimer>
@@ -84,7 +85,7 @@ Worker::Worker(QObject *parent)
     setUpAlpm();
 
     connect(d->timeout, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit()));
-    d->timeout->setInterval(10000);
+    d->timeout->setInterval(2000);
     d->timeout->start();
 }
 

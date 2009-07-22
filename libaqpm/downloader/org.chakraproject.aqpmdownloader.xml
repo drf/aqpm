@@ -1,0 +1,19 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+	<interface name="org.chakraproject.aqpmdownloader">
+		<method name="download">
+			<arg type="s" direction="in" />
+			<arg type="s" direction="in" />
+		</method>
+		<method name="abortDownload">
+		</method>
+
+		<signal name="downloadProgress">
+			<arg type="i" direction="out" />
+			<arg type="i" direction="out" />
+		</signal>
+		<signal name="finished">
+			<arg type="s" direction="out" />
+		</signal>
+	</interface>
+</node>

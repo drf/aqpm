@@ -1,5 +1,6 @@
 
 add_subdirectory(worker)
+add_subdirectory(downloader)
 
 SET(aqpm_SRCS 
     Backend.cpp

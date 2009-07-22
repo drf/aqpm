@@ -24,7 +24,6 @@
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <QWaitCondition>
 #include <QDebug>
 #include <QGlobalStatic>
 #include <QDateTime>
@@ -37,10 +36,16 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkProxy>
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusConnectionInterface>
 
 #include "alpm.h"
 
 #define UPDATE_SPEED_SEC 0.2f
+
+static QEvent::Type s_eventType;
 
 namespace AqpmWorker
 {
@@ -60,7 +65,6 @@ public:
     qint64 list_total;
     qint64 list_xfered;
     qint64 list_last;
-    QTimer updateTimer;
     QDateTime averageRateTime;
     QTime busControlTime;
     QString currentFile;
@@ -102,8 +106,7 @@ void CallBacksPrivate::init()
     Q_Q(CallBacks);
     manager = new QNetworkAccessManager(q);
     manager->setProxy(QNetworkProxy());
-    updateTimer.setSingleShot(true);
-    updateTimer.setInterval(UPDATE_SPEED_SEC);
+    s_eventType = (QEvent::Type)QEvent::registerEventType();
 }
 
 QNetworkRequest CallBacksPrivate::createNetworkRequest(const QUrl &url)
@@ -342,7 +345,6 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
     connect(reply, SIGNAL(finished()), &re, SLOT(quit()));
     re.exec();
-    disconnect(reply, SIGNAL(finished()), &re, SLOT(quit()));
 
     d->currentFile = QString(url).split('/').at(QString(url).split('/').length() - 1);
 
@@ -355,6 +357,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     time_t newtime = dtime.toTime_t();
     mtimenew = &newtime;
     reply->deleteLater();
+
     qDebug() << "Comparing";
 
     if (*mtimenew == mtimeold) {
@@ -367,24 +370,33 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     // We should handle the request synchronously, so get ready for some loops.
 
     QEventLoop e;
-    reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
-    connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
-    connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(computeDownloadProgress(qint64, qint64)));
+
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmdownloader", "/Downloader", "org.chakraproject.aqpmdownloader",
+                                         "finished", &e, SLOT(quit()));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmdownloader", "/Downloader", "org.chakraproject.aqpmdownloader",
+                                         "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
+
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
+              "/Downloader",
+              "org.chakraproject.aqpmdownloader",
+              QLatin1String("download"));
+    QList<QVariant> argumentList;
+
+    message << QString(url);
+    message << QString(localpath + d->currentFile);
+    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+
     e.exec();
 
-    QFile file(localpath + d->currentFile);
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmdownloader", "/Downloader",
+                                            "org.chakraproject.aqpmdownloader",
+                                            "downloadProgress", this, SLOT(computeDownloadProgress(qint64,qint64)));
 
-    if (!file.open(QIODevice::ReadWrite)) {
-        return -1;
-    }
-
-    file.write(reply->readAll());
-
-    reply->deleteLater();
+    QCoreApplication::processEvents();
     return 0;
 }
 
-void CallBacks::computeDownloadProgress(qint64 downloaded, qint64 total)
+void CallBacks::computeDownloadProgress(int downloaded, int total)
 {
     Q_D(CallBacks);
 
@@ -433,14 +445,9 @@ void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int 
 
     Aqpm::Globals::TransactionProgress evt;
 
-    if (d->updateTimer.isActive()) {
+    if (percent > 0 && percent < 100) {
         return;
-    } else {
-        d->updateTimer.start();
     }
-
-    if (percent > 0 && percent < 100)
-        return;
 
     switch (event) {
     case PM_TRANS_PROGRESS_ADD_START:
@@ -459,10 +466,8 @@ void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int 
 
     qDebug() << "Streaming trans progress";
 
-    emit streamTransProgress((int)evt, QString(pkgname), percent, howmany, remain);
+    emit streamTransProgress((int)evt, pkgname, percent, howmany, remain);
 }
-
-
 
 void CallBacks::cb_log(pmloglevel_t level, char *fmt, va_list args)
 {
@@ -485,8 +490,6 @@ void CallBacks::cb_log(pmloglevel_t level, char *fmt, va_list args)
     }
 }
 
-/* Now the real suckness is coming... */
-
 void cb_dl_total(off_t total)
 {
     CallBacks::instance()->cb_dl_total(total);
@@ -506,13 +509,11 @@ void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
 void cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
                    void *data3, int *response)
 {
-    qDebug() << "Question Event Triggered";
     CallBacks::instance()->cb_trans_conv(event, data1, data2, data3, response);
 }
 
 void cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
 {
-    qDebug() << "Received Event Callback";
     CallBacks::instance()->cb_trans_evt(event, data1, data2);
 }
 

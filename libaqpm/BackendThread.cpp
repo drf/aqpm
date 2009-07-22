@@ -873,8 +873,8 @@ void BackendThread::workerResult(bool result)
                                             "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "workerResult", this, SLOT(workerResult(bool)));
-    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceUnregistered(QString)),
-               this, SLOT(serviceUnregistered(QString)));
+    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+               this, SLOT(serviceOwnerChanged(QString,QString,QString)));
 
     // After a worker operation ends, reload Alpm and clear the queue
     reloadPacmanConfiguration();
