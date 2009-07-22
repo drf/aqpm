@@ -384,7 +384,12 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     message << QString(url);
     message << QString(localpath + d->currentFile);
-    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+    QDBusMessage mreply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+
+    if (mreply.type() == QDBusMessage::ErrorMessage) {
+        // Damn this, there was an error
+        return 1;
+    }
 
     e.exec();
 
