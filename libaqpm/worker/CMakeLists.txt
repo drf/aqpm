@@ -19,7 +19,6 @@ SET(aqpmworker_SRCS
 automoc4_add_executable(aqpmworker
     ${aqpmworker_SRCS}
     ${aqpmworker_adaptor_SRCS}
-    ${aqpmworker_MOC_SRCS}
 )
 
 TARGET_LINK_LIBRARIES(aqpmworker

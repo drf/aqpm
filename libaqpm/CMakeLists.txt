@@ -29,7 +29,6 @@ SET(aqpm_HEADERS
                       
 automoc4_add_library(aqpm SHARED
     ${aqpm_SRCS}
-    ${aqpm_MOC_SRCS}
 )
 
 set_target_properties(aqpm PROPERTIES VERSION ${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQPM_VERSION}
