@@ -43,10 +43,6 @@
 
 #include "alpm.h"
 
-#define UPDATE_SPEED_SEC 0.2f
-
-static QEvent::Type s_eventType;
-
 namespace AqpmWorker
 {
 
@@ -106,7 +102,6 @@ void CallBacksPrivate::init()
     Q_Q(CallBacks);
     manager = new QNetworkAccessManager(q);
     manager->setProxy(QNetworkProxy());
-    s_eventType = (QEvent::Type)QEvent::registerEventType();
 }
 
 QNetworkRequest CallBacksPrivate::createNetworkRequest(const QUrl &url)
