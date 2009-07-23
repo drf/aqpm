@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QVariantList>
+#include <QProcess>
 #include <QtDBus/QDBusContext>
 
 #include <alpm.h>
@@ -54,6 +55,11 @@ private:
     void operationPerformed(bool result);
     bool addTransTarget(const QString &target);
     bool performTransaction();
+
+private Q_SLOTS:
+    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void errorOutput();
+    void standardOutput();
 
 Q_SIGNALS:
     void workerReady();

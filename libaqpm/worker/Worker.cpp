@@ -24,6 +24,7 @@
 
 #include "../ConfigurationParser.h"
 #include "../Configuration.h"
+#include "../Maintenance.h"
 #include "w_callbacks.h"
 #include "../Globals.h"
 #include "../QueueItem.h"
@@ -46,6 +47,7 @@ public:
     pmdb_t *db_local;
     pmdb_t *dbs_sync;
     QTimer *timeout;
+    QProcess *proc;
 
     bool ready;
 };
@@ -713,6 +715,60 @@ void Worker::performMaintenance(int type)
     }
 
     d->timeout->stop();
+
+    switch ((Aqpm::Maintenance::Action)type) {
+    case Aqpm::Maintenance::CleanCache:
+    case Aqpm::Maintenance::CleanUnusedDatabases:
+        // TODO: This should not work this way
+        if (!QProcess::execute("pacman -Sc --noconfirm")) {
+            operationPerformed(true);
+        } else {
+            operationPerformed(false);
+        }
+        return;
+    case Aqpm::Maintenance::EmptyCache:
+        // TODO: This should not work this way
+        if (!QProcess::execute("pacman -Scc --noconfirm")) {
+            operationPerformed(true);
+        } else {
+            operationPerformed(false);
+        }
+        return;
+    case Aqpm::Maintenance::OptimizeDatabases:
+        d->proc = new QProcess(this);
+        connect(d->proc, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processFinished(int,QProcess::ExitStatus)));
+        connect(d->proc, SIGNAL(readyReadStandardError()), this, SLOT(errorOutput()));
+        connect(d->proc, SIGNAL(readyReadStandardOutput()), this, SLOT(standardOutput()));
+        d->proc->start("pacman-optimize");
+        break;
+    default:
+        operationPerformed(false);
+        break;
+    }
+}
+
+void Worker::processFinished(int exitCode, QProcess::ExitStatus)
+{
+    d->proc->deleteLater();
+
+    if (exitCode) {
+        operationPerformed(false);
+    } else {
+        QProcess::execute("sync");
+        operationPerformed(true);
+    }
+}
+
+void Worker::errorOutput()
+{
+    d->proc->setReadChannel(QProcess::StandardError);
+    emit messageStreamed(QString::fromLocal8Bit(d->proc->readLine()));
+}
+
+void Worker::standardOutput()
+{
+    d->proc->setReadChannel(QProcess::StandardOutput);
+    emit messageStreamed(QString::fromLocal8Bit(d->proc->readLine()));
 }
 
 }
