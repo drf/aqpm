@@ -81,7 +81,7 @@ private:
     bool isInstalled(const Package &package);
 
     bool updateDatabase();
-    void fullSystemUpgrade();
+    void fullSystemUpgrade(bool downgrade);
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 

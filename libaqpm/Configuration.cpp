@@ -213,6 +213,8 @@ QString Configuration::getServerForDatabase(const QString &db) const
     d->tempfile->open();
     QTextStream in(d->tempfile);
 
+    QString retstr;
+
     // Find out the db
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -225,14 +227,12 @@ QString Configuration::getServerForDatabase(const QString &db) const
             }
             // Cool, let's see if it's valid
             if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
-                d->tempfile->close();
-                return QString();
+                retstr.clear();
             } else if (nextLine.startsWith("Server")) {
                 nextLine.remove(' ');
                 nextLine.remove('=');
                 nextLine.remove("Server", Qt::CaseSensitive);
-                d->tempfile->close();
-                return nextLine;
+                retstr = nextLine;
             } else {
                 nextLine.remove(' ');
                 nextLine.remove('=');
@@ -252,16 +252,16 @@ QString Configuration::getServerForDatabase(const QString &db) const
                         incLine.remove('=');
                         incLine.remove("Server", Qt::CaseSensitive);
                         file.close();
-                        d->tempfile->close();
-                        return incLine;
+                        retstr = incLine;
                     }
                 }
             }
         }
     }
 
+    retstr.replace("$repo", db);
     d->tempfile->close();
-    return QString();
+    return retstr;
 }
 
 void Configuration::remove(const QString &key)

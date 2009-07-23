@@ -70,16 +70,6 @@ class AQPM_EXPORT Backend : public QObject
     Q_OBJECT
 
 public:
-    /**
-     * This enum is used by Aqpm internals
-     */
-    enum BackendEvent {
-        UpdateDatabase = 1001,
-        ProcessQueue = 1002,
-        Initialization = 1003,
-        SystemUpgrade = 1004,
-        PerformAction = 1005
-    };
 
     /**
      * Defines the action type in a synchonous operation. There is a matching entry for
@@ -117,7 +107,12 @@ public:
         IsOnTransaction,
         SetFlags,
         ReloadPacmanConfiguration,
-        AlpmListToStringList
+        AlpmListToStringList,
+        UpdateDatabase,
+        ProcessQueue,
+        Initialization,
+        SystemUpgrade,
+        PerformAction
     };
 
     /**
@@ -134,7 +129,7 @@ public:
     /**
      * Internal method
      */
-    QEvent::Type getEventTypeFor(BackendEvent event);
+    QEvent::Type getEventTypeFor(ActionType event);
 
     /**
      * Performs a test on the library to check if Alpm and Aqpm are ready to be used
@@ -177,7 +172,7 @@ public:
     bool isInstalled(const Package &package);
 
     bool updateDatabase();
-    void fullSystemUpgrade(const QList<pmtransflag_t> &flags);
+    void fullSystemUpgrade(const QList<pmtransflag_t> &flags, bool downgrade = false);
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 

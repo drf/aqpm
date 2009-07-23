@@ -179,7 +179,8 @@ void BackendThread::customEvent(QEvent *event)
     } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::Initialization)) {
         init();
     } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::SystemUpgrade)) {
-        fullSystemUpgrade();
+        ActionEvent *ae = dynamic_cast<ActionEvent*>(event);
+        fullSystemUpgrade(ae->args()["downgrade"].toBool());
     } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::PerformAction)) {
         ActionEvent *ae = dynamic_cast<ActionEvent*>(event);
 
@@ -735,7 +736,7 @@ bool BackendThread::updateDatabase()
     return true;
 }
 
-void BackendThread::fullSystemUpgrade()
+void BackendThread::fullSystemUpgrade(bool downgrade)
 {
     emit transactionStarted();
 
@@ -756,9 +757,8 @@ void BackendThread::fullSystemUpgrade()
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("systemUpgrade"));
-    QList<QVariant> argumentList;
-    argumentList << qVariantFromValue(flags);
-    message.setArguments(argumentList);
+    message << qVariantFromValue(flags);
+    message << downgrade;
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }
 

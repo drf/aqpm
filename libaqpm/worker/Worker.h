@@ -43,7 +43,7 @@ public:
 public Q_SLOTS:
     void processQueue(const QVariantList &packages, const QVariantList &flags);
     void updateDatabase();
-    void systemUpgrade(const QVariantList &flags);
+    void systemUpgrade(const QVariantList &flags, bool downgrade);
     void setAnswer(int answer);
     void saveConfiguration(const QString &conf);
 

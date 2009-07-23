@@ -410,7 +410,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
     operationPerformed(true);
 }
 
-void Worker::systemUpgrade(const QVariantList &flags)
+void Worker::systemUpgrade(const QVariantList &flags, bool downgrade)
 {
     d->timeout->stop();
 
@@ -453,7 +453,9 @@ void Worker::systemUpgrade(const QVariantList &flags)
         return;
     }
 
-    if (alpm_trans_sysupgrade(0) == -1) { //TODO: Provide option for downgrading
+    int dwng = downgrade ? 1 : 0;
+
+    if (alpm_trans_sysupgrade(0) == -1) {
         qDebug() << "Creating a sysupgrade transaction failed!!";
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());

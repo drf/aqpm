@@ -43,7 +43,7 @@ public:
 
     BackendThread *thread;
     ContainerThread *containerThread;
-    QMap<Backend::BackendEvent, QEvent::Type> events;
+    QMap<Backend::ActionType, QEvent::Type> events;
 };
 
 class BackendHelper
@@ -143,7 +143,7 @@ void Backend::setUpSelf(BackendThread *t)
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }
 
-QEvent::Type Backend::getEventTypeFor(BackendEvent event)
+QEvent::Type Backend::getEventTypeFor(ActionType event)
 {
     return d->events[event];
 }
@@ -341,12 +341,14 @@ bool Backend::updateDatabase()
     return true;
 }
 
-void Backend::fullSystemUpgrade(const QList<pmtransflag_t> &flags)
+void Backend::fullSystemUpgrade(const QList<pmtransflag_t> &flags, bool downgrade)
 {
     QVariantMap args;
     args["flags"] = QVariant::fromValue(flags);
+    args["downgrade"] = downgrade;
     SynchronousLoop s(SetFlags, args);
-    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(SystemUpgrade)));
+    QCoreApplication::postEvent(d->thread,
+                                new ActionEvent(getEventTypeFor(SystemUpgrade), SystemUpgrade, args));
     qDebug() << "Thread is running";
 }
 
