@@ -264,6 +264,54 @@ QString Configuration::getServerForDatabase(const QString &db) const
     return retstr;
 }
 
+QStringList Configuration::getMirrorList(MirrorType type) const
+{
+    QFile file;
+
+    if (type == ArchMirror) {
+        file.setFileName("/etc/pacman.d/mirrorlist");
+    } else if (type == KdemodMirror) {
+        if (QFile::exists("/etc/pacman.d/kdemodmirrorlist")) {
+            file.setFileName("/etc/pacman.d/kdemodmirrorlist");
+        } else {
+            return QStringList();
+        }
+    }
+
+    QStringList retlist;
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return QStringList();
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+
+        if (line.startsWith('#')) {
+            line.remove(0, 1);
+        }
+
+        if (!line.contains("server", Qt::CaseInsensitive)) {
+            continue;
+        }
+
+        QStringList list(line.split('=', QString::SkipEmptyParts));
+        if (list.count() >= 1) {
+            QString serverN(list.at(1));
+
+            serverN.remove(QChar(' '), Qt::CaseInsensitive);
+
+            retlist.append(serverN);
+        }
+    }
+
+    file.close();
+
+    return retlist;
+
+}
+
 void Configuration::remove(const QString &key)
 {
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);

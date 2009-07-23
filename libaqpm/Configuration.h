@@ -31,6 +31,11 @@ class Configuration : public QObject
     Q_OBJECT
 
 public:
+    enum MirrorType {
+        ArchMirror,
+        KdemodMirror
+    };
+
     static Configuration *instance();
 
     virtual ~Configuration();
@@ -43,6 +48,7 @@ public:
 
     QStringList databases();
     QString getServerForDatabase(const QString &db) const;
+    QStringList getMirrorList(MirrorType type) const;
 
     void remove(const QString &key);
     bool exists(const QString &key, const QString &val = QString());
