@@ -18,6 +18,9 @@
 			<arg type="s" direction="in" />
 			<arg type="i" direction="in" />
                 </method>
+		<method name="performMaintenance">
+			<arg type="i" direction="in" />
+		</method>
 		<method name="isWorkerReady">
 			<arg type="b" direction="out" />
 		</method>
@@ -66,6 +69,9 @@
                         <arg type="i" direction="out" />
                         <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
                         <arg type="a{sv}" direction="out" />
+                </signal>
+		<signal name="messageStreamed">
+                        <arg type="s" direction="out" />
                 </signal>
 		<signal name="logMessageStreamed">
                         <arg type="s" direction="out" />

@@ -27,19 +27,30 @@ namespace Aqpm {
 
 class Maintenance : public QObject
 {
+    Q_OBJECT
+
 public:
     enum Action {
-        CleanUnusedDatabases,
-        CleanCache,
-        EmptyCache,
-        OptimizeDatabases,
-        CleanABS,
-        RemoveUnusedPackages
+        CleanUnusedDatabases = 1,
+        CleanCache = 2,
+        EmptyCache = 4,
+        OptimizeDatabases = 8,
+        CleanABS = 16,
+        RemoveUnusedPackages = 32
     };
 
     static Maintenance *instance();
 
     virtual ~Maintenance();
+
+    void performAction(Action type);
+
+Q_SIGNALS:
+    void actionPerformed(bool result);
+    void actionOutput(const QString &output);
+    
+private Q_SLOTS:
+    void workerResult(bool result);
 
 private:
     Maintenance();

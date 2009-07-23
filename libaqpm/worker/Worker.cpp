@@ -697,4 +697,22 @@ void Worker::addMirror(const QString &mirror, int type)
     operationPerformed(true);
 }
 
+void Worker::performMaintenance(int type)
+{
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.performmaintenance",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        operationPerformed(false);
+        return;
+    }
+
+    d->timeout->stop();
+}
+
 }

@@ -47,6 +47,7 @@ public Q_SLOTS:
     void setAnswer(int answer);
     void saveConfiguration(const QString &conf);
     void addMirror(const QString &mirror, int type);
+    void performMaintenance(int type);
 
 private:
     void setUpAlpm();
@@ -72,6 +73,8 @@ Q_SIGNALS:
                           int rate, int list_done, int list_total);
 
     void errorOccurred(int code, const QVariantMap &details);
+
+    void messageStreamed(const QString &msg);
 
     void logMessageStreamed(const QString &msg);
 

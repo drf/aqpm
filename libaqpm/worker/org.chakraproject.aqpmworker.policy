@@ -52,4 +52,13 @@
     </defaults>
   </action>
 
+  <action id="org.chakraproject.aqpm.performmaintenance">
+    <description>Performs a maintenance operation on the package system</description>
+    <message>Prevents the Package Manager from performing a maintenance action</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
 </policyconfig>
