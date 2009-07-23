@@ -14,6 +14,10 @@
 		<method name="saveConfiguration">
 			<arg type="s" direction="in" />
                 </method>
+		<method name="addMirror">
+			<arg type="s" direction="in" />
+			<arg type="i" direction="in" />
+                </method>
 		<method name="isWorkerReady">
 			<arg type="b" direction="out" />
 		</method>

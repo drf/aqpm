@@ -312,6 +312,56 @@ QStringList Configuration::getMirrorList(MirrorType type) const
 
 }
 
+bool Configuration::addMirror(const QString &mirror, MirrorType type)
+{
+    QEventLoop e;
+
+    connect(this, SIGNAL(configurationSaved(bool)), &e, SLOT(quit()));
+
+    addMirrorAsync(mirror, type);
+    e.exec();
+
+    return d->lastResult;
+}
+
+void Configuration::addMirrorAsync(const QString &mirror, MirrorType type)
+{
+    QDBusMessage message;
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("isWorkerReady"));
+    QDBusMessage reply = QDBusConnection::systemBus().call(message);
+    if (reply.type() == QDBusMessage::ReplyMessage
+            && reply.arguments().size() == 1) {
+        qDebug() << reply.arguments().first().toBool();
+    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
+        qWarning() << "Message did not receive a reply (timeout by message bus)";
+        workerResult(false);
+        return;
+    }
+
+    if (Backend::instance()->shouldHandleAuthorization()) {
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.addmirror")) {
+            qDebug() << "User unauthorized";
+            workerResult(false);
+            return;
+        }
+    }
+
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "workerResult", this, SLOT(workerResult(bool)));
+
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("addMirror"));
+
+    message << mirror;
+    message << (int)type;
+    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+}
+
 void Configuration::remove(const QString &key)
 {
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);

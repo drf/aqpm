@@ -46,6 +46,7 @@ public Q_SLOTS:
     void systemUpgrade(const QVariantList &flags, bool downgrade);
     void setAnswer(int answer);
     void saveConfiguration(const QString &conf);
+    void addMirror(const QString &mirror, int type);
 
 private:
     void setUpAlpm();

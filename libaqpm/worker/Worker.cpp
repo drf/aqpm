@@ -23,6 +23,7 @@
 #include "aqpmworkeradaptor.h"
 
 #include "../ConfigurationParser.h"
+#include "../Configuration.h"
 #include "w_callbacks.h"
 #include "../Globals.h"
 #include "../QueueItem.h"
@@ -644,6 +645,51 @@ void Worker::saveConfiguration(const QString &conf)
 
     QTextStream out(&file);
     out << conf;
+
+    file.flush();
+    file.close();
+
+    operationPerformed(true);
+}
+
+void Worker::addMirror(const QString &mirror, int type)
+{
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.addmirror",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        operationPerformed(false);
+        return;
+    }
+
+    d->timeout->stop();
+
+    QString toInsert("Server=");
+    toInsert.append(mirror);
+
+    QFile file;
+
+    switch ((Aqpm::Configuration::MirrorType)type) {
+    case Aqpm::Configuration::ArchMirror:
+        file.setFileName("/etc/pacman.d/mirrorlist");
+        break;
+    case Aqpm::Configuration::KdemodMirror:
+        file.setFileName("/etc/pacman.d/kdemodmirrorlist");
+        break;
+    }
+
+    if (!file.open(QIODevice::Append | QIODevice::Text)) {
+        operationPerformed(false);
+        return;
+    }
+
+    file.write(toInsert.toUtf8().data(), toInsert.length());
+    file.write("\n", 1);
 
     file.flush();
     file.close();

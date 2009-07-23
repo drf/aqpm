@@ -32,8 +32,8 @@ class Configuration : public QObject
 
 public:
     enum MirrorType {
-        ArchMirror,
-        KdemodMirror
+        ArchMirror = 1,
+        KdemodMirror = 2
     };
 
     static Configuration *instance();
@@ -48,7 +48,11 @@ public:
 
     QStringList databases();
     QString getServerForDatabase(const QString &db) const;
+
     QStringList getMirrorList(MirrorType type) const;
+
+    bool addMirror(const QString &mirror, MirrorType type);
+    void addMirrorAsync(const QString &mirror, MirrorType type);
 
     void remove(const QString &key);
     bool exists(const QString &key, const QString &val = QString());
