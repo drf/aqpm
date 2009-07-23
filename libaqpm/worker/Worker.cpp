@@ -141,11 +141,6 @@ void Worker::setUpAlpm()
         }
     }
 
-    if (!pdata.xferCommand.isEmpty()) {
-        qDebug() << "XFerCommand is:" << pdata.xferCommand;
-        alpm_option_set_xfercommand(pdata.xferCommand.toAscii().data());
-    }
-
     alpm_option_set_nopassiveftp(pdata.noPassiveFTP);
 
     /*foreach(const QString &str, pdata.HoldPkg) {
@@ -458,7 +453,7 @@ void Worker::systemUpgrade(const QVariantList &flags)
         return;
     }
 
-    if (alpm_trans_sysupgrade() == -1) {
+    if (alpm_trans_sysupgrade(0) == -1) { //TODO: Provide option for downgrading
         qDebug() << "Creating a sysupgrade transaction failed!!";
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());
