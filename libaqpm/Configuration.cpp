@@ -112,6 +112,7 @@ void Configuration::reload()
         QString line = in.readLine();
         if (!line.startsWith('#')) {
             out << line;
+            out << '\n';
         }
     }
 
@@ -200,6 +201,70 @@ QVariant Configuration::value(const QString &key)
 {
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
     return settings.value(key);
+}
+
+QStringList Configuration::databases()
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QStringList retlist = settings.childGroups();
+    retlist.removeOne("options");
+    return retlist;
+}
+
+QString Configuration::getServerForDatabase(const QString &db) const
+{
+    d->tempfile->open();
+    QTextStream in(d->tempfile);
+
+    // Find out the db
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        if (line.startsWith('[' + db)) {
+            // Let's go to the next line
+            QString nextLine = "#";
+
+            while (nextLine.startsWith('#') || nextLine.isEmpty()) {
+                nextLine = in.readLine();
+            }
+            // Cool, let's see if it's valid
+            if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
+                d->tempfile->close();
+                return QString();
+            } else if (nextLine.startsWith("Server")) {
+                nextLine.remove(' ');
+                nextLine.remove('=');
+                nextLine.remove("Server", Qt::CaseSensitive);
+                d->tempfile->close();
+                return nextLine;
+            } else {
+                nextLine.remove(' ');
+                nextLine.remove('=');
+                nextLine.remove("Include", Qt::CaseSensitive);
+
+                // Now let's hit the include file
+                QFile file(nextLine);
+
+                file.open(QIODevice::ReadOnly);
+
+                QTextStream incin(&file);
+
+                while (!incin.atEnd()) {
+                    QString incLine = incin.readLine();
+                    if (incLine.startsWith("Server")) {
+                        incLine.remove(' ');
+                        incLine.remove('=');
+                        incLine.remove("Server", Qt::CaseSensitive);
+                        file.close();
+                        d->tempfile->close();
+                        return incLine;
+                    }
+                }
+            }
+        }
+    }
+
+    d->tempfile->close();
+    return QString();
 }
 
 void Configuration::remove(const QString &key)

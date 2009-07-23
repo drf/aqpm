@@ -41,6 +41,9 @@ public:
     void setValue(const QString &key, const QString &val);
     QVariant value(const QString &key);
 
+    QStringList databases();
+    QString getServerForDatabase(const QString &db) const;
+
     void remove(const QString &key);
     bool exists(const QString &key, const QString &val = QString());
 

@@ -21,6 +21,7 @@
 #include "BackendThread.h"
 
 #include "ConfigurationParser.h"
+#include "Configuration.h"
 #include "ActionEvent.h"
 
 #include <QDebug>
@@ -346,40 +347,35 @@ bool BackendThread::reloadPacmanConfiguration()
 
 void BackendThread::setUpAlpm()
 {
-    PacmanConf pdata;
-
-    pdata = ConfigurationParser::instance()->getPacmanConf(true);
-
     alpm_option_set_root("/");
     alpm_option_set_dbpath("/var/lib/pacman");
     alpm_option_add_cachedir("/var/cache/pacman/pkg");
 
     d->db_local = alpm_db_register_local();
 
-    if (pdata.logFile.isEmpty()) {
+    if (Configuration::instance()->value("options/LogFile").toString().isEmpty()) {
         alpm_option_set_logfile("/var/log/pacman.log");
     } else {
-        alpm_option_set_logfile(pdata.logFile.toAscii().data());
+        alpm_option_set_logfile(Configuration::instance()->value("options/LogFile").toString().toAscii().data());
     }
 
     /* Register our sync databases, kindly taken from pacdata */
 
-    if (!pdata.loaded) {
-        qDebug() << "Error Parsing Pacman Configuration!!";
-    }
+    qDebug() << Configuration::instance()->databases();
 
-    for (int i = 0; i < pdata.syncdbs.size(); ++i) {
-        if (pdata.serverAssoc.size() <= i) {
-            qDebug() << "Could not find a matching repo for" << pdata.syncdbs.at(i);
+    foreach (const QString &db, Configuration::instance()->databases()) {
+        QString srvr = Configuration::instance()->getServerForDatabase(db);
+        if (srvr.isEmpty()) {
+            qDebug() << "Could not find a matching repo for" << db;
             continue;
         }
 
-        d->dbs_sync = alpm_db_register_sync(pdata.syncdbs.at(i).toAscii().data());
+        d->dbs_sync = alpm_db_register_sync(db.toAscii().data());
 
-        if (alpm_db_setserver(d->dbs_sync, pdata.serverAssoc.at(i).toAscii().data()) == 0) {
-            qDebug() << pdata.syncdbs.at(i) << "--->" << pdata.serverAssoc.at(i);
+        if (alpm_db_setserver(d->dbs_sync, srvr.toAscii().data()) == 0) {
+            qDebug() << db << "--->" << srvr;
         } else {
-            qDebug() << "Failed to add" << pdata.syncdbs.at(i) << "!!";
+            qDebug() << "Failed to add" << db << "!!";
         }
     }
 
@@ -387,24 +383,24 @@ void BackendThread::setUpAlpm()
         alpm_option_add_holdpkg(str.toAscii().data());
     }*/
 
-    foreach(const QString &str, pdata.IgnorePkg) {
+    foreach(const QString &str, Configuration::instance()->value("options/IgnorePkg").toString().split(' ')) {
         alpm_option_add_ignorepkg(str.toAscii().data());
     }
 
-    foreach(const QString &str, pdata.IgnoreGrp) {
+    foreach(const QString &str, Configuration::instance()->value("options/IgnoreGroup").toString().split(' ')) {
         alpm_option_add_ignoregrp(str.toAscii().data());
     }
 
-    foreach(const QString &str, pdata.NoExtract) {
+    foreach(const QString &str, Configuration::instance()->value("options/NoExtract").toString().split(' ')) {
         alpm_option_add_noextract(str.toAscii().data());
     }
 
-    foreach(const QString &str, pdata.NoUpgrade) {
+    foreach(const QString &str, Configuration::instance()->value("options/NoUpgrade").toString().split(' ')) {
         alpm_option_add_noupgrade(str.toAscii().data());
     }
 
     //alpm_option_set_usedelta(pdata.useDelta); Until a proper implementation is there
-    alpm_option_set_usesyslog(pdata.useSysLog);
+    alpm_option_set_usesyslog(Configuration::instance()->value("options/UseSyslog").toInt());
 
     PERFORM_RETURN_VOID(Backend::SetUpAlpm)
 }
