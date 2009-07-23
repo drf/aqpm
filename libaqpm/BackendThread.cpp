@@ -20,7 +20,6 @@
 
 #include "BackendThread.h"
 
-#include "ConfigurationParser.h"
 #include "Configuration.h"
 #include "ActionEvent.h"
 
@@ -304,37 +303,21 @@ bool BackendThread::isOnTransaction()
 
 bool BackendThread::reloadPacmanConfiguration()
 {
-    PacmanConf pdata;
-
     alpm_db_unregister_all();
 
-    //pdata.HoldPkg = alpmListToStringList(alpm_option_get_holdpkgs());
-
-    pdata.IgnorePkg = alpmListToStringList(alpm_option_get_ignorepkgs());
-
-    pdata.IgnoreGrp = alpmListToStringList(alpm_option_get_ignoregrps());
-
-    pdata.NoExtract = alpmListToStringList(alpm_option_get_noextracts());
-
-    pdata.NoUpgrade = alpmListToStringList(alpm_option_get_noupgrades());
-
-    /*foreach(const QString &str, pdata.HoldPkg) {
-        alpm_option_remove_holdpkg(str.toAscii().data());
-    }*/
-
-    foreach(const QString &str, pdata.IgnorePkg) {
+    foreach(const QString &str, alpmListToStringList(alpm_option_get_ignorepkgs())) {
         alpm_option_remove_ignorepkg(str.toAscii().data());
     }
 
-    foreach(const QString &str, pdata.IgnoreGrp) {
+    foreach(const QString &str, alpmListToStringList(alpm_option_get_ignoregrps())) {
         alpm_option_remove_ignoregrp(str.toAscii().data());
     }
 
-    foreach(const QString &str, pdata.NoExtract) {
+    foreach(const QString &str, alpmListToStringList(alpm_option_get_noextracts())) {
         alpm_option_remove_noextract(str.toAscii().data());
     }
 
-    foreach(const QString &str, pdata.NoUpgrade) {
+    foreach(const QString &str, alpmListToStringList(alpm_option_get_noupgrades())) {
         alpm_option_remove_noupgrade(str.toAscii().data());
     }
 
@@ -360,8 +343,6 @@ void BackendThread::setUpAlpm()
     }
 
     /* Register our sync databases, kindly taken from pacdata */
-
-    qDebug() << Configuration::instance()->databases();
 
     foreach (const QString &db, Configuration::instance()->databases()) {
         QString srvr = Configuration::instance()->getServerForDatabase(db);

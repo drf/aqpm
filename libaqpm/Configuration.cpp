@@ -118,9 +118,6 @@ void Configuration::reload()
 
     file.close();
     d->tempfile->close();
-
-    qDebug() << d->tempfile->fileName();
-    exists("test", "test");
 }
 
 bool Configuration::saveConfiguration()
@@ -276,16 +273,12 @@ void Configuration::remove(const QString &key)
 bool Configuration::exists(const QString &key, const QString &val)
 {
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
-    qDebug() << "Checking" << key << val;
     bool result = settings.contains(key);
-    qDebug() << "Done";
 
     if (!val.isEmpty() && result) {
         qDebug() << "Check";
         result = value(key).toString() == val;
     }
-
-    qDebug() << "Done";
 
     return result;
 }
