@@ -6,7 +6,6 @@ SET(aqpm_SRCS
     Backend.cpp
     BackendThread.cpp
     ConfigurationParser.cpp
-#    callbacks.cpp
     QueueItem.cpp
     Package.cpp
     Group.cpp
@@ -14,6 +13,7 @@ SET(aqpm_SRCS
     SynchronousLoop.cpp
     ActionEvent.cpp
     Configuration.cpp
+    Maintenance.cpp
 )
 
 SET(aqpm_HEADERS
@@ -25,6 +25,7 @@ SET(aqpm_HEADERS
 	Group.h
 	Database.h
 	Configuration.h
+        Maintenance.h
 )
                       
 automoc4_add_library(aqpm SHARED
