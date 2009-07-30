@@ -39,9 +39,9 @@ public:
     BackendThread(QObject *parent = 0);
     virtual ~BackendThread();
 
+private:
     void init();
 
-private:
     void setUpAlpm();
     bool testLibrary();
     bool isOnTransaction();
@@ -92,8 +92,11 @@ private:
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
     void setFlags(const QList<pmtransflag_t> &flags);
+
     void processQueue();
     QueueItem::List queue();
+
+    void interruptTransaction();
 
     void setShouldHandleAuthorization(bool should);
     bool shouldHandleAuthorization();

@@ -285,6 +285,8 @@ void BackendThread::customEvent(QEvent *event)
             case Backend::ReloadPacmanConfiguration:
                 reloadPacmanConfiguration();
                 break;
+            case Backend::InterruptTransaction:
+                interruptTransaction();
             default:
                 qDebug() << "Implement me!!";
                 break;
@@ -885,6 +887,21 @@ void BackendThread::serviceOwnerChanged(const QString &name, const QString &oldO
     // Ok, something got screwed. Report and flee
     emit errorOccurred((int) Aqpm::Globals::WorkerDisappeared, QVariantMap());
     workerResult(false);
+}
+
+void BackendThread::interruptTransaction()
+{
+    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
+        emit errorOccurred((int) Aqpm::Globals::TransactionInterruptedByUser, QVariantMap());
+        emit operationFinished(false);
+        return;
+    }
+
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("interruptTransaction"));
+    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }
 
 }

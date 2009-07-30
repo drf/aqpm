@@ -80,21 +80,22 @@ public:
     enum ErrorCode {
         PrepareError = 1,
         CommitError = 2,
-        InitTransactionError = 4,
-        ReleaseTransactionError = 8,
-        AddTargetError = 16,
-        CreateSysUpgradeError = 32,
-        DuplicateTarget = 64,
-        PackageIgnored = 128,
-        PackageNotFound = 256,
-        UnsatisfiedDependencies = 512,
-        ConflictingDependencies = 1024,
-        FileConflictTarget = 2048,
-        FileConflictFilesystem = 4096,
-        CorruptedFile = 8192,
-        WorkerInitializationFailed = 16384,
-        AuthorizationNotGranted = 32768,
-        WorkerDisappeared = 65536
+        InitTransactionError = 3,
+        ReleaseTransactionError = 4,
+        AddTargetError = 5,
+        CreateSysUpgradeError = 6,
+        DuplicateTarget = 7,
+        PackageIgnored = 8,
+        PackageNotFound = 9,
+        UnsatisfiedDependencies = 10,
+        ConflictingDependencies = 11,
+        FileConflictTarget = 12,
+        FileConflictFilesystem = 13,
+        CorruptedFile = 14,
+        WorkerInitializationFailed = 15,
+        AuthorizationNotGranted = 16,
+        WorkerDisappeared = 17,
+        TransactionInterruptedByUser = 18
     };
 
     Q_DECLARE_FLAGS(Errors, ErrorCode)

@@ -112,7 +112,8 @@ public:
         ProcessQueue,
         Initialization,
         SystemUpgrade,
-        PerformAction
+        PerformAction,
+        InterruptTransaction
     };
 
     /**
@@ -182,8 +183,11 @@ public:
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
+
     void processQueue(const QList<pmtransflag_t> &flags);
     QueueItem::List queue() const;
+
+    void interruptTransaction();
 
     void setShouldHandleAuthorization(bool should);
     bool shouldHandleAuthorization() const;

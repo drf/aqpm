@@ -426,4 +426,9 @@ BackendThread *Backend::getInnerThread()
     return d->thread;
 }
 
+void Backend::interruptTransaction()
+{
+    SynchronousLoop s(InterruptTransaction, QVariantMap());
+}
+
 }

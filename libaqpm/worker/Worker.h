@@ -49,6 +49,7 @@ public Q_SLOTS:
     void saveConfiguration(const QString &conf);
     void addMirror(const QString &mirror, int type);
     void performMaintenance(int type);
+    void interruptTransaction();
 
 private:
     void setUpAlpm();

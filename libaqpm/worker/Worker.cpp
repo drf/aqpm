@@ -510,7 +510,7 @@ bool Worker::performTransaction()
                 //free(depstring);
             }
             args["UnsatisfiedDeps"] = innerdata;
-            emit errorOccurred(Aqpm::Globals::PrepareError | Aqpm::Globals::UnsatisfiedDependencies, args);
+            emit errorOccurred(Aqpm::Globals::UnsatisfiedDependencies, args);
             break;
         case PM_ERR_CONFLICTING_DEPS:
             for(i = data; i; i = alpm_list_next(i)) {
@@ -518,7 +518,7 @@ bool Worker::performTransaction()
                 innerdata[alpm_conflict_get_package1(conflict)] = alpm_conflict_get_package2(conflict);
             }
             args["ConflictingDeps"] = innerdata;
-            emit errorOccurred(Aqpm::Globals::PrepareError | Aqpm::Globals::ConflictingDependencies, args);
+            emit errorOccurred(Aqpm::Globals::ConflictingDependencies, args);
             break;
         default:
             args["ErrorString"] = alpm_strerrorlast();
@@ -545,12 +545,12 @@ bool Worker::performTransaction()
                             << alpm_fileconflict_get_ctarget(conflict);
                     qDebug() << innerdata;
                     args["ConflictingTargets"] = innerdata;
-                    emit errorOccurred(Aqpm::Globals::CommitError | Aqpm::Globals::FileConflictTarget, args);
+                    emit errorOccurred(Aqpm::Globals::FileConflictTarget, args);
                     break;
                 case PM_FILECONFLICT_FILESYSTEM:
                     innerdata[alpm_fileconflict_get_target(conflict)] = alpm_fileconflict_get_file(conflict);
                     args["ConflictingFiles"] = innerdata;
-                    emit errorOccurred(Aqpm::Globals::CommitError | Aqpm::Globals::FileConflictFilesystem, args);
+                    emit errorOccurred(Aqpm::Globals::FileConflictFilesystem, args);
                     break;
                 default:
                     args["ErrorString"] = alpm_strerrorlast();
@@ -565,7 +565,7 @@ bool Worker::performTransaction()
                 files << QString((char*) alpm_list_getdata(i));
             }
             args["Filenames"] = files;
-            emit errorOccurred(Aqpm::Globals::CommitError | Aqpm::Globals::CorruptedFile, args);
+            emit errorOccurred(Aqpm::Globals::CorruptedFile, args);
             break;
         default:
             args["ErrorString"] = alpm_strerrorlast();
@@ -596,15 +596,15 @@ bool Worker::addTransTarget(const QString &target)
         if (pm_errno == PM_ERR_TRANS_DUP_TARGET) {
             QVariantMap args;
             args["PackageName"] = target;
-            emit errorOccurred(Aqpm::Globals::AddTargetError | Aqpm::Globals::DuplicateTarget, args);
+            emit errorOccurred(Aqpm::Globals::DuplicateTarget, args);
         } else if (pm_errno == PM_ERR_PKG_IGNORED) {
             QVariantMap args;
             args["PackageName"] = target;
-            emit errorOccurred(Aqpm::Globals::AddTargetError | Aqpm::Globals::PackageIgnored, args);
+            emit errorOccurred(Aqpm::Globals::PackageIgnored, args);
         } else if (pm_errno == PM_ERR_PKG_NOT_FOUND) {
             QVariantMap args;
             args["PackageName"] = target;
-            emit errorOccurred(Aqpm::Globals::AddTargetError | Aqpm::Globals::PackageNotFound, args);
+            emit errorOccurred(Aqpm::Globals::PackageNotFound, args);
         } else {
             QVariantMap args;
             args["ErrorString"] = alpm_strerrorlast();
@@ -769,6 +769,24 @@ void Worker::standardOutput()
 {
     d->proc->setReadChannel(QProcess::StandardOutput);
     emit messageStreamed(QString::fromLocal8Bit(d->proc->readLine()));
+}
+
+void Worker::interruptTransaction()
+{
+    if (QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmdownloader")) {
+        QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
+                                                              "/Downloader",
+                                                              "org.chakraproject.aqpmdownloader",
+                                                              QLatin1String("abortDownload"));
+        QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+    }
+
+    if (alpm_trans_interrupt() == 0) {
+        alpm_trans_release();
+        emit errorOccurred((int) Aqpm::Globals::TransactionInterruptedByUser, QVariantMap());
+        emit operationPerformed(false);
+        d->timeout->start();
+    }
 }
 
 }
