@@ -786,6 +786,7 @@ void Worker::interruptTransaction()
         emit errorOccurred((int) Aqpm::Globals::TransactionInterruptedByUser, QVariantMap());
         emit operationPerformed(false);
         d->timeout->start();
+    } else {
     }
 }
 

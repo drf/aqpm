@@ -27,6 +27,8 @@
 		<method name="setAnswer">
 			<arg type="i" direction="in" />
 		</method>
+                <method name="interruptTransaction">
+                </method>
 
 		<signal name="workerReady">
 		</signal>

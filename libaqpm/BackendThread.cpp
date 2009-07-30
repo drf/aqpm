@@ -287,6 +287,7 @@ void BackendThread::customEvent(QEvent *event)
                 break;
             case Backend::InterruptTransaction:
                 interruptTransaction();
+                break;
             default:
                 qDebug() << "Implement me!!";
                 break;
