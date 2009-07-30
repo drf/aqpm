@@ -22,7 +22,7 @@
 
 #include <config-aqpm.h>
 
-#include "ConfigurationParser.h"
+#include "Configuration.h"
 #include "BackendThread.h"
 #include "SynchronousLoop.h"
 #include "ActionEvent.h"
@@ -93,6 +93,10 @@ Backend::Backend()
     d->events[PerformAction] = (QEvent::Type)QEvent::registerEventType();
 
     qDebug() << d->events;
+
+    // Right before that, instantiate Configuration in the main thread
+
+    Configuration::instance();
 
     d->containerThread = new ContainerThread();
     connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(setUpSelf(BackendThread*)));
