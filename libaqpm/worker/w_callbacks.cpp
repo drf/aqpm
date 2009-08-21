@@ -359,16 +359,16 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmdownloader", "/Downloader", "org.chakraproject.aqpmdownloader",
                                          "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
 
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
+    QDBusMessage qmessage = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
               QLatin1String("download"));
 
-    message << QString(url);
-    message << QString(localpath + d->currentFile);
-    mreply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+    qmessage << QString(url);
+    qmessage << QString(localpath + d->currentFile);
+    QDBusMessage reply = QDBusConnection::systemBus().call(qmessage, QDBus::BlockWithGui);
 
-    if (mreply.type() == QDBusMessage::ErrorMessage) {
+    if (reply.type() == QDBusMessage::ErrorMessage) {
         // Damn this, there was an error
         return 1;
     }

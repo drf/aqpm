@@ -100,7 +100,7 @@ void Downloader::download(const QString &url, const QString &to)
 {
     stopTemporizing();
 
-    qDebug() << "About to get";
+    qDebug() << "About to get " << url << " into " << to;
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
     qDebug() << "Getting started";
     reply->setProperty("to_FileName_p", to);
