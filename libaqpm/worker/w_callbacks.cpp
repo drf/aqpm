@@ -338,6 +338,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     // Let's check if the modification times collide. If so, there's no need to download the file
 
     time_t newtime = mreply.arguments().first().toInt();
+    qDebug() << "Header says" << newtime;
     mtimenew = &newtime;
 
     qDebug() << "Comparing";
