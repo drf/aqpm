@@ -52,7 +52,7 @@ public:
     bool ready;
 };
 
-Worker::Worker(QObject *parent)
+Worker::Worker(bool temporized, QObject *parent)
         : QObject(parent)
         , d(new Private())
 {
@@ -87,9 +87,9 @@ Worker::Worker(QObject *parent)
 
     setUpAlpm();
 
-    connect(d->timeout, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit()));
-    d->timeout->setInterval(8000);
-    d->timeout->start();
+    setIsTemporized(temporized);
+    setTimeout(2000);
+    startTemporizing();
 }
 
 Worker::~Worker()
@@ -175,7 +175,7 @@ void Worker::setUpAlpm()
 
 void Worker::updateDatabase()
 {
-    d->timeout->stop();
+    stopTemporizing();
 
     qDebug() << "Starting DB Update";
 
@@ -255,7 +255,7 @@ void Worker::updateDatabase()
 
 void Worker::processQueue(const QVariantList &packages, const QVariantList &flags)
 {
-    d->timeout->stop();
+    stopTemporizing();
 
     qDebug() << "Starting Queue Processing";
 
@@ -415,7 +415,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
 
 void Worker::systemUpgrade(const QVariantList &flags, bool downgrade)
 {
-    d->timeout->stop();
+    stopTemporizing();
 
     qDebug() << "Starting System Upgrade";
 
@@ -483,12 +483,12 @@ void Worker::setAnswer(int answer)
 void Worker::operationPerformed(bool result)
 {
     emit workerResult(result);
-    d->timeout->start();
+    startTemporizing();
 }
 
 bool Worker::performTransaction()
 {
-    d->timeout->stop();
+    stopTemporizing();
 
     alpm_list_t *data = NULL;
 
@@ -633,7 +633,7 @@ void Worker::saveConfiguration(const QString &conf)
         return;
     }
 
-    d->timeout->stop();
+    stopTemporizing();
 
     qDebug() << "About to write:" << conf;
 
@@ -669,7 +669,7 @@ void Worker::addMirror(const QString &mirror, int type)
         return;
     }
 
-    d->timeout->stop();
+    stopTemporizing();
 
     QString toInsert("Server=");
     toInsert.append(mirror);
@@ -714,7 +714,7 @@ void Worker::performMaintenance(int type)
         return;
     }
 
-    d->timeout->stop();
+    stopTemporizing();
 
     switch ((Aqpm::Maintenance::Action)type) {
     case Aqpm::Maintenance::CleanCache:
@@ -785,7 +785,7 @@ void Worker::interruptTransaction()
         alpm_trans_release();
         emit errorOccurred((int) Aqpm::Globals::TransactionInterruptedByUser, QVariantMap());
         emit operationPerformed(false);
-        d->timeout->start();
+        startTemporizing();
     } else {
     }
 }

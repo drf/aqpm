@@ -28,15 +28,17 @@
 
 #include <alpm.h>
 
+#include "../TemporizedApplication.h"
+
 namespace AqpmWorker
 {
 
-class Worker : public QObject, protected QDBusContext
+class Worker : public QObject, protected QDBusContext, private TemporizedApplication
 {
     Q_OBJECT
 
 public:
-    Worker(QObject *parent = 0);
+    Worker(bool temporized, QObject *parent = 0);
     virtual ~Worker();
 
     bool isWorkerReady();

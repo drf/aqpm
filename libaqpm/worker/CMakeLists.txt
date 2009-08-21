@@ -14,6 +14,7 @@ SET(aqpmworker_SRCS
     w_callbacks.cpp
     ../QueueItem.cpp
     ../ConfigurationParser.cpp
+    ../TemporizedApplication.cpp
 )
                       
 automoc4_add_executable(aqpmworker

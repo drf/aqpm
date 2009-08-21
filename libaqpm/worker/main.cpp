@@ -69,7 +69,13 @@ int main(int argc, char **argv)
     signal(SIGTERM, cleanup);
     signal(SIGSEGV, cleanup);
 
-    AqpmWorker::Worker w;
+    bool tmprz = true;
+
+    if (arguments.contains("--no-timeout")) {
+        tmprz = false;
+    }
+
+    AqpmWorker::Worker w(tmprz);
 
     app.exec();
 }
