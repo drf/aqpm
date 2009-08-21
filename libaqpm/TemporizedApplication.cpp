@@ -18,30 +18,51 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "Downloader.h"
+#include "TemporizedApplication.h"
 
 #include <QCoreApplication>
-#include <QStringList>
-#include <QDebug>
 
-int main(int argc, char **argv)
+TemporizedApplication::TemporizedApplication()
+        : m_timer(new QTimer(0))
+        , m_temporized(false)
 {
-    QCoreApplication app(argc, argv);
+    m_timer->connect(m_timer, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit()));
+}
 
-    QCoreApplication::setOrganizationName("chakra");
-    QCoreApplication::setOrganizationDomain("chakra-project.org");
-    QCoreApplication::setApplicationName("aqpmdownloader");
-    QCoreApplication::setApplicationVersion("0.2");
+TemporizedApplication::~TemporizedApplication()
+{
+}
 
-    QStringList arguments = app.arguments();
+void TemporizedApplication::setIsTemporized(bool is)
+{
+    m_temporized = is;
+}
 
-    bool tmprz = true;
+bool TemporizedApplication::isTemporized() const
+{
+    return m_temporized;
+}
 
-    if (arguments.contains("--no-timeout")) {
-        tmprz = false;
+void TemporizedApplication::setTimeout(int timeout)
+{
+    m_timer->setInterval(timeout);
+}
+
+int TemporizedApplication::timeout() const
+{
+    return m_timer->interval();
+}
+
+void TemporizedApplication::startTemporizing()
+{
+    if (isTemporized()) {
+        m_timer->start();
     }
+}
 
-    AqpmDownloader::Downloader dwn(tmprz);
-
-    app.exec();
+void TemporizedApplication::stopTemporizing()
+{
+    if (isTemporized()) {
+        m_timer->stop();
+    }
 }

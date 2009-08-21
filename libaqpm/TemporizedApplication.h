@@ -18,30 +18,29 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "Downloader.h"
+#ifndef TEMPORIZEDAPPLICATION_H
+#define TEMPORIZEDAPPLICATION_H
 
-#include <QCoreApplication>
-#include <QStringList>
-#include <QDebug>
+#include <QTimer>
 
-int main(int argc, char **argv)
+class TemporizedApplication
 {
-    QCoreApplication app(argc, argv);
+public:
+    TemporizedApplication();
+    virtual ~TemporizedApplication();
 
-    QCoreApplication::setOrganizationName("chakra");
-    QCoreApplication::setOrganizationDomain("chakra-project.org");
-    QCoreApplication::setApplicationName("aqpmdownloader");
-    QCoreApplication::setApplicationVersion("0.2");
+    void setIsTemporized(bool is);
+    bool isTemporized() const;
 
-    QStringList arguments = app.arguments();
+    void setTimeout(int timeout);
+    int timeout() const;
 
-    bool tmprz = true;
+    void startTemporizing();
+    void stopTemporizing();
 
-    if (arguments.contains("--no-timeout")) {
-        tmprz = false;
-    }
+private:
+    QTimer *m_timer;
+    bool m_temporized;
+};
 
-    AqpmDownloader::Downloader dwn(tmprz);
-
-    app.exec();
-}
+#endif // TEMPORIZEDAPPLICATION_H

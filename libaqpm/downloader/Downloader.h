@@ -25,17 +25,19 @@
 #include <QtDBus/QDBusContext>
 #include <QtDBus/QDBusVariant>
 
+#include "../TemporizedApplication.h"
+
 class QNetworkReply;
 
 namespace AqpmDownloader
 {
 
-class Downloader : public QObject, protected QDBusContext
+class Downloader : public QObject, protected QDBusContext, private TemporizedApplication
 {
     Q_OBJECT
 
 public:
-    Downloader(QObject *parent = 0);
+    Downloader(bool temporize, QObject *parent = 0);
     virtual ~Downloader();
 
 public Q_SLOTS:

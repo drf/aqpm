@@ -42,7 +42,6 @@ public:
 
     QNetworkRequest createNetworkRequest(const QUrl &url);
 
-    QTimer *timeout;
     QNetworkAccessManager *manager;
     QList<QNetworkReply*> replies;
 };
@@ -55,7 +54,7 @@ QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
     return request;
 }
 
-Downloader::Downloader(QObject *parent)
+Downloader::Downloader(bool temporize, QObject *parent)
         : QObject(parent)
         , d(new Private())
 {
@@ -74,22 +73,20 @@ Downloader::Downloader(QObject *parent)
     }
 
     d->manager = new QNetworkAccessManager(this);
-    d->timeout = new QTimer(this);
     connect(d->manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(downloadFinished(QNetworkReply*)));
-    connect(d->timeout, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit()));
-    d->timeout->setInterval(8000);
-    d->timeout->start();
+    setIsTemporized(temporize);
+    setTimeout(2000);
+    startTemporizing();
 }
 
 Downloader::~Downloader()
 {
     d->manager->deleteLater();
-    d->timeout->deleteLater();
 }
 
 int Downloader::checkHeader(const QString &url)
 {
-    d->timeout->stop();
+    stopTemporizing();
 
     qDebug() << "About to check";
     QNetworkReply *reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
@@ -101,7 +98,7 @@ int Downloader::checkHeader(const QString &url)
 
 void Downloader::download(const QString &url, const QString &to)
 {
-    d->timeout->stop();
+    stopTemporizing();
 
     qDebug() << "About to get";
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
@@ -125,7 +122,7 @@ void Downloader::downloadFinished(QNetworkReply *reply)
     reply->deleteLater();
 
     if (d->replies.isEmpty()) {
-        d->timeout->start();
+        startTemporizing();
     }
 }
 
@@ -137,7 +134,7 @@ void Downloader::abortDownload()
     }
 
     d->replies.clear();
-    d->timeout->start();
+    startTemporizing();
 }
 
 void Downloader::progress(qint64 done, qint64 total)

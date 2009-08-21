@@ -11,6 +11,7 @@ qt4_add_dbus_adaptor(aqpmdownloader_adaptor_SRCS org.chakraproject.aqpmdownloade
 SET(aqpmdownloader_SRCS 
     main.cpp
     Downloader.cpp
+    ../TemporizedApplication.cpp
 )
                       
 automoc4_add_executable(aqpmdownloader

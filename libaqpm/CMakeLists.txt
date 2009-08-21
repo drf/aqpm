@@ -14,6 +14,7 @@ SET(aqpm_SRCS
     ActionEvent.cpp
     Configuration.cpp
     Maintenance.cpp
+    TemporizedApplication.cpp
 )
 
 SET(aqpm_HEADERS
