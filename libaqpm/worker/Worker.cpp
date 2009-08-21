@@ -88,7 +88,7 @@ Worker::Worker(QObject *parent)
     setUpAlpm();
 
     connect(d->timeout, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit()));
-    d->timeout->setInterval(2000);
+    d->timeout->setInterval(8000);
     d->timeout->start();
 }
 

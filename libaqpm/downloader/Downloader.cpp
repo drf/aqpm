@@ -77,7 +77,7 @@ Downloader::Downloader(QObject *parent)
     d->timeout = new QTimer(this);
     connect(d->manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(downloadFinished(QNetworkReply*)));
     connect(d->timeout, SIGNAL(timeout()), QCoreApplication::instance(), SLOT(quit()));
-    d->timeout->setInterval(2000);
+    d->timeout->setInterval(8000);
     d->timeout->start();
 }
 
@@ -85,6 +85,18 @@ Downloader::~Downloader()
 {
     d->manager->deleteLater();
     d->timeout->deleteLater();
+}
+
+int Downloader::checkHeader(const QString &url)
+{
+    d->timeout->stop();
+
+    qDebug() << "About to check";
+    QNetworkReply *reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
+    qDebug() << "Getting started";
+    QEventLoop e;
+    connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
+    return reply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
 }
 
 void Downloader::download(const QString &url, const QString &to)
@@ -104,7 +116,6 @@ void Downloader::downloadFinished(QNetworkReply *reply)
     QFile file(reply->property("to_FileName_p").toString());
 
     file.open(QIODevice::ReadWrite);
-
     file.write(reply->readAll());
 
     emit finished(reply->url().toString());

@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QtDBus/QDBusContext>
+#include <QtDBus/QDBusVariant>
 
 class QNetworkReply;
 
@@ -38,6 +39,7 @@ public:
     virtual ~Downloader();
 
 public Q_SLOTS:
+    int checkHeader(const QString &url);
     void download(const QString &url, const QString &to);
     void abortDownload();
 

@@ -32,10 +32,6 @@
 #include <QTimer>
 #include <QStringList>
 #include <QCoreApplication>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkProxy>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusConnection>
@@ -52,8 +48,6 @@ public:
     CallBacksPrivate();
     void init();
 
-    QNetworkRequest createNetworkRequest(const QUrl &url);
-
     Q_DECLARE_PUBLIC(CallBacks)
     CallBacks *q_ptr;
 
@@ -64,7 +58,6 @@ public:
     QDateTime averageRateTime;
     QTime busControlTime;
     QString currentFile;
-    QNetworkAccessManager *manager;
 };
 
 class CallBacksHelper
@@ -100,16 +93,6 @@ CallBacksPrivate::CallBacksPrivate()
 void CallBacksPrivate::init()
 {
     Q_Q(CallBacks);
-    manager = new QNetworkAccessManager(q);
-    manager->setProxy(QNetworkProxy());
-}
-
-QNetworkRequest CallBacksPrivate::createNetworkRequest(const QUrl &url)
-{
-    QNetworkRequest request;
-    request.setUrl(url);
-    request.setRawHeader("User-Agent", "Aqpm 1.0");
-    return request;
 }
 
 CallBacks::CallBacks(QObject *parent)
@@ -335,11 +318,18 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     qDebug() << "fetching: " << url << localpath;
 
-    QNetworkReply *reply;
-    QEventLoop re;
-    reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
-    connect(reply, SIGNAL(finished()), &re, SLOT(quit()));
-    re.exec();
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
+              "/Downloader",
+              "org.chakraproject.aqpmdownloader",
+              QLatin1String("checkHeader"));
+
+    message << QString(url);
+    QDBusMessage mreply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+
+    if (mreply.type() == QDBusMessage::ErrorMessage) {
+        // Damn this, there was an error
+        return 1;
+    }
 
     d->currentFile = QString(url).split('/').at(QString(url).split('/').length() - 1);
 
@@ -347,11 +337,8 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     // Let's check if the modification times collide. If so, there's no need to download the file
 
-    QDateTime dtime = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
-    qDebug() << "Modified on:" << dtime;
-    time_t newtime = dtime.toTime_t();
+    time_t newtime = mreply.arguments().first().toInt();
     mtimenew = &newtime;
-    reply->deleteLater();
 
     qDebug() << "Comparing";
 
@@ -371,15 +358,14 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmdownloader", "/Downloader", "org.chakraproject.aqpmdownloader",
                                          "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
 
-    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
               QLatin1String("download"));
-    QList<QVariant> argumentList;
 
     message << QString(url);
     message << QString(localpath + d->currentFile);
-    QDBusMessage mreply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+    mreply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
 
     if (mreply.type() == QDBusMessage::ErrorMessage) {
         // Damn this, there was an error

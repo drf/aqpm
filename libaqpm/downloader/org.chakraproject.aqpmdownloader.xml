@@ -5,6 +5,10 @@
 			<arg type="s" direction="in" />
 			<arg type="s" direction="in" />
 		</method>
+		<method name="checkHeader">
+			<arg type="s" direction="in" />
+			<arg type="i" direction="out" />
+		</method>
 		<method name="abortDownload">
 		</method>
 
