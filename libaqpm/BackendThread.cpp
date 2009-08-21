@@ -597,16 +597,19 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
     Package::List retlist;
 
     if (db.alpmDatabase() == d->db_local) {
-        alpm_list_t *pkglist = alpm_db_get_pkgcache(d->db_local);
+        qDebug() << "Getting local packages";
 
-        pkglist = alpm_list_first(pkglist);
-
-        while (pkglist != NULL) {
-            if (!getPackageDatabase(Package((pmpkg_t *) alpm_list_getdata(pkglist))).isValid()) {
-                retlist.append((pmpkg_t *) alpm_list_getdata(pkglist));
+        foreach (const Package &pkg, getInstalledPackages()) {
+            bool matched = false;
+            foreach (const Database &db, getAvailableDatabases()) {
+                if (alpm_db_get_pkg(db.alpmDatabase(), pkg.name().toAscii().data())) {
+                    matched = true;
+                    break;
+                }
             }
-
-            pkglist = alpm_list_next(pkglist);
+            if (!matched) {
+                retlist.append(pkg);
+            }
         }
     } else {
         alpm_list_t *pkgs = alpm_db_get_pkgcache(db.alpmDatabase());
