@@ -515,9 +515,10 @@ bool Worker::performTransaction()
         case PM_ERR_CONFLICTING_DEPS:
             for(i = data; i; i = alpm_list_next(i)) {
                 pmconflict_t *conflict = (pmconflict_t*) alpm_list_getdata(i);
-                innerdata[alpm_conflict_get_package1(conflict)] = alpm_conflict_get_package2(conflict);
+                innerdata[QString(alpm_conflict_get_package1(conflict))] =
+                        QVariant::fromValue(QString(alpm_conflict_get_package2(conflict)));
             }
-            args["ConflictingDeps"] = innerdata;
+            args["ConflictingDeps"] = QVariant::fromValue(innerdata);
             emit errorOccurred(Aqpm::Globals::ConflictingDependencies, args);
             break;
         default:
