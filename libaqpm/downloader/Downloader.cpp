@@ -90,6 +90,7 @@ int Downloader::checkHeader(const QString &url)
 
     qDebug() << "About to check";
     QNetworkReply *reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
+    reply->setProperty("is_Header_Check", true);
     qDebug() << "Getting started";
     QEventLoop e;
     connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
@@ -110,6 +111,15 @@ void Downloader::download(const QString &url, const QString &to)
 
 void Downloader::downloadFinished(QNetworkReply *reply)
 {
+    if (reply->property("is_Header_Check").toBool()) {
+        // Skip that
+        if (d->replies.isEmpty()) {
+            startTemporizing();
+        }
+
+        return;
+    }
+
     QFile file(reply->property("to_FileName_p").toString());
 
     file.open(QIODevice::ReadWrite);
