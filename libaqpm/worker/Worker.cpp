@@ -463,7 +463,28 @@ void Worker::downloadQueue(const QVariantList &packages)
 
     qDebug() << "Starting Package Syncing";
 
-    foreach(const Aqpm::QueueItem &itm, queue) {
+    foreach (const Aqpm::QueueItem &itm, queue) {
+        if (itm.action_id != Aqpm::QueueItem::FullUpgrade) {
+            if (alpm_trans_sysupgrade(0) == -1) {
+                qDebug() << "Creating a sysupgrade transaction failed!!";
+                QVariantMap args;
+                args["ErrorString"] = QString(alpm_strerrorlast());
+                emit errorOccurred(Aqpm::Globals::CreateSysUpgradeError, args);
+                alpm_trans_release();
+                operationPerformed(false);
+                return;
+            }
+
+            if (!performTransaction()) {
+                return;
+            }
+
+            operationPerformed(true);
+            return;
+        }
+    }
+
+    foreach (const Aqpm::QueueItem &itm, queue) {
         if (itm.action_id != Aqpm::QueueItem::Sync) {
             continue;
         }
@@ -527,7 +548,7 @@ void Worker::systemUpgrade(const QVariantList &flags, bool downgrade)
 
     int dwng = downgrade ? 1 : 0;
 
-    if (alpm_trans_sysupgrade(0) == -1) {
+    if (alpm_trans_sysupgrade(downgrade) == -1) {
         qDebug() << "Creating a sysupgrade transaction failed!!";
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());

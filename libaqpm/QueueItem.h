@@ -42,7 +42,10 @@ public:
         Remove = 2,
         /** From file operation */
         FromFile = 4,
-        /** This token is reserved. DO NOT ATTEMPT TO USE IT! */
+        /**
+         * When adding an item with this token, all others will be ignored
+         * and the queue populated with all upgradeable packages
+         */
         FullUpgrade = 8
     };
 
