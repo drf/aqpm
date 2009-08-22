@@ -317,7 +317,7 @@ Package Backend::getPackage(const QString &name, const QString &db) const
 {
     QVariantMap args;
     args["name"] = QVariant::fromValue(name);
-    args["db"] = QVariant::fromValue(db);
+    args["database"] = QVariant::fromValue(db);
     SynchronousLoop s(GetPackage, args);
     return s.result()["retvalue"].value<Package>();
 }
