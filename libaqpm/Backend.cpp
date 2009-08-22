@@ -94,10 +94,6 @@ Backend::Backend()
 
     qDebug() << d->events;
 
-    // Right before that, instantiate Configuration in the main thread
-
-    Configuration::instance();
-
     d->containerThread = new ContainerThread();
     connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(setUpSelf(BackendThread*)));
     d->containerThread->start();

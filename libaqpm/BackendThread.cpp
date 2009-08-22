@@ -48,6 +48,9 @@ namespace Aqpm
 
 void ContainerThread::run()
 {
+    // Right before that, instantiate Configuration in the container thread
+    Configuration::instance();
+
     BackendThread *t = new BackendThread();
     emit threadCreated(t);
     exec();
