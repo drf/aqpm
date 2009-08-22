@@ -380,6 +380,12 @@ void Backend::processQueue(const QList<pmtransflag_t> &flags)
     qDebug() << "Thread is running";
 }
 
+void Backend::downloadQueue()
+{
+    SynchronousLoop s(DownloadQueue, QVariantMap());
+    qDebug() << "Thread is running";
+}
+
 void Backend::setShouldHandleAuthorization(bool should)
 {
     QVariantMap args;

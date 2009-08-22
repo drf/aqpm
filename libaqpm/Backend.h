@@ -110,6 +110,7 @@ public:
         AlpmListToStringList,
         UpdateDatabase,
         ProcessQueue,
+        DownloadQueue,
         Initialization,
         SystemUpgrade,
         PerformAction,
@@ -185,6 +186,7 @@ public:
     void addItemToQueue(const QString &name, QueueItem::Action action);
 
     void processQueue(const QList<pmtransflag_t> &flags);
+    void downloadQueue();
     QueueItem::List queue() const;
 
     void interruptTransaction();

@@ -338,7 +338,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
 
         foreach(const Aqpm::QueueItem &itm, queue) {
             if (itm.action_id != Aqpm::QueueItem::Remove) {
-                return;
+                continue;
             }
 
             if (!addTransTarget(itm.name)) {
@@ -367,7 +367,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
 
         foreach(const Aqpm::QueueItem &itm, queue) {
             if (itm.action_id != Aqpm::QueueItem::Sync) {
-                return;
+                continue;
             }
 
             qDebug() << "Adding " << itm.name;
@@ -397,7 +397,7 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
 
         foreach(const Aqpm::QueueItem &itm, queue) {
             if (itm.action_id != Aqpm::QueueItem::FromFile) {
-                return;
+                continue;
             }
 
             if (!addTransTarget(itm.name)) {
@@ -408,6 +408,75 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
         if (!performTransaction()) {
             return;
         }
+    }
+
+    operationPerformed(true);
+}
+
+void Worker::downloadQueue(const QVariantList &packages)
+{
+    stopTemporizing();
+
+    qDebug() << "Starting Queue Download";
+
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.downloadqueue",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        operationPerformed(false);
+        return;
+    }
+
+    pmtransflag_t alpmflags;
+
+    alpmflags = (pmtransflag_t)((pmtransflag_t)PM_TRANS_FLAG_ALLDEPS | (pmtransflag_t)PM_TRANS_FLAG_DOWNLOADONLY);
+
+    qDebug() << alpmflags;
+
+    Aqpm::QueueItem::List queue;
+
+    qDebug() << "Appending packages";
+
+    foreach(const QVariant &ent, packages) {
+        qDebug() << ent.typeName();
+        Aqpm::QueueItem item;
+        ent.value<QDBusArgument>() >> item;
+        queue.append(item);
+    }
+
+    qDebug() << "Packages appended, starting evaluation";
+
+    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+                        AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                        AqpmWorker::cb_trans_progress) == -1) {
+        QVariantMap args;
+        args["ErrorString"] = QString(alpm_strerrorlast());
+        emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
+        operationPerformed(false);
+        return;
+    }
+
+    qDebug() << "Starting Package Syncing";
+
+    foreach(const Aqpm::QueueItem &itm, queue) {
+        if (itm.action_id != Aqpm::QueueItem::Sync) {
+            continue;
+        }
+
+        qDebug() << "Adding " << itm.name;
+
+        if (!addTransTarget(itm.name)) {
+            return;
+        }
+    }
+
+    if (!performTransaction()) {
+        return;
     }
 
     operationPerformed(true);

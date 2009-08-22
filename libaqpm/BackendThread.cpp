@@ -255,6 +255,9 @@ void BackendThread::customEvent(QEvent *event)
             case Backend::GetQueue:
                 queue();
                 break;
+            case Backend::DownloadQueue:
+                downloadQueue();
+                break;
             case Backend::SetShouldHandleAuthorization:
                 setShouldHandleAuthorization(ae->args()["should"].toBool());
                 break;
@@ -824,6 +827,34 @@ void BackendThread::processQueue()
     QList<QVariant> argumentList;
     argumentList << qVariantFromValue(packages);
     argumentList << qVariantFromValue(flags);
+    message.setArguments(argumentList);
+    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+}
+
+void BackendThread::downloadQueue()
+{
+    emit transactionStarted();
+
+    QVariantList packages;
+
+    foreach(const QueueItem &ent, d->queue) {
+        qDebug() << "Appending " << ent.name;
+        packages.append(QVariant::fromValue(ent));
+    }
+
+    if (!d->initWorker("org.chakraproject.aqpm.downloadqueue")) {
+        emit errorOccurred((int) Aqpm::Globals::WorkerInitializationFailed, QVariantMap());
+        workerResult(false);
+    }
+
+    qDebug() << "Download queue started";
+
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("downloadQueue"));
+    QList<QVariant> argumentList;
+    argumentList << qVariantFromValue(packages);
     message.setArguments(argumentList);
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }

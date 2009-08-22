@@ -94,6 +94,7 @@ private:
     void setFlags(const QList<pmtransflag_t> &flags);
 
     void processQueue();
+    void downloadQueue();
     QueueItem::List queue();
 
     void interruptTransaction();

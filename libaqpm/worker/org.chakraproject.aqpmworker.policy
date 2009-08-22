@@ -34,6 +34,15 @@
     </defaults>
   </action>
 
+  <action id="org.chakraproject.aqpm.downloadqueue">
+    <description>Process queue</description>
+    <message>Prevents the Package Manager from downloading a package queue</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.chakraproject.aqpm.saveconfiguration">
     <description>Save pacman configuration</description>
     <message>Prevents the Package Manager from saving the configuration</message>

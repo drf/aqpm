@@ -11,6 +11,9 @@
 			<arg type="av" direction="in" />
 			<arg type="av" direction="in" />
 		</method>
+		<method name="downloadQueue">
+			<arg type="av" direction="in" />
+		</method>
 		<method name="saveConfiguration">
 			<arg type="s" direction="in" />
                 </method>
