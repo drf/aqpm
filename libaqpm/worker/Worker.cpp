@@ -434,9 +434,8 @@ void Worker::downloadQueue(const QVariantList &packages)
 
     pmtransflag_t alpmflags;
 
-    alpmflags = (pmtransflag_t)((pmtransflag_t)PM_TRANS_FLAG_ALLDEPS | (pmtransflag_t)PM_TRANS_FLAG_DOWNLOADONLY);
-
-    qDebug() << alpmflags;
+    alpmflags = PM_TRANS_FLAG_ALLDEPS;
+    alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)PM_TRANS_FLAG_DOWNLOADONLY);
 
     Aqpm::QueueItem::List queue;
 
@@ -464,7 +463,7 @@ void Worker::downloadQueue(const QVariantList &packages)
     qDebug() << "Starting Package Syncing";
 
     foreach (const Aqpm::QueueItem &itm, queue) {
-        if (itm.action_id != Aqpm::QueueItem::FullUpgrade) {
+        if (itm.action_id == Aqpm::QueueItem::FullUpgrade) {
             if (alpm_trans_sysupgrade(0) == -1) {
                 qDebug() << "Creating a sysupgrade transaction failed!!";
                 QVariantMap args;
@@ -663,7 +662,7 @@ bool Worker::performTransaction()
             emit errorOccurred(Aqpm::Globals::CommitError, args);
             break;
         }
-        qDebug() << "Could not commit transaction";
+        qDebug() << "Could not commit transaction" << alpm_strerrorlast();
         alpm_trans_release();
         operationPerformed(false);
         return false;
