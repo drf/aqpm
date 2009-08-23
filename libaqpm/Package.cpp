@@ -20,7 +20,13 @@
 
 #include "Package.h"
 
+#include <QFile>
+#include <QStringList>
+#include <QTextStream>
+
 #include <alpm.h>
+
+#define CLBUF_SIZE 4096
 
 using namespace Aqpm;
 
@@ -112,6 +118,79 @@ QString Package::version() const
 pmpkg_t *Package::alpmPackage() const
 {
     return d->underlying;
+}
+
+QString Package::retrieveChangelog() const
+{
+    void *fp = NULL;
+
+    if ((fp = alpm_pkg_changelog_open(d->underlying)) == NULL) {
+        return QString();
+    } else {
+        QString text;
+        /* allocate a buffer to get the changelog back in chunks */
+        char buf[CLBUF_SIZE];
+        int ret = 0;
+        while ((ret = alpm_pkg_changelog_read(buf, CLBUF_SIZE, d->underlying, fp))) {
+            if (ret < CLBUF_SIZE) {
+                /* if we hit the end of the file, we need to add a null terminator */
+                *(buf + ret) = '\0';
+            }
+            text.append(buf);
+        }
+        alpm_pkg_changelog_close(d->underlying, fp);
+        return text;
+    }
+
+    return QString();
+}
+
+QString Package::retrieveLoggedActions() const
+{
+    QFile fp(alpm_option_get_logfile());
+
+    QStringList contents;
+
+    if (!fp.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return QString();
+    }
+
+    QTextStream in(&fp);
+
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        contents.append(line);
+    }
+
+    fp.close();
+
+    QString toShow;
+    QString pkgName(name());
+
+    foreach(const QString &ent, contents) {
+        if (!ent.contains(pkgName, Qt::CaseInsensitive)) {
+            continue;
+        }
+
+        toShow.append(ent + QChar('\n'));
+    }
+
+    return toShow;
+}
+
+bool Package::hasScriptlet() const
+{
+    return alpm_pkg_has_scriptlet(d->underlying);
+}
+
+QDateTime Package::buildDate() const
+{
+    return QDateTime::fromTime_t(alpm_pkg_get_builddate(d->underlying));
+}
+
+QDateTime Package::installDate() const
+{
+    return QDateTime::fromTime_t(alpm_pkg_get_installdate(d->underlying));
 }
 
 bool Package::operator==(const Package &pkg)

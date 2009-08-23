@@ -50,9 +50,15 @@ public:
     QString packager() const;
     QString md5sum() const;
     QString arch() const;
+    bool hasScriptlet() const;
+    QDateTime buildDate() const;
+    QDateTime installDate() const;
     qint32 size();
     qint32 isize();
     pmpkg_t *alpmPackage() const;
+
+    QString retrieveChangelog() const;
+    QString retrieveLoggedActions() const;
 
     bool operator ==(const Package &pkg);
 
