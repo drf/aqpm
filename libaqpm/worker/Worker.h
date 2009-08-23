@@ -29,6 +29,7 @@
 #include <alpm.h>
 
 #include "../TemporizedApplication.h"
+#include "../Globals.h"
 
 namespace AqpmWorker
 {
@@ -44,10 +45,10 @@ public:
     bool isWorkerReady();
 
 public Q_SLOTS:
-    void processQueue(const QVariantList &packages, const QVariantList &flags);
+    void processQueue(const QVariantList &packages, int flags);
     void downloadQueue(const QVariantList &packages);
     void updateDatabase();
-    void systemUpgrade(const QVariantList &flags, bool downgrade);
+    void systemUpgrade(int flags, bool downgrade);
     void setAnswer(int answer);
     void saveConfiguration(const QString &conf);
     void addMirror(const QString &mirror, int type);
@@ -59,6 +60,7 @@ private:
     void operationPerformed(bool result);
     bool addTransTarget(const QString &target);
     bool performTransaction();
+    pmtransflag_t processFlags(Aqpm::Globals::TransactionFlags flags);
 
 private Q_SLOTS:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);

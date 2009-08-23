@@ -91,7 +91,7 @@ private:
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
-    void setFlags(const QList<pmtransflag_t> &flags);
+    void setFlags(Globals::TransactionFlags flags);
 
     void processQueue();
     void downloadQueue();

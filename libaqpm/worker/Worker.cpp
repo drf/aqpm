@@ -253,7 +253,7 @@ void Worker::updateDatabase()
     operationPerformed(true);
 }
 
-void Worker::processQueue(const QVariantList &packages, const QVariantList &flags)
+void Worker::processQueue(const QVariantList &packages, int flags)
 {
     stopTemporizing();
 
@@ -272,17 +272,15 @@ void Worker::processQueue(const QVariantList &packages, const QVariantList &flag
         return;
     }
 
-    pmtransflag_t alpmflags;
+    Aqpm::Globals::TransactionFlags gflags;
 
-    if (flags.isEmpty()) {
-        alpmflags = PM_TRANS_FLAG_ALLDEPS;
+    if (flags == 0) {
+        gflags = Aqpm::Globals::AllDeps;
     } else {
-        alpmflags = (pmtransflag_t)flags.at(0).toUInt();
-
-        for (int i = 1; i < flags.count(); ++i) {
-            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)flags.at(i).toUInt());
-        }
+        gflags = (Aqpm::Globals::TransactionFlags)flags;
     }
+
+    pmtransflag_t alpmflags = processFlags(gflags);
 
     qDebug() << alpmflags;
 
@@ -502,7 +500,7 @@ void Worker::downloadQueue(const QVariantList &packages)
     operationPerformed(true);
 }
 
-void Worker::systemUpgrade(const QVariantList &flags, bool downgrade)
+void Worker::systemUpgrade(int flags, bool downgrade)
 {
     stopTemporizing();
 
@@ -521,17 +519,15 @@ void Worker::systemUpgrade(const QVariantList &flags, bool downgrade)
         return;
     }
 
-    pmtransflag_t alpmflags;
+    Aqpm::Globals::TransactionFlags gflags;
 
-    if (flags.isEmpty()) {
-        alpmflags = PM_TRANS_FLAG_ALLDEPS;
+    if (flags == 0) {
+        gflags = Aqpm::Globals::AllDeps;
     } else {
-        alpmflags = (pmtransflag_t)flags.at(0).toUInt();
-
-        for (int i = 1; i < flags.count(); ++i) {
-            alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)flags.at(i).toUInt());
-        }
+        gflags = (Aqpm::Globals::TransactionFlags)flags;
     }
+
+    pmtransflag_t alpmflags = processFlags(gflags);
 
     qDebug() << alpmflags;
 
@@ -878,6 +874,61 @@ void Worker::interruptTransaction()
         startTemporizing();
     } else {
     }
+}
+
+pmtransflag_t Worker::processFlags(Aqpm::Globals::TransactionFlags flags)
+{
+    pmtransflag_t retflags;
+
+    switch (flags) {
+    case Aqpm::Globals::NoDeps:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_NODEPS);
+        break;
+    case Aqpm::Globals::Force:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_FORCE);
+        break;
+    case Aqpm::Globals::NoSave:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_NOSAVE);
+        break;
+    case Aqpm::Globals::Cascade:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_CASCADE);
+        break;
+    case Aqpm::Globals::Recurse:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_RECURSE);
+        break;
+    case Aqpm::Globals::DbOnly:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_DBONLY);
+        break;
+    case Aqpm::Globals::AllDeps:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_ALLDEPS);
+        break;
+    case Aqpm::Globals::DownloadOnly:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_DOWNLOADONLY);
+        break;
+    case Aqpm::Globals::NoScriptlet:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_NOSCRIPTLET);
+        break;
+    case Aqpm::Globals::NoConflicts:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_NOCONFLICTS);
+        break;
+    case Aqpm::Globals::Needed:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_NEEDED);
+        break;
+    case Aqpm::Globals::AllExplicit:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_ALLEXPLICIT);
+        break;
+    case Aqpm::Globals::UnNeeded:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_UNNEEDED);
+        break;
+    case Aqpm::Globals::RecurseAll:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_RECURSEALL);
+        break;
+    case Aqpm::Globals::NoLock:
+        retflags = (pmtransflag_t)((pmtransflag_t)retflags | (pmtransflag_t)PM_TRANS_FLAG_NOLOCK);
+        break;
+    }
+
+    return retflags;
 }
 
 }

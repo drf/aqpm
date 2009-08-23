@@ -4,12 +4,12 @@
 		<method name="updateDatabase">
 		</method>
 		<method name="systemUpgrade">
-			<arg type="av" direction="in" />
+			<arg type="i" direction="in" />
 			<arg type="b" direction="in" />
                 </method>
 		<method name="processQueue">
 			<arg type="av" direction="in" />
-			<arg type="av" direction="in" />
+			<arg type="i" direction="in" />
 		</method>
 		<method name="downloadQueue">
 			<arg type="av" direction="in" />

@@ -72,7 +72,7 @@ public:
     pmdb_t *dbs_sync;
 
     QueueItem::List queue;
-    QList<pmtransflag_t> flags;
+    Globals::TransactionFlags flags;
 
     bool handleAuth;
 };
@@ -283,10 +283,7 @@ void BackendThread::customEvent(QEvent *event)
                 isOnTransaction();
                 break;
             case Backend::SetFlags:
-                setFlags(ae->args()["flags"].value<QList<pmtransflag_t> >());
-                break;
-            case Backend::AlpmListToStringList:
-                alpmListToStringList(ae->args()["flags"].value<alpm_list_t*>());
+                setFlags((Globals::TransactionFlags)(ae->args()["flags"].toInt()));
                 break;
             case Backend::ReloadPacmanConfiguration:
                 reloadPacmanConfiguration();
@@ -664,7 +661,7 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
         list = alpm_list_next(list);
     }
 
-    PERFORM_RETURN(Backend::AlpmListToStringList, retlist)
+    return retlist;
 }
 
 Package BackendThread::getPackage(const QString &name, const QString &repo)
@@ -752,12 +749,6 @@ void BackendThread::fullSystemUpgrade(bool downgrade)
 {
     emit transactionStarted();
 
-    QVariantList flags;
-
-    foreach(const pmtransflag_t &ent, d->flags) {
-        flags.append(ent);
-    }
-
     if (!d->initWorker("org.chakraproject.aqpm.systemupgrade")) {
         emit errorOccurred((int) Aqpm::Globals::WorkerInitializationFailed, QVariantMap());
         workerResult(false);
@@ -769,7 +760,7 @@ void BackendThread::fullSystemUpgrade(bool downgrade)
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("systemUpgrade"));
-    message << qVariantFromValue(flags);
+    message << (int)d->flags;
     message << downgrade;
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }
@@ -791,7 +782,7 @@ QueueItem::List BackendThread::queue()
     PERFORM_RETURN(Backend::GetQueue, d->queue)
 }
 
-void BackendThread::setFlags(const QList<pmtransflag_t> &flags)
+void BackendThread::setFlags(Globals::TransactionFlags flags)
 {
     d->flags = flags;
     PERFORM_RETURN_VOID(Backend::SetFlags)
@@ -801,12 +792,7 @@ void BackendThread::processQueue()
 {
     emit transactionStarted();
 
-    QVariantList flags;
     QVariantList packages;
-
-    foreach(const pmtransflag_t &ent, d->flags) {
-        flags.append(ent);
-    }
 
     foreach(const QueueItem &ent, d->queue) {
         qDebug() << "Appending " << ent.name;
@@ -826,7 +812,7 @@ void BackendThread::processQueue()
               QLatin1String("processQueue"));
     QList<QVariant> argumentList;
     argumentList << qVariantFromValue(packages);
-    argumentList << qVariantFromValue(flags);
+    argumentList << (int)d->flags;
     message.setArguments(argumentList);
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }

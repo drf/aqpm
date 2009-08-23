@@ -35,7 +35,6 @@
 
 #include <alpm.h>
 
-//typedef struct __alpm_list_t alpm_list_t;
 //typedef enum __pmtransflag_t pmtransflag_t;
 
 namespace Aqpm
@@ -107,7 +106,6 @@ public:
         IsOnTransaction,
         SetFlags,
         ReloadPacmanConfiguration,
-        AlpmListToStringList,
         UpdateDatabase,
         ProcessQueue,
         DownloadQueue,
@@ -178,14 +176,12 @@ public:
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 
-    QStringList alpmListToStringList(alpm_list_t *list);
-
     QString getAlpmVersion();
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
 
-    void processQueue(const QList<pmtransflag_t> &flags);
+    void processQueue(Globals::TransactionFlags flags);
     void downloadQueue();
     QueueItem::List queue() const;
 
@@ -251,7 +247,5 @@ private:
 };
 
 }
-
-Q_DECLARE_METATYPE(alpm_list_t*)
 
 #endif /* BACKEND_H */

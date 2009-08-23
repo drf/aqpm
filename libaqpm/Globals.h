@@ -98,7 +98,30 @@ public:
         TransactionInterruptedByUser = 18
     };
 
-    Q_DECLARE_FLAGS(Errors, ErrorCode)
+    Q_DECLARE_FLAGS(Errors, ErrorCode);
+
+    enum TransactionFlag {
+        NoDeps = 0x01,
+        Force = 0x02,
+        NoSave = 0x04,
+        /* 0x08 flag can go here */
+        Cascade = 0x10,
+        Recurse = 0x20,
+        DbOnly = 0x40,
+        /* 0x80 flag can go here */
+        AllDeps = 0x100,
+        DownloadOnly = 0x200,
+        NoScriptlet = 0x400,
+        NoConflicts = 0x800,
+        /* 0x1000 flag can go here */
+        Needed = 0x2000,
+        AllExplicit = 0x4000,
+        UnNeeded = 0x8000,
+        RecurseAll = 0x10000,
+        NoLock = 0x20000
+    };
+
+    Q_DECLARE_FLAGS(TransactionFlags, TransactionFlag);
 
     enum DatabaseState {
         Checking = 1,
@@ -116,6 +139,10 @@ public:
     };
 
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Globals::TransactionFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Globals::Errors)
+
 }
 
 #endif // GLOBALSH

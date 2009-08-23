@@ -33,6 +33,8 @@
 #include <QDBusMetaType>
 #include <QGlobalStatic>
 
+Q_DECLARE_METATYPE(alpm_list_t*)
+
 namespace Aqpm
 {
 
@@ -293,14 +295,6 @@ int Backend::countPackages(Globals::PackageStatus status)
     return s.result()["retvalue"].toInt();
 }
 
-QStringList Backend::alpmListToStringList(alpm_list_t *list)
-{
-    QVariantMap args;
-    args["list"] = QVariant::fromValue(list);
-    SynchronousLoop s(AlpmListToStringList, args);
-    return s.result()["retvalue"].toStringList();
-}
-
 Group::List Backend::getPackageGroups(const Package &package)
 {
     QVariantMap args;
@@ -371,10 +365,10 @@ QueueItem::List Backend::queue() const
     return s.result()["retvalue"].value<QueueItem::List>();
 }
 
-void Backend::processQueue(const QList<pmtransflag_t> &flags)
+void Backend::processQueue(Globals::TransactionFlags flags)
 {
     QVariantMap args;
-    args["flags"] = QVariant::fromValue(flags);
+    args["flags"] = QVariant::fromValue((int)flags);
     SynchronousLoop s(SetFlags, args);
     QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(ProcessQueue)));
     qDebug() << "Thread is running";
