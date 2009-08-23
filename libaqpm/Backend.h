@@ -135,8 +135,18 @@ public:
     bool testLibrary();
     bool isOnTransaction();
 
+    /**
+     * Performs an action asynchronously. You are not advised to use this method as it is right now,
+     * since it's still a work in progress
+     */
     void performAsyncAction(ActionType type, const QVariantMap &args);
 
+    /**
+     * Gets a list of all available remote databases on the system. This list does not include
+     * the local database.
+     *
+     * @return every sync database registered
+     */
     Database::List getAvailableDatabases() const;
     Database getLocalDatabase() const;
 
