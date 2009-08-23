@@ -140,8 +140,8 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t*)data1);
         emit streamTransEvent((int) Aqpm::Globals::AddDone, args);
         logmsg = QString("%1 (%2) installed successfully").arg(args["PackageName"].toString())
-                 .arg(args["PackageVersion"].toString());
-        alpm_logaction( logmsg.toUtf8().data() );
+                 .arg(args["PackageVersion"].toString()) + '\n';
+        alpm_logaction( logmsg.toUtf8().data());
         break;
     case PM_TRANS_EVT_REMOVE_START:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
@@ -152,8 +152,8 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t*)data1);
         emit streamTransEvent((int) Aqpm::Globals::RemoveDone, args);
         logmsg = QString("%1 (%2) removed successfully").arg(args["PackageName"].toString())
-                 .arg(args["PackageVersion"].toString());
-        alpm_logaction( logmsg.toUtf8().data() );
+                 .arg(args["PackageVersion"].toString()) + '\n';
+        alpm_logaction(logmsg.toUtf8().data());
         break;
     case PM_TRANS_EVT_UPGRADE_START:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
@@ -165,7 +165,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         args["NewVersion"] = QString((char*)alpm_pkg_get_version((pmpkg_t*)data1));
         emit streamTransEvent((int) Aqpm::Globals::UpgradeDone, args);
         logmsg = QString("Upgraded %1 successfully (%2 -> %3)").arg(args["PackageName"].toString())
-                 .arg(args["OldVersion"].toString()).arg(args["NewVersion"].toString() );
+                 .arg(args["OldVersion"].toString()).arg(args["NewVersion"].toString()) + '\n';
         alpm_logaction(logmsg.toUtf8().data());
         break;
     case PM_TRANS_EVT_INTEGRITY_START:
