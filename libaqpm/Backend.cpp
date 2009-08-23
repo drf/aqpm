@@ -335,10 +335,10 @@ bool Backend::updateDatabase()
     return true;
 }
 
-void Backend::fullSystemUpgrade(const QList<pmtransflag_t> &flags, bool downgrade)
+void Backend::fullSystemUpgrade(Globals::TransactionFlags flags, bool downgrade)
 {
     QVariantMap args;
-    args["flags"] = QVariant::fromValue(flags);
+    args["flags"] = QVariant::fromValue((int)flags);
     args["downgrade"] = downgrade;
     SynchronousLoop s(SetFlags, args);
     QCoreApplication::postEvent(d->thread,

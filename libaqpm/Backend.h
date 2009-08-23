@@ -33,10 +33,6 @@
 #include <QEvent>
 #include <QMetaType>
 
-#include <alpm.h>
-
-//typedef enum __pmtransflag_t pmtransflag_t;
-
 namespace Aqpm
 {
 
@@ -172,7 +168,7 @@ public:
     bool isInstalled(const Package &package);
 
     bool updateDatabase();
-    void fullSystemUpgrade(const QList<pmtransflag_t> &flags, bool downgrade = false);
+    void fullSystemUpgrade(Globals::TransactionFlags flags, bool downgrade = false);
 
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 
@@ -225,11 +221,6 @@ Q_SIGNALS:
     void operationFinished(bool success);
 
     void backendReady();
-
-    // Reserved for thread communication
-
-    void startDbUpdate();
-    void startQueue(QList<pmtransflag_t> flags);
 
 private Q_SLOTS:
     void setUpSelf(BackendThread *t);
