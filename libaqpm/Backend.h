@@ -63,6 +63,7 @@ class BackendThread;
 class AQPM_EXPORT Backend : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(Backend)
 
 public:
 
@@ -148,6 +149,11 @@ public:
      * @return every sync database registered
      */
     Database::List getAvailableDatabases() const;
+    /**
+     * Returns the local database, which carries all installed packages
+     *
+     * @return the local database
+     */
     Database getLocalDatabase() const;
 
     Group::List getAvailableGroups();
@@ -244,7 +250,7 @@ private:
     Backend();
 
     class Private;
-    Private *d;
+    Private * const d;
 };
 
 }
