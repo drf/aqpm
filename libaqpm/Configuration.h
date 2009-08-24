@@ -48,6 +48,7 @@ public:
 
     QStringList databases();
     QString getServerForDatabase(const QString &db);
+    QStringList getMirrorsForDatabase(const QString &db);
 
     QStringList getMirrorList(MirrorType type) const;
 
@@ -59,6 +60,7 @@ public:
 
     void setOrUnset(bool set, const QString &key, const QString &val = QString());
 
+public Q_SLOTS:
     void reload();
 
 private Q_SLOTS:

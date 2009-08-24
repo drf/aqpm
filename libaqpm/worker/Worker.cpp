@@ -57,7 +57,7 @@ Worker::Worker(bool temporized, QObject *parent)
 {
     new AqpmworkerAdaptor(this);
 
-    if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmworker")) {
+    /*if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmworker")) {
         qDebug() << "another helper is already running";
         QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
@@ -67,7 +67,7 @@ Worker::Worker(bool temporized, QObject *parent)
         qDebug() << "unable to register service interface to dbus";
         QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
-    }
+    }*/
 
     alpm_initialize();
 
@@ -136,27 +136,31 @@ void Worker::setUpAlpm()
         alpm_option_add_holdpkg(str.toAscii().data());
     }*/
 
-    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/IgnorePkg").toString().split(' ')) {
+    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/IgnorePkg").toStringList()) {
         alpm_option_add_ignorepkg(str.toAscii().data());
     }
 
-    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/IgnoreGroup").toString().split(' ')) {
+    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/IgnoreGroup").toStringList()) {
         alpm_option_add_ignoregrp(str.toAscii().data());
     }
 
-    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/NoExtract").toString().split(' ')) {
+    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/NoExtract").toStringList()) {
         alpm_option_add_noextract(str.toAscii().data());
     }
 
-    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/NoUpgrade").toString().split(' ')) {
+    foreach(const QString &str, Aqpm::Configuration::instance()->value("options/NoUpgrade").toStringList()) {
         alpm_option_add_noupgrade(str.toAscii().data());
     }
 
     //alpm_option_set_usedelta(pdata.useDelta); Until a proper implementation is there
     alpm_option_set_usesyslog(Aqpm::Configuration::instance()->value("options/UseSyslog").toInt());
 
+    qDebug() << "Yeah";
+
     d->ready = true;
     emit workerReady();
+
+    qDebug() << "Yeah";
 }
 
 void Worker::updateDatabase()

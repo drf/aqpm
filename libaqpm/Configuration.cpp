@@ -29,6 +29,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QDebug>
+#include <QTimer>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusConnection>
@@ -44,6 +45,7 @@ class Configuration::Private
 public:
     Private();
     QString retrieveServerFromPacmanConf(const QString &db) const;
+    QString convertPacmanConfToAqpmConf() const;
 
     QTemporaryFile *tempfile;
     QString arch;
@@ -108,35 +110,33 @@ void Configuration::reload()
     d->tempfile = new QTemporaryFile(this);
     d->tempfile->open();
 
-    QString fname;
-
     if (QFile::exists("/etc/aqpm.conf")) {
-        fname = "/etc/aqpm.conf";
-    } else {
-        fname = "/etc/pacman.conf";
-    }
+        QFile file("/etc/aqpm.conf");
 
-    QFile file(fname);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "prcd!";
-        emit configurationSaved(false);
-        return;
-    }
-
-    QTextStream out(d->tempfile);
-    QTextStream in(&file);
-
-    // Strip out comments
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        if (!line.startsWith('#')) {
-            out << line;
-            out << '\n';
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "prcd!";
+            emit configurationSaved(false);
+            return;
         }
+
+        QTextStream out(d->tempfile);
+        QTextStream in(&file);
+
+        // Strip out comments
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (!line.startsWith('#')) {
+                out << line;
+                out << '\n';
+            }
+        }
+
+        file.close();
+    } else {
+        d->convertPacmanConfToAqpmConf();
     }
 
-    file.close();
+
     d->tempfile->close();
 }
 
@@ -224,32 +224,46 @@ QStringList Configuration::databases()
 {
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
     QStringList dbsreg = settings.childGroups();
-    QStringList ordereddbs = settings.value("options/dborder").toStringList();
-
-    if (dbsreg.size() != ordereddbs.size()) {
-        foreach(const QString &db, dbsreg) {
-            if (!ordereddbs.contains(db)) {
-                ordereddbs.append(db);
-            }
-        }
-        foreach(const QString &db, ordereddbs) {
-            if (!dbsreg.contains(db)) {
-                ordereddbs.removeOne(db);
-            }
-        }
-    }
-
-    ordereddbs.removeOne("options");
-    return ordereddbs;
+    return settings.value("options/DbOrder").toStringList();
 }
 
 QString Configuration::getServerForDatabase(const QString &db)
 {
+    return getMirrorsForDatabase(db).first();
+}
+
+QStringList Configuration::getMirrorsForDatabase(const QString &db)
+{
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
-    QString retstr = settings.value(db + "/Server").toString();
-    retstr.replace("$repo", db);
-    retstr.replace("$arch", d->arch);
-    return retstr;
+    QStringList retlist;
+
+    settings.beginGroup("mirrors");
+
+    qDebug() << "Checking " << db;
+
+    if (db == "core" || db == "extra" || db == "community" || db == "testing") {
+        settings.beginGroup("arch");
+    } else if (db == "kdemod-core" || db == "kdemod-extragear" || db == "kdemod-unstable" ||
+               db == "kdemod-legacy" || db == "kdemod-testing" || db == "kdemod-playground") {
+        settings.beginGroup("kdemod");
+    } else {
+        foreach (const QString &mirror, settings.childGroups()) {
+            if (settings.value(mirror + "/Databases").toStringList().contains(db)) {
+                settings.beginGroup(mirror);
+            }
+        }
+    }
+
+    qDebug() << "ok, keys are " << settings.childKeys();
+
+    for (int i = 1; i <= settings.childKeys().size(); ++i) {
+        QString retstr = settings.value(QString("Mirror%1").arg(i)).toString();
+        retstr.replace("$repo", db);
+        retstr.replace("$arch", d->arch);
+        retlist.append(retstr);
+    }
+
+    return retlist;
 }
 
 QStringList Configuration::getMirrorList(MirrorType type) const
@@ -380,8 +394,9 @@ void Configuration::setOrUnset(bool set, const QString &key, const QString &val)
 
 QString Configuration::Private::retrieveServerFromPacmanConf(const QString &db) const
 {
-    tempfile->open();
-    QTextStream in(tempfile);
+    QFile pfile("/etc/pacman.conf");
+    pfile.open(QFile::ReadOnly | QFile::Text);
+    QTextStream in(&pfile);
 
     QString retstr;
 
@@ -432,7 +447,69 @@ QString Configuration::Private::retrieveServerFromPacmanConf(const QString &db) 
         }
     }
 
+    pfile.close();
+
     return retstr;
+}
+
+QString Configuration::Private::convertPacmanConfToAqpmConf() const
+{
+    QSettings settings("/etc/pacman.conf", QSettings::IniFormat);
+    QSettings writeSettings(tempfile->fileName(), QSettings::IniFormat);
+
+    QStringList databases = settings.childGroups();
+    databases.removeOne("options");
+
+    bool kdemodset = false;
+    bool coreset = false;
+
+    writeSettings.beginGroup("mirrors");
+
+    foreach (const QString &db, databases) {
+        if (db == "core" || db == "extra" || db == "community" || db == "testing") {
+            if (coreset) {
+                continue;
+            }
+            writeSettings.beginGroup("arch");
+            QString server = retrieveServerFromPacmanConf(db);
+            server.replace(db, "$repo");
+            writeSettings.setValue("Mirror1", server);
+            writeSettings.endGroup();
+            coreset = true;
+        } else if (db == "kdemod-core" || db == "kdemod-extragear" || db == "kdemod-unstable" ||
+                   db == "kdemod-legacy" || db == "kdemod-testing" || db == "kdemod-playground") {
+            if (kdemodset) {
+                continue;
+            }
+            writeSettings.beginGroup("kdemod");
+            QString server = retrieveServerFromPacmanConf(db);
+            server.replace(db, "$repo");
+            writeSettings.setValue("Mirror1", server);
+            writeSettings.endGroup();
+            kdemodset = true;
+        } else {
+            // Create a custom mirror section
+            writeSettings.beginGroup(db);
+            QString server = retrieveServerFromPacmanConf(db);
+            server.replace(db, "$repo");
+            writeSettings.setValue("Databases", QStringList() << db);
+            writeSettings.setValue("Mirror1", server);
+            writeSettings.endGroup();
+        }
+    }
+
+    writeSettings.endGroup();
+    writeSettings.beginGroup("options");
+    settings.beginGroup("options");
+
+    foreach (const QString &key, settings.childKeys()) {
+        writeSettings.setValue(key, settings.value(key));
+    }
+
+    writeSettings.setValue("DbOrder", databases);
+
+    writeSettings.endGroup();
+    writeSettings.sync();
 }
 
 }
