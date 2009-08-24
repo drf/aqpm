@@ -47,7 +47,7 @@ public:
     QVariant value(const QString &key);
 
     QStringList databases();
-    QString getServerForDatabase(const QString &db) const;
+    QString getServerForDatabase(const QString &db);
 
     QStringList getMirrorList(MirrorType type) const;
 

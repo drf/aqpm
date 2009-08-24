@@ -42,11 +42,22 @@ namespace Aqpm
 class Configuration::Private
 {
 public:
-    Private() : tempfile(0) {}
+    Private();
 
     QTemporaryFile *tempfile;
+    QString arch;
     bool lastResult;
 };
+
+Configuration::Private::Private()
+         : tempfile(0)
+{
+    QProcess proc;
+    proc.start("arch");
+    proc.waitForFinished(20000);
+
+    arch = QString(proc.readAllStandardOutput()).remove('\n').remove(' ');
+}
 
 class ConfigurationHelper
 {
@@ -96,7 +107,15 @@ void Configuration::reload()
     d->tempfile = new QTemporaryFile(this);
     d->tempfile->open();
 
-    QFile file("/etc/pacman.conf");
+    QString fname;
+
+    if (QFile::exists("/etc/aqpm.conf")) {
+        fname = "/etc/aqpm.conf";
+    } else {
+        fname = "/etc/pacman.conf";
+    }
+
+    QFile file(fname);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "prcd!";
@@ -203,64 +222,32 @@ QVariant Configuration::value(const QString &key)
 QStringList Configuration::databases()
 {
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
-    QStringList retlist = settings.childGroups();
-    retlist.removeOne("options");
-    return retlist;
-}
+    QStringList dbsreg = settings.childGroups();
+    QStringList ordereddbs = settings.value("options/dborder").toStringList();
 
-QString Configuration::getServerForDatabase(const QString &db) const
-{
-    d->tempfile->open();
-    QTextStream in(d->tempfile);
-
-    QString retstr;
-
-    // Find out the db
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        if (line.startsWith('[' + db)) {
-            // Let's go to the next line
-            QString nextLine = "#";
-
-            while (nextLine.startsWith('#') || nextLine.isEmpty()) {
-                nextLine = in.readLine();
+    if (dbsreg.size() != ordereddbs.size()) {
+        foreach(const QString &db, dbsreg) {
+            if (!ordereddbs.contains(db)) {
+                ordereddbs.append(db);
             }
-            // Cool, let's see if it's valid
-            if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
-                retstr.clear();
-            } else if (nextLine.startsWith("Server")) {
-                nextLine.remove(' ');
-                nextLine.remove('=');
-                nextLine.remove("Server", Qt::CaseSensitive);
-                retstr = nextLine;
-            } else {
-                nextLine.remove(' ');
-                nextLine.remove('=');
-                nextLine.remove("Include", Qt::CaseSensitive);
-
-                // Now let's hit the include file
-                QFile file(nextLine);
-
-                file.open(QIODevice::ReadOnly);
-
-                QTextStream incin(&file);
-
-                while (!incin.atEnd()) {
-                    QString incLine = incin.readLine();
-                    if (incLine.startsWith("Server")) {
-                        incLine.remove(' ');
-                        incLine.remove('=');
-                        incLine.remove("Server", Qt::CaseSensitive);
-                        file.close();
-                        retstr = incLine;
-                    }
-                }
+        }
+        foreach(const QString &db, ordereddbs) {
+            if (!dbsreg.contains(db)) {
+                ordereddbs.removeOne(db);
             }
         }
     }
 
+    ordereddbs.removeOne("options");
+    return ordereddbs;
+}
+
+QString Configuration::getServerForDatabase(const QString &db)
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QString retstr = settings.value(db + "/Server").toString();
     retstr.replace("$repo", db);
-    d->tempfile->close();
+    retstr.replace("$arch", d->arch);
     return retstr;
 }
 
