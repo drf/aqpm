@@ -12,8 +12,6 @@ SET(aqpmworker_SRCS
     main.cpp
     Worker.cpp
     w_callbacks.cpp
-    ../QueueItem.cpp
-    ../ConfigurationParser.cpp
     ../TemporizedApplication.cpp
 )
                       
@@ -28,6 +26,7 @@ TARGET_LINK_LIBRARIES(aqpmworker
     ${QT_QTNETWORK_LIBRARY}
     ${ALPM_LIBS}
     ${POLKITQT_CORE_LIBRARY}
+    aqpm
 )
 
 INSTALL(CODE "MESSAGE(\"Installing Aqpm worker...\")")
