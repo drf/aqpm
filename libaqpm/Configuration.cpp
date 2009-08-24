@@ -222,38 +222,40 @@ QString Configuration::getServerForDatabase(const QString &db) const
             // Let's go to the next line
             QString nextLine = "#";
 
-            while (nextLine.startsWith('#') || nextLine.isEmpty()) {
-                nextLine = in.readLine();
-            }
-            // Cool, let's see if it's valid
-            if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
-                retstr.clear();
-            } else if (nextLine.startsWith("Server")) {
-                nextLine.remove(' ');
-                nextLine.remove('=');
-                nextLine.remove("Server", Qt::CaseSensitive);
-                retstr = nextLine;
-            } else {
-                nextLine.remove(' ');
-                nextLine.remove('=');
-                nextLine.remove("Include", Qt::CaseSensitive);
+            while (retstr.isEmpty() && !in.atEnd()) {
+                while ((nextLine.startsWith('#') || nextLine.isEmpty()) && !in.atEnd()) {
+                    nextLine = in.readLine();
+                }
+                // Cool, let's see if it's valid
+                if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
+                    retstr.clear();
+                } else if (nextLine.startsWith("Server")) {
+                    nextLine.remove(' ');
+                    nextLine.remove('=');
+                    nextLine.remove("Server", Qt::CaseSensitive);
+                    retstr = nextLine;
+                } else {
+                    nextLine.remove(' ');
+                    nextLine.remove('=');
+                    nextLine.remove("Include", Qt::CaseSensitive);
 
-                // Now let's hit the include file
-                QFile file(nextLine);
+                    // Now let's hit the include file
+                    QFile file(nextLine);
 
-                file.open(QIODevice::ReadOnly);
+                    file.open(QIODevice::ReadOnly);
 
-                QTextStream incin(&file);
+                    QTextStream incin(&file);
 
-                while (!incin.atEnd()) {
-                    QString incLine = incin.readLine();
-                    if (incLine.startsWith("Server")) {
-                        incLine.remove(' ');
-                        incLine.remove('=');
-                        incLine.remove("Server", Qt::CaseSensitive);
-                        file.close();
-                        retstr = incLine;
-                        break;
+                    while (!incin.atEnd()) {
+                        QString incLine = incin.readLine();
+                        if (incLine.startsWith("Server")) {
+                            incLine.remove(' ');
+                            incLine.remove('=');
+                            incLine.remove("Server", Qt::CaseSensitive);
+                            file.close();
+                            retstr = incLine;
+                            break;
+                        }
                     }
                 }
             }
