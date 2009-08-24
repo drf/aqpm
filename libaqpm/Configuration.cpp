@@ -43,6 +43,7 @@ class Configuration::Private
 {
 public:
     Private();
+    QString retrieveServerFromPacmanConf(const QString &db) const;
 
     QTemporaryFile *tempfile;
     QString arch;
@@ -375,6 +376,63 @@ void Configuration::setOrUnset(bool set, const QString &key, const QString &val)
     } else {
         remove(key);
     }
+}
+
+QString Configuration::Private::retrieveServerFromPacmanConf(const QString &db) const
+{
+    tempfile->open();
+    QTextStream in(tempfile);
+
+    QString retstr;
+
+    // Find out the db
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        if (line.startsWith('[' + db)) {
+            // Let's go to the next line
+            QString nextLine = "#";
+
+            while (retstr.isEmpty() && !in.atEnd()) {
+                while ((nextLine.startsWith('#') || nextLine.isEmpty()) && !in.atEnd()) {
+                    nextLine = in.readLine();
+                }
+                // Cool, let's see if it's valid
+                if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
+                    retstr.clear();
+                } else if (nextLine.startsWith("Server")) {
+                    nextLine.remove(' ');
+                    nextLine.remove('=');
+                    nextLine.remove("Server", Qt::CaseSensitive);
+                    retstr = nextLine;
+                } else {
+                    nextLine.remove(' ');
+                    nextLine.remove('=');
+                    nextLine.remove("Include", Qt::CaseSensitive);
+
+                    // Now let's hit the include file
+                    QFile file(nextLine);
+
+                    file.open(QIODevice::ReadOnly);
+
+                    QTextStream incin(&file);
+
+                    while (!incin.atEnd()) {
+                        QString incLine = incin.readLine();
+                        if (incLine.startsWith("Server")) {
+                            incLine.remove(' ');
+                            incLine.remove('=');
+                            incLine.remove("Server", Qt::CaseSensitive);
+                            file.close();
+                            retstr = incLine;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return retstr;
 }
 
 }
