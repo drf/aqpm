@@ -253,6 +253,7 @@ QString Configuration::getServerForDatabase(const QString &db) const
                         incLine.remove("Server", Qt::CaseSensitive);
                         file.close();
                         retstr = incLine;
+                        break;
                     }
                 }
             }
