@@ -14,13 +14,6 @@
 		<method name="downloadQueue">
 			<arg type="av" direction="in" />
 		</method>
-		<method name="saveConfiguration">
-			<arg type="s" direction="in" />
-                </method>
-		<method name="addMirror">
-			<arg type="s" direction="in" />
-			<arg type="i" direction="in" />
-                </method>
 		<method name="performMaintenance">
 			<arg type="i" direction="in" />
 		</method>

@@ -134,36 +134,22 @@ bool Configuration::saveConfiguration()
 
 void Configuration::saveConfigurationAsync()
 {
-    QDBusMessage message;
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("isWorkerReady"));
-    QDBusMessage reply = QDBusConnection::systemBus().call(message);
-    if (reply.type() == QDBusMessage::ReplyMessage
-            && reply.arguments().size() == 1) {
-        qDebug() << reply.arguments().first().toBool();
-    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
-        qWarning() << "Message did not receive a reply (timeout by message bus)";
-        workerResult(false);
-        return;
-    }
-
     if (Backend::instance()->shouldHandleAuthorization()) {
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.saveconfiguration")) {
             qDebug() << "User unauthorized";
-            workerResult(false);
+            configuratorResult(false);
             return;
         }
     }
 
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "workerResult", this, SLOT(workerResult(bool)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmconfigurator", "/Configurator",
+                                         "org.chakraproject.aqpmconfigurator",
+                                         "configuratorResult", this, SLOT(configuratorResult(bool)));
 
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("saveConfiguration"));
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
+                                                          "/Configurator",
+                                                          "org.chakraproject.aqpmconfigurator",
+                                                          QLatin1String("saveConfiguration"));
 
     d->tempfile->open();
     message << QString(d->tempfile->readAll());
@@ -172,10 +158,11 @@ void Configuration::saveConfigurationAsync()
     d->tempfile->close();
 }
 
-void Configuration::workerResult(bool result)
+void Configuration::configuratorResult(bool result)
 {
-    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                            "workerResult", this, SLOT(workerResult(bool)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmconfigurator", "/Configurator",
+                                            "org.chakraproject.aqpmconfigurator",
+                                            "configuratorResult", this, SLOT(configuratorResult(bool)));
 
     qDebug() << "Got a result:" << result;
 
@@ -329,36 +316,21 @@ bool Configuration::addMirror(const QString &mirror, MirrorType type)
 
 void Configuration::addMirrorAsync(const QString &mirror, MirrorType type)
 {
-    QDBusMessage message;
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("isWorkerReady"));
-    QDBusMessage reply = QDBusConnection::systemBus().call(message);
-    if (reply.type() == QDBusMessage::ReplyMessage
-            && reply.arguments().size() == 1) {
-        qDebug() << reply.arguments().first().toBool();
-    } else if (reply.type() == QDBusMessage::MethodCallMessage) {
-        qWarning() << "Message did not receive a reply (timeout by message bus)";
-        workerResult(false);
-        return;
-    }
-
     if (Backend::instance()->shouldHandleAuthorization()) {
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.addmirror")) {
             qDebug() << "User unauthorized";
-            workerResult(false);
+            configuratorResult(false);
             return;
         }
     }
 
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "workerResult", this, SLOT(workerResult(bool)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmconfigurator", "/Configurator", "org.chakraproject.aqpmconfigurator",
+                                         "configuratorResult", this, SLOT(configuratorResult(bool)));
 
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("addMirror"));
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
+                                                          "/Configurator",
+                                                          "org.chakraproject.aqpmconfigurator",
+                                                          QLatin1String("addMirror"));
 
     message << mirror;
     message << (int)type;

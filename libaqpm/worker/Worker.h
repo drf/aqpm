@@ -50,8 +50,6 @@ public Q_SLOTS:
     void updateDatabase();
     void systemUpgrade(int flags, bool downgrade);
     void setAnswer(int answer);
-    void saveConfiguration(const QString &conf);
-    void addMirror(const QString &mirror, int type);
     void performMaintenance(int type);
     void interruptTransaction();
 

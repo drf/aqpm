@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2009 by Dario Freddi                                    *
- *   drf@kde.org                                                           *
+ *   drf@chakra-project.org                                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,62 +18,32 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#include "Configurator.h"
 
-#include <QObject>
+#include <QCoreApplication>
+#include <QStringList>
+#include <QDebug>
 
-namespace Aqpm
+#include <config-aqpm.h>
+
+int main(int argc, char **argv)
 {
+    QCoreApplication app(argc, argv);
 
-class Configuration : public QObject
-{
-    Q_OBJECT
+    QCoreApplication::setOrganizationName("chakra");
+    QCoreApplication::setOrganizationDomain("chakra-project.org");
+    QCoreApplication::setApplicationName("aqpmconfigurator");
+    QCoreApplication::setApplicationVersion(AQPM_VERSION);
 
-public:
-    enum MirrorType {
-        ArchMirror = 1,
-        KdemodMirror = 2
-    };
+    QStringList arguments = app.arguments();
 
-    static Configuration *instance();
+    bool tmprz = true;
 
-    virtual ~Configuration();
+    if (arguments.contains("--no-timeout")) {
+        tmprz = false;
+    }
 
-    bool saveConfiguration();
-    void saveConfigurationAsync();
+    AqpmConfigurator::Configurator dwn(tmprz);
 
-    void setValue(const QString &key, const QString &val);
-    QVariant value(const QString &key);
-
-    QStringList databases();
-    QString getServerForDatabase(const QString &db) const;
-
-    QStringList getMirrorList(MirrorType type) const;
-
-    bool addMirror(const QString &mirror, MirrorType type);
-    void addMirrorAsync(const QString &mirror, MirrorType type);
-
-    void remove(const QString &key);
-    bool exists(const QString &key, const QString &val = QString());
-
-    void setOrUnset(bool set, const QString &key, const QString &val = QString());
-
-    void reload();
-
-private Q_SLOTS:
-    void configuratorResult(bool result);
-
-Q_SIGNALS:
-    void configurationSaved(bool result);
-
-private:
-    Configuration();
-
-    class Private;
-    Private *d;
-};
-
+    app.exec();
 }
-
-#endif // CONFIGURATION_H
