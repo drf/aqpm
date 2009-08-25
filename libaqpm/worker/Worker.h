@@ -54,13 +54,13 @@ public Q_SLOTS:
     void interruptTransaction();
 
 private:
-    void setUpAlpm();
     void operationPerformed(bool result);
     bool addTransTarget(const QString &target);
     bool performTransaction();
     pmtransflag_t processFlags(Aqpm::Globals::TransactionFlags flags);
 
 private Q_SLOTS:
+    void setUpAlpm();
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void errorOutput();
     void standardOutput();

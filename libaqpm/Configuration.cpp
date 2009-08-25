@@ -101,6 +101,29 @@ void Configuration::reload()
 {
     qDebug() << "reloading";
 
+    if (!QFile::exists("/etc/aqpm.conf")) {
+        QCoreApplication::processEvents();
+
+        qDebug() << "Loading...";
+
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.convertconfiguration")) {
+            qDebug() << "User unauthorized";
+            configuratorResult(false);
+            return;
+        }
+
+        qDebug() << "Kewl";
+
+        QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
+                                                              "/Configurator",
+                                                              "org.chakraproject.aqpmconfigurator",
+                                                              QLatin1String("pacmanConfToAqpmConf"));
+
+        message << true;
+        QDBusConnection::systemBus().call(message, QDBus::Block);
+        qDebug() << QDBusConnection::systemBus().lastError();
+    }
+
     if (d->tempfile) {
         d->tempfile->close();
         d->tempfile->deleteLater();
@@ -109,31 +132,27 @@ void Configuration::reload()
     d->tempfile = new QTemporaryFile(this);
     d->tempfile->open();
 
-    if (QFile::exists("/etc/aqpm.conf")) {
-        QFile file("/etc/aqpm.conf");
+    QFile file("/etc/aqpm.conf");
 
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qDebug() << "prcd!";
-            emit configurationSaved(false);
-            return;
-        }
-
-        QTextStream out(d->tempfile);
-        QTextStream in(&file);
-
-        // Strip out comments
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            if (!line.startsWith('#')) {
-                out << line;
-                out << '\n';
-            }
-        }
-
-        file.close();
-    } else {
-
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "prcd!";
+        emit configurationSaved(false);
+        return;
     }
+
+    QTextStream out(d->tempfile);
+    QTextStream in(&file);
+
+    // Strip out comments
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        if (!line.startsWith('#')) {
+            out << line;
+            out << '\n';
+        }
+    }
+
+    file.close();
 
     d->tempfile->close();
 }

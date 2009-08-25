@@ -215,6 +215,8 @@ QString Configurator::Private::retrieveServerFromPacmanConf(const QString &db) c
 
 QString Configurator::pacmanConfToAqpmConf(bool writeconf)
 {
+    qDebug() << "IN da call";
+
     if (writeconf) {
         PolkitQt::Auth::Result result;
         result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.convertconfiguration",
@@ -231,6 +233,7 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
     }
 
     QTemporaryFile *tmpconf = new QTemporaryFile(this);
+    tmpconf->open();
 
     QSettings settings("/etc/pacman.conf", QSettings::IniFormat);
     QSettings writeSettings(tmpconf->fileName(), QSettings::IniFormat);
@@ -289,22 +292,19 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
     writeSettings.endGroup();
     writeSettings.sync();
 
+    if (writeconf) {
+        QFile::copy(tmpconf->fileName(), "/etc/aqpm.conf");
+        QProcess::execute("chmod 755 /etc/aqpm.conf");
+    }
+
     tmpconf->open();
     QString result = tmpconf->readAll();
+    qDebug() << result;
     tmpconf->close();
     tmpconf->deleteLater();
 
-    if (writeconf) {
-        QFile aqpmfile("/etc/aqpm.conf");
-        aqpmfile.open(QFile::WriteOnly | QFile::Text);
-
-        aqpmfile.write(result.toLocal8Bit());
-
-        aqpmfile.flush();
-        aqpmfile.close();
-    }
-
     operationPerformed(true);
+    qDebug() << result;
     return result;
 }
 

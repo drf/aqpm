@@ -57,7 +57,7 @@ Worker::Worker(bool temporized, QObject *parent)
 {
     new AqpmworkerAdaptor(this);
 
-    /*if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmworker")) {
+    if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmworker")) {
         qDebug() << "another helper is already running";
         QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
@@ -67,7 +67,7 @@ Worker::Worker(bool temporized, QObject *parent)
         qDebug() << "unable to register service interface to dbus";
         QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
-    }*/
+    }
 
     alpm_initialize();
 
@@ -84,7 +84,7 @@ Worker::Worker(bool temporized, QObject *parent)
     connect(this, SIGNAL(streamAnswer(int)),
             AqpmWorker::CallBacks::instance(), SLOT(setAnswer(int)));
 
-    setUpAlpm();
+    QTimer::singleShot(0, this, SLOT(setUpAlpm()));
 
     setIsTemporized(temporized);
     setTimeout(2000);
