@@ -52,6 +52,15 @@
     </defaults>
   </action>
 
+  <action id="org.chakraproject.aqpm.convertconfiguration">
+    <description>Convert pacman configuration</description>
+    <message>Prevents the Package Manager from converting Pacman configuration to Aqpm</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.chakraproject.aqpm.addmirror">
     <description>Add a mirror to Pacman</description>
     <message>Prevents the Package Manager from adding a new mirror</message>

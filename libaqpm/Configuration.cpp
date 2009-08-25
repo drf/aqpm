@@ -44,7 +44,6 @@ class Configuration::Private
 {
 public:
     Private();
-    QString retrieveServerFromPacmanConf(const QString &db) const;
     QString convertPacmanConfToAqpmConf() const;
 
     QTemporaryFile *tempfile;
@@ -133,9 +132,8 @@ void Configuration::reload()
 
         file.close();
     } else {
-        d->convertPacmanConfToAqpmConf();
-    }
 
+    }
 
     d->tempfile->close();
 }
@@ -362,126 +360,6 @@ void Configuration::setOrUnset(bool set, const QString &key, const QString &val)
     } else {
         remove(key);
     }
-}
-
-QString Configuration::Private::retrieveServerFromPacmanConf(const QString &db) const
-{
-    QFile pfile("/etc/pacman.conf");
-    pfile.open(QFile::ReadOnly | QFile::Text);
-    QTextStream in(&pfile);
-
-    QString retstr;
-
-    // Find out the db
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        if (line.startsWith('[' + db)) {
-            // Let's go to the next line
-            QString nextLine = "#";
-
-            while (retstr.isEmpty() && !in.atEnd()) {
-                while ((nextLine.startsWith('#') || nextLine.isEmpty()) && !in.atEnd()) {
-                    nextLine = in.readLine();
-                }
-                // Cool, let's see if it's valid
-                if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
-                    retstr.clear();
-                } else if (nextLine.startsWith("Server")) {
-                    nextLine.remove(' ');
-                    nextLine.remove('=');
-                    nextLine.remove("Server", Qt::CaseSensitive);
-                    retstr = nextLine;
-                } else {
-                    nextLine.remove(' ');
-                    nextLine.remove('=');
-                    nextLine.remove("Include", Qt::CaseSensitive);
-
-                    // Now let's hit the include file
-                    QFile file(nextLine);
-
-                    file.open(QIODevice::ReadOnly);
-
-                    QTextStream incin(&file);
-
-                    while (!incin.atEnd()) {
-                        QString incLine = incin.readLine();
-                        if (incLine.startsWith("Server")) {
-                            incLine.remove(' ');
-                            incLine.remove('=');
-                            incLine.remove("Server", Qt::CaseSensitive);
-                            file.close();
-                            retstr = incLine;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    pfile.close();
-
-    return retstr;
-}
-
-QString Configuration::Private::convertPacmanConfToAqpmConf() const
-{
-    QSettings settings("/etc/pacman.conf", QSettings::IniFormat);
-    QSettings writeSettings(tempfile->fileName(), QSettings::IniFormat);
-
-    QStringList databases = settings.childGroups();
-    databases.removeOne("options");
-
-    bool kdemodset = false;
-    bool coreset = false;
-
-    writeSettings.beginGroup("mirrors");
-
-    foreach (const QString &db, databases) {
-        if (db == "core" || db == "extra" || db == "community" || db == "testing") {
-            if (coreset) {
-                continue;
-            }
-            writeSettings.beginGroup("arch");
-            QString server = retrieveServerFromPacmanConf(db);
-            server.replace(db, "$repo");
-            writeSettings.setValue("Mirror1", server);
-            writeSettings.endGroup();
-            coreset = true;
-        } else if (db == "kdemod-core" || db == "kdemod-extragear" || db == "kdemod-unstable" ||
-                   db == "kdemod-legacy" || db == "kdemod-testing" || db == "kdemod-playground") {
-            if (kdemodset) {
-                continue;
-            }
-            writeSettings.beginGroup("kdemod");
-            QString server = retrieveServerFromPacmanConf(db);
-            server.replace(db, "$repo");
-            writeSettings.setValue("Mirror1", server);
-            writeSettings.endGroup();
-            kdemodset = true;
-        } else {
-            // Create a custom mirror section
-            writeSettings.beginGroup(db);
-            QString server = retrieveServerFromPacmanConf(db);
-            server.replace(db, "$repo");
-            writeSettings.setValue("Databases", QStringList() << db);
-            writeSettings.setValue("Mirror1", server);
-            writeSettings.endGroup();
-        }
-    }
-
-    writeSettings.endGroup();
-    writeSettings.beginGroup("options");
-    settings.beginGroup("options");
-
-    foreach (const QString &key, settings.childKeys()) {
-        writeSettings.setValue(key, settings.value(key));
-    }
-
-    writeSettings.setValue("DbOrder", databases);
-
-    writeSettings.endGroup();
-    writeSettings.sync();
 }
 
 }
