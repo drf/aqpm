@@ -48,12 +48,19 @@ public:
 
     QStringList databases();
     QString getServerForDatabase(const QString &db);
-    QStringList getMirrorsForDatabase(const QString &db);
+    QStringList getServersForDatabase(const QString &db);
 
     QStringList getMirrorList(MirrorType type) const;
 
-    bool addMirror(const QString &mirror, MirrorType type);
-    void addMirrorAsync(const QString &mirror, MirrorType type);
+    bool addMirrorToMirrorList(const QString &mirror, MirrorType type);
+    void addMirrorToMirrorListAsync(const QString &mirror, MirrorType type);
+
+    QStringList mirrors();
+    QStringList serversForMirror(const QString &mirror);
+
+    void setDatabases(const QStringList &databases);
+    void setDatabasesForMirror(const QStringList &database, const QString &mirror);
+    void setServersForMirror(const QStringList &servers, const QString &mirror);
 
     void remove(const QString &key);
     bool exists(const QString &key, const QString &val = QString());

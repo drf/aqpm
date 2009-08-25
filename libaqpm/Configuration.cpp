@@ -233,10 +233,10 @@ QStringList Configuration::databases()
 
 QString Configuration::getServerForDatabase(const QString &db)
 {
-    return getMirrorsForDatabase(db).first();
+    return getServersForDatabase(db).first();
 }
 
-QStringList Configuration::getMirrorsForDatabase(const QString &db)
+QStringList Configuration::getServersForDatabase(const QString &db)
 {
     QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
     QStringList retlist;
@@ -261,7 +261,7 @@ QStringList Configuration::getMirrorsForDatabase(const QString &db)
     qDebug() << "ok, keys are " << settings.childKeys();
 
     for (int i = 1; i <= settings.childKeys().size(); ++i) {
-        QString retstr = settings.value(QString("Mirror%1").arg(i)).toString();
+        QString retstr = settings.value(QString("Server%1").arg(i)).toString();
         retstr.replace("$repo", db);
         retstr.replace("$arch", d->arch);
         retlist.append(retstr);
@@ -318,19 +318,19 @@ QStringList Configuration::getMirrorList(MirrorType type) const
 
 }
 
-bool Configuration::addMirror(const QString &mirror, MirrorType type)
+bool Configuration::addMirrorToMirrorList(const QString &mirror, MirrorType type)
 {
     QEventLoop e;
 
     connect(this, SIGNAL(configurationSaved(bool)), &e, SLOT(quit()));
 
-    addMirrorAsync(mirror, type);
+    addMirrorToMirrorListAsync(mirror, type);
     e.exec();
 
     return d->lastResult;
 }
 
-void Configuration::addMirrorAsync(const QString &mirror, MirrorType type)
+void Configuration::addMirrorToMirrorListAsync(const QString &mirror, MirrorType type)
 {
     if (Backend::instance()->shouldHandleAuthorization()) {
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.addmirror")) {
@@ -379,6 +379,37 @@ void Configuration::setOrUnset(bool set, const QString &key, const QString &val)
     } else {
         remove(key);
     }
+}
+
+void Configuration::setDatabases(const QStringList &databases)
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    settings.setValue("DbOrder", databases);
+}
+
+void Configuration::setDatabasesForMirror(const QStringList &databases, const QString &mirror)
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    settings.setValue("mirrors/" + mirror + "/Databases", databases);
+}
+
+void Configuration::setServersForMirror(const QStringList &servers, const QString &mirror)
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    settings.beginGroup("mirrors");
+    settings.beginGroup(mirror);
+    foreach (const QString &key, settings.childKeys()) {
+        if (key.startsWith("Server")) {
+            settings.remove(key);
+        }
+    }
+
+    for (int i = 1; i <= servers.size(); ++i) {
+        settings.setValue(QString("Server%1").arg(i), servers.at(i-1));
+    }
+
+    settings.endGroup();
+    settings.endGroup();
 }
 
 }

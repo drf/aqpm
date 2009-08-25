@@ -254,7 +254,7 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
             writeSettings.beginGroup("arch");
             QString server = d->retrieveServerFromPacmanConf(db);
             server.replace(db, "$repo");
-            writeSettings.setValue("Mirror1", server);
+            writeSettings.setValue("Server1", server);
             writeSettings.endGroup();
             coreset = true;
         } else if (db == "kdemod-core" || db == "kdemod-extragear" || db == "kdemod-unstable" ||
@@ -265,7 +265,7 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
             writeSettings.beginGroup("kdemod");
             QString server = d->retrieveServerFromPacmanConf(db);
             server.replace(db, "$repo");
-            writeSettings.setValue("Mirror1", server);
+            writeSettings.setValue("Server1", server);
             writeSettings.endGroup();
             kdemodset = true;
         } else {
@@ -274,7 +274,7 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
             QString server = d->retrieveServerFromPacmanConf(db);
             server.replace(db, "$repo");
             writeSettings.setValue("Databases", QStringList() << db);
-            writeSettings.setValue("Mirror1", server);
+            writeSettings.setValue("Server1", server);
             writeSettings.endGroup();
         }
     }
