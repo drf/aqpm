@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2009 by Dario Freddi                                    *
- *   drf@kde.org                                                           *
+ *   drf@chakra-project.org                                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,64 +18,44 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#ifndef CONFIGURATOR_H
+#define CONFIGURATOR_H
 
 #include <QObject>
+#include <QtDBus/QDBusContext>
+#include <QtDBus/QDBusVariant>
 
-namespace Aqpm
+#include "../TemporizedApplication.h"
+
+class QNetworkReply;
+
+namespace AqpmConfigurator
 {
 
-class Configuration : public QObject
+class Configurator : public QObject, protected QDBusContext, private TemporizedApplication
 {
     Q_OBJECT
 
 public:
-    enum MirrorType {
-        ArchMirror = 1,
-        KdemodMirror = 2
-    };
-
-    static Configuration *instance();
-
-    virtual ~Configuration();
-
-    bool saveConfiguration();
-    void saveConfigurationAsync();
-
-    void setValue(const QString &key, const QString &val);
-    QVariant value(const QString &key);
-
-    QStringList databases();
-    QString getServerForDatabase(const QString &db);
-    QStringList getMirrorsForDatabase(const QString &db);
-
-    QStringList getMirrorList(MirrorType type) const;
-
-    bool addMirror(const QString &mirror, MirrorType type);
-    void addMirrorAsync(const QString &mirror, MirrorType type);
-
-    void remove(const QString &key);
-    bool exists(const QString &key, const QString &val = QString());
-
-    void setOrUnset(bool set, const QString &key, const QString &val = QString());
+    Configurator(bool temporize, QObject *parent = 0);
+    virtual ~Configurator();
 
 public Q_SLOTS:
-    void reload();
-
-private Q_SLOTS:
-    void configuratorResult(bool result);
+    void saveConfiguration(const QString &conf);
+    void addMirror(const QString &mirror, int type);
 
 Q_SIGNALS:
-    void configurationSaved(bool result);
+    void errorOccurred(int code, const QVariantMap &details);
+    void configuratorResult(bool);
+
+private Q_SLOTS:
+    void operationPerformed(bool result);
 
 private:
-    Configuration();
-
     class Private;
     Private *d;
 };
 
 }
 
-#endif // CONFIGURATION_H
+#endif /* CONFIGURATOR_H */
