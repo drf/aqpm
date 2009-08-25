@@ -55,8 +55,9 @@ public:
     bool addMirrorToMirrorList(const QString &mirror, MirrorType type);
     void addMirrorToMirrorListAsync(const QString &mirror, MirrorType type);
 
-    QStringList mirrors();
+    QStringList mirrors(bool thirdpartyonly = false);
     QStringList serversForMirror(const QString &mirror);
+    QStringList databasesForMirror(const QString &mirror);
 
     void setDatabases(const QStringList &databases);
     void setDatabasesForMirror(const QStringList &database, const QString &mirror);

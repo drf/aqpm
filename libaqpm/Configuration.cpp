@@ -214,19 +214,19 @@ void Configuration::configuratorResult(bool result)
 
 void Configuration::setValue(const QString &key, const QString &val)
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     settings.setValue(key, val);
 }
 
 QVariant Configuration::value(const QString &key)
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     return settings.value(key);
 }
 
 QStringList Configuration::databases()
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     QStringList dbsreg = settings.childGroups();
     return settings.value("options/DbOrder").toStringList();
 }
@@ -238,7 +238,7 @@ QString Configuration::getServerForDatabase(const QString &db)
 
 QStringList Configuration::getServersForDatabase(const QString &db)
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     QStringList retlist;
 
     settings.beginGroup("mirrors");
@@ -355,7 +355,7 @@ void Configuration::addMirrorToMirrorListAsync(const QString &mirror, MirrorType
 
 void Configuration::remove(const QString &key)
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     settings.remove(key);
 }
 
@@ -383,19 +383,35 @@ void Configuration::setOrUnset(bool set, const QString &key, const QString &val)
 
 void Configuration::setDatabases(const QStringList &databases)
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     settings.setValue("DbOrder", databases);
 }
 
 void Configuration::setDatabasesForMirror(const QStringList &databases, const QString &mirror)
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     settings.setValue("mirrors/" + mirror + "/Databases", databases);
+}
+
+QStringList Configuration::serversForMirror(const QString &mirror)
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
+    QStringList retlist;
+    settings.beginGroup("mirrors");
+    settings.beginGroup(mirror);
+    foreach (const QString &key, settings.childKeys()) {
+        if (key.startsWith("Server")) {
+            retlist.append(settings.value(key).toString());
+        }
+    }
+
+    settings.endGroup();
+    settings.endGroup();
 }
 
 void Configuration::setServersForMirror(const QStringList &servers, const QString &mirror)
 {
-    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat, this);
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
     settings.beginGroup("mirrors");
     settings.beginGroup(mirror);
     foreach (const QString &key, settings.childKeys()) {
@@ -410,6 +426,27 @@ void Configuration::setServersForMirror(const QStringList &servers, const QStrin
 
     settings.endGroup();
     settings.endGroup();
+}
+
+QStringList Configuration::mirrors(bool thirdpartyonly)
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
+    settings.beginGroup("mirrors");
+    QStringList retlist = settings.childGroups();
+    settings.endGroup();
+
+    if (thirdpartyonly) {
+        retlist.removeOne("arch");
+        retlist.removeOne("kdemod");
+    }
+
+    return retlist;
+}
+
+QStringList Configuration::databasesForMirror(const QString &mirror)
+{
+    QSettings settings(d->tempfile->fileName(), QSettings::IniFormat);
+    settings.value("mirrors/" + mirror + "/Databases").toStringList();
 }
 
 }
