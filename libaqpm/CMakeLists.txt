@@ -14,6 +14,7 @@ SET(aqpm_SRCS
     SynchronousLoop.cpp
     ActionEvent.cpp
     Configuration.cpp
+    ConfigurationThread.cpp
     Maintenance.cpp
     TemporizedApplication.cpp
 )

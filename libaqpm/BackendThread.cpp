@@ -192,7 +192,7 @@ void BackendThread::customEvent(QEvent *event)
             return;
         }
 
-        switch (ae->actionType()) {
+        switch ((Backend::ActionType)ae->actionType()) {
             case Backend::SetUpAlpm:
                 setUpAlpm();
             case Backend::GetAvailableDatabases:

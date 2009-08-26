@@ -22,14 +22,14 @@
 
 namespace Aqpm {
 
-ActionEvent::ActionEvent(Type type, Backend::ActionType actiontype, const QVariantMap &args)
+ActionEvent::ActionEvent(Type type, int actiontype, const QVariantMap &args)
         : QEvent(type)
         , m_actionType(actiontype)
         , m_args(args)
 {
 }
 
-Backend::ActionType ActionEvent::actionType() const
+int ActionEvent::actionType() const
 {
     return m_actionType;
 }

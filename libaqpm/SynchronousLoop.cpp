@@ -24,6 +24,7 @@
 #include <QDebug>
 
 #include "BackendThread.h"
+#include "ConfigurationThread.h"
 #include "ActionEvent.h"
 
 namespace Aqpm {
@@ -31,12 +32,26 @@ namespace Aqpm {
 SynchronousLoop::SynchronousLoop(Backend::ActionType type, const QVariantMap &args)
         : QEventLoop(0)
         , m_result(QVariantMap())
-        , m_type(type)
+        , m_type((int)type)
 {
     connect(Backend::instance()->getInnerThread(), SIGNAL(actionPerformed(int,QVariantMap)),
             this, SLOT(actionPerformed(int,QVariantMap)));
 
     QCoreApplication::postEvent(Backend::instance()->getInnerThread(),
+                                new ActionEvent(Backend::instance()->getEventTypeFor(Backend::PerformAction), type, args));
+
+    exec();
+}
+
+SynchronousLoop::SynchronousLoop(Configuration::ActionType type, const QVariantMap &args)
+        : QEventLoop(0)
+        , m_result(QVariantMap())
+        , m_type((int)type)
+{
+    connect(Configuration::instance()->getInnerThread(), SIGNAL(actionPerformed(int,QVariantMap)),
+            this, SLOT(actionPerformed(int,QVariantMap)));
+
+    QCoreApplication::postEvent(Configuration::instance()->getInnerThread(),
                                 new ActionEvent(Backend::instance()->getEventTypeFor(Backend::PerformAction), type, args));
 
     exec();

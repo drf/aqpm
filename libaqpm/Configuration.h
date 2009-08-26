@@ -26,6 +26,8 @@
 namespace Aqpm
 {
 
+class ConfigurationThread;
+
 class Configuration : public QObject
 {
     Q_OBJECT
@@ -34,6 +36,29 @@ public:
     enum MirrorType {
         ArchMirror = 1,
         KdemodMirror = 2
+    };
+
+    enum ActionType {
+        SaveConfiguration,
+        SaveConfigurationAsync,
+        SetValue,
+        Value,
+        Databases,
+        GetServerForDatabase,
+        GetServersForDatabase,
+        GetMirrorList,
+        AddMirrorToMirrorList,
+        AddMirrorToMirrorListAsync,
+        Mirrors,
+        ServersForMirror,
+        DatabasesForMirror,
+        SetDatabases,
+        SetDatabasesForMirror,
+        SetServersForMirror,
+        Remove,
+        Exists,
+        SetOrUnset,
+        Reload
     };
 
     static Configuration *instance();
@@ -68,11 +93,10 @@ public:
 
     void setOrUnset(bool set, const QString &key, const QString &val = QString());
 
+    ConfigurationThread *getInnerThread();
+
 public Q_SLOTS:
     void reload();
-
-private Q_SLOTS:
-    void configuratorResult(bool result);
 
 Q_SIGNALS:
     void configurationSaved(bool result);

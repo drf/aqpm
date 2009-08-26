@@ -24,6 +24,7 @@
 #include <QEventLoop>
 
 #include "Backend.h"
+#include "Configuration.h"
 
 namespace Aqpm {
 
@@ -33,6 +34,7 @@ class SynchronousLoop : public QEventLoop
 
 public:
     SynchronousLoop(Backend::ActionType type, const QVariantMap &args);
+    SynchronousLoop(Configuration::ActionType type, const QVariantMap &args);
 
     QVariantMap result() const;
 
@@ -41,7 +43,7 @@ public Q_SLOTS:
 
 private:
     QVariantMap m_result;
-    Backend::ActionType m_type;
+    int m_type;
 };
 
 }

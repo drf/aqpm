@@ -30,13 +30,13 @@ namespace Aqpm {
 class ActionEvent : public QEvent
 {
 public:
-    ActionEvent(Type type, Backend::ActionType actiontype, const QVariantMap &args);
+    ActionEvent(Type type, int actiontype, const QVariantMap &args);
 
-    Backend::ActionType actionType() const;
+    int actionType() const;
     QVariantMap args() const;
 
 private:
-    Backend::ActionType m_actionType;
+    int m_actionType;
     QVariantMap m_args;
 };
 
