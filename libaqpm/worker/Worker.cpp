@@ -84,7 +84,7 @@ Worker::Worker(bool temporized, QObject *parent)
     connect(this, SIGNAL(streamAnswer(int)),
             AqpmWorker::CallBacks::instance(), SLOT(setAnswer(int)));
 
-    QTimer::singleShot(0, this, SLOT(setUpAlpm()));
+    setUpAlpm();
 
     setIsTemporized(temporized);
     setTimeout(2000);
