@@ -93,7 +93,7 @@ void Configuration::reload()
     SynchronousLoop s(Reload, QVariantMap());
 }
 
-bool Configuration::saveConfiguration()
+bool Configuration::saveConfiguration() const
 {
     SynchronousLoop s(SaveConfiguration, QVariantMap());
     return s.result()["retvalue"].toBool();
@@ -112,7 +112,7 @@ void Configuration::setValue(const QString &key, const QString &val)
     SynchronousLoop s(SetValue, args);
 }
 
-QVariant Configuration::value(const QString &key)
+QVariant Configuration::value(const QString &key) const
 {
     QVariantMap args;
     args["key"] = QVariant::fromValue(key);
@@ -120,13 +120,13 @@ QVariant Configuration::value(const QString &key)
     return s.result()["retvalue"];
 }
 
-QStringList Configuration::databases()
+QStringList Configuration::databases() const
 {
     SynchronousLoop s(Databases, QVariantMap());
     return s.result()["retvalue"].toStringList();
 }
 
-QString Configuration::getServerForDatabase(const QString &db)
+QString Configuration::getServerForDatabase(const QString &db) const
 {
     QVariantMap args;
     args["db"] = QVariant::fromValue(db);
@@ -134,7 +134,7 @@ QString Configuration::getServerForDatabase(const QString &db)
     return s.result()["retvalue"].toString();
 }
 
-QStringList Configuration::getServersForDatabase(const QString &db)
+QStringList Configuration::getServersForDatabase(const QString &db) const
 {
     QVariantMap args;
     args["db"] = QVariant::fromValue(db);
@@ -150,7 +150,7 @@ QStringList Configuration::getMirrorList(MirrorType type) const
     return s.result()["retvalue"].toStringList();
 }
 
-bool Configuration::addMirrorToMirrorList(const QString &mirror, MirrorType type)
+bool Configuration::addMirrorToMirrorList(const QString &mirror, MirrorType type) const
 {
     QVariantMap args;
     args["type"] = QVariant::fromValue((int)type);
@@ -174,7 +174,7 @@ void Configuration::remove(const QString &key)
     SynchronousLoop s(Remove, args);
 }
 
-bool Configuration::exists(const QString &key, const QString &val)
+bool Configuration::exists(const QString &key, const QString &val) const
 {
     QVariantMap args;
     args["key"] = QVariant::fromValue(key);
@@ -207,7 +207,7 @@ void Configuration::setDatabasesForMirror(const QStringList &databases, const QS
     SynchronousLoop s(SetDatabasesForMirror, args);
 }
 
-QStringList Configuration::serversForMirror(const QString &mirror)
+QStringList Configuration::serversForMirror(const QString &mirror) const
 {
     QVariantMap args;
     args["mirror"] = QVariant::fromValue(mirror);
@@ -223,7 +223,7 @@ void Configuration::setServersForMirror(const QStringList &servers, const QStrin
     SynchronousLoop s(SetServersForMirror, args);
 }
 
-QStringList Configuration::mirrors(bool thirdpartyonly)
+QStringList Configuration::mirrors(bool thirdpartyonly) const
 {
     QVariantMap args;
     args["thirdpartyonly"] = QVariant::fromValue(thirdpartyonly);
@@ -231,7 +231,7 @@ QStringList Configuration::mirrors(bool thirdpartyonly)
     return s.result()["retvalue"].toStringList();
 }
 
-QStringList Configuration::databasesForMirror(const QString &mirror)
+QStringList Configuration::databasesForMirror(const QString &mirror) const
 {
     QVariantMap args;
     args["mirror"] = QVariant::fromValue(mirror);

@@ -193,6 +193,21 @@ QDateTime Package::installDate() const
     return QDateTime::fromTime_t(alpm_pkg_get_installdate(d->underlying));
 }
 
+QStringList Package::files() const
+{
+    alpm_list_t *files;
+    QStringList retlist;
+
+    files = alpm_pkg_get_files(d->underlying);
+
+    while (files != NULL) {
+        retlist.append(QString((char*)alpm_list_getdata(files)).prepend(alpm_option_get_root()));
+        files = alpm_list_next(files);
+    }
+
+    return retlist;
+}
+
 bool Package::operator==(const Package &pkg)
 {
     return pkg.alpmPackage() == d->underlying;

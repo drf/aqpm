@@ -65,31 +65,31 @@ public:
 
     virtual ~Configuration();
 
-    bool saveConfiguration();
+    bool saveConfiguration() const;
     void saveConfigurationAsync();
 
     void setValue(const QString &key, const QString &val);
-    QVariant value(const QString &key);
+    QVariant value(const QString &key) const;
 
-    QStringList databases();
-    QString getServerForDatabase(const QString &db);
-    QStringList getServersForDatabase(const QString &db);
+    QStringList databases() const;
+    QString getServerForDatabase(const QString &db) const;
+    QStringList getServersForDatabase(const QString &db) const;
 
     QStringList getMirrorList(MirrorType type) const;
 
-    bool addMirrorToMirrorList(const QString &mirror, MirrorType type);
+    bool addMirrorToMirrorList(const QString &mirror, MirrorType type) const;
     void addMirrorToMirrorListAsync(const QString &mirror, MirrorType type);
 
-    QStringList mirrors(bool thirdpartyonly = false);
-    QStringList serversForMirror(const QString &mirror);
-    QStringList databasesForMirror(const QString &mirror);
+    QStringList mirrors(bool thirdpartyonly = false) const;
+    QStringList serversForMirror(const QString &mirror) const;
+    QStringList databasesForMirror(const QString &mirror) const;
 
     void setDatabases(const QStringList &databases);
     void setDatabasesForMirror(const QStringList &database, const QString &mirror);
     void setServersForMirror(const QStringList &servers, const QString &mirror);
 
     void remove(const QString &key);
-    bool exists(const QString &key, const QString &val = QString());
+    bool exists(const QString &key, const QString &val = QString()) const;
 
     void setOrUnset(bool set, const QString &key, const QString &val = QString());
 

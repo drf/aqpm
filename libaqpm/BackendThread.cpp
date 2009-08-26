@@ -225,9 +225,6 @@ void BackendThread::customEvent(QEvent *event)
             case Backend::GetDependenciesOnPackage:
                 getDependenciesOnPackage(ae->args()["package"].value<Package>());
                 break;
-            case Backend::GetPackageFiles:
-                getPackageFiles(ae->args()["package"].value<Package>());
-                break;
             case Backend::CountPackages:
                 countPackages(ae->args()["status"].toInt());
                 break;
@@ -506,21 +503,6 @@ bool BackendThread::isInstalled(const Package &package)
     }
 
     PERFORM_RETURN(Backend::IsInstalled, true)
-}
-
-QStringList BackendThread::getPackageFiles(const Package &package)
-{
-    alpm_list_t *files;
-    QStringList retlist;
-
-    files = alpm_pkg_get_files(alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(package.alpmPackage())));
-
-    while (files != NULL) {
-        retlist.append(QString((char*)alpm_list_getdata(files)).prepend(alpm_option_get_root()));
-        files = alpm_list_next(files);
-    }
-
-    PERFORM_RETURN(Backend::GetPackageFiles, retlist)
 }
 
 QStringList BackendThread::getProviders(const Package &package)

@@ -232,14 +232,6 @@ bool Backend::isInstalled(const Package &package)
     return s.result()["retvalue"].toBool();
 }
 
-QStringList Backend::getPackageFiles(const Package &package)
-{
-    QVariantMap args;
-    args["package"] = QVariant::fromValue(package);
-    SynchronousLoop s(GetPackageFiles, args);
-    return s.result()["retvalue"].toStringList();
-}
-
 QStringList Backend::getProviders(const Package &package)
 {
     QVariantMap args;

@@ -82,7 +82,6 @@ public:
         GetPackageDependencies,
         GetPackageGroups,
         GetDependenciesOnPackage,
-        GetPackageFiles,
         CountPackages,
         GetProviders,
         IsProviderInstalled,
@@ -171,8 +170,6 @@ public:
     Group::List getPackageGroups(const Package &package);
 
     Package::List getDependenciesOnPackage(const Package &package);
-
-    QStringList getPackageFiles(const Package &package);
 
     int countPackages(Globals::PackageStatus status);
 

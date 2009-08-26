@@ -55,6 +55,7 @@ public:
     QDateTime installDate() const;
     qint32 size();
     qint32 isize();
+    QStringList files() const;
     pmpkg_t *alpmPackage() const;
 
     QString retrieveChangelog() const;
