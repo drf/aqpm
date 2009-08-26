@@ -42,10 +42,10 @@
 #define PERFORM_RETURN(ty, val) \
         QVariantMap retmap; \
         retmap["retvalue"] = QVariant::fromValue(val); \
-        emit actionPerformed(ty, retmap); \
+        emit actionPerformed((int)ty, retmap); \
         return val;
 
-#define PERFORM_RETURN_VOID(ty) emit actionPerformed(ty, QVariantMap());
+#define PERFORM_RETURN_VOID(ty) emit actionPerformed((int)ty, QVariantMap());
 
 namespace Aqpm
 {
@@ -175,7 +175,7 @@ void ConfigurationThread::reload()
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.convertConfigurationThread")) {
             qDebug() << "User unauthorized";
             configuratorResult(false);
-            return;
+            PERFORM_RETURN_VOID(Configuration::Reload)
         }
 
         qDebug() << "Kewl";
@@ -203,7 +203,7 @@ void ConfigurationThread::reload()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "prcd!";
         emit configurationSaved(false);
-        return;
+        PERFORM_RETURN_VOID(Configuration::Reload)
     }
 
     QTextStream out(d->tempfile);
@@ -221,6 +221,8 @@ void ConfigurationThread::reload()
     file.close();
 
     d->tempfile->close();
+
+    PERFORM_RETURN_VOID(Configuration::Reload)
 }
 
 bool ConfigurationThread::saveConfiguration()
@@ -232,7 +234,7 @@ bool ConfigurationThread::saveConfiguration()
     saveConfigurationAsync();
     e.exec();
 
-    return d->lastResult;
+    PERFORM_RETURN(Configuration::SaveConfiguration, d->lastResult)
 }
 
 void ConfigurationThread::saveConfigurationAsync()
@@ -241,7 +243,7 @@ void ConfigurationThread::saveConfigurationAsync()
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.saveconfiguration")) {
             qDebug() << "User unauthorized";
             configuratorResult(false);
-            return;
+            PERFORM_RETURN_VOID(Configuration::SaveConfigurationAsync)
         }
     }
 
@@ -259,6 +261,8 @@ void ConfigurationThread::saveConfigurationAsync()
     QDBusConnection::systemBus().call(message);
     qDebug() << QDBusConnection::systemBus().lastError();
     d->tempfile->close();
+
+    PERFORM_RETURN_VOID(Configuration::SaveConfigurationAsync)
 }
 
 void ConfigurationThread::configuratorResult(bool result)
@@ -283,6 +287,8 @@ void ConfigurationThread::setValue(const QString &key, const QString &val)
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     settings->setValue(key, val);
     settings->deleteLater();
+
+    PERFORM_RETURN_VOID(Configuration::SetValue)
 }
 
 QVariant ConfigurationThread::value(const QString &key)
@@ -290,20 +296,22 @@ QVariant ConfigurationThread::value(const QString &key)
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     QVariant ret = settings->value(key);
     settings->deleteLater();
-    return ret;
+
+    PERFORM_RETURN(Configuration::Value, ret)
 }
 
 QStringList ConfigurationThread::databases()
 {
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     QStringList dbsreg = settings->childGroups();
-    return settings->value("options/DbOrder").toStringList();
+    QStringList retlist = settings->value("options/DbOrder").toStringList();
     settings->deleteLater();
+    PERFORM_RETURN(Configuration::Databases, retlist)
 }
 
 QString ConfigurationThread::getServerForDatabase(const QString &db)
 {
-    return getServersForDatabase(db).first();
+    PERFORM_RETURN(Configuration::GetServerForDatabase, getServersForDatabase(db).first());
 }
 
 QStringList ConfigurationThread::getServersForDatabase(const QString &db)
@@ -337,10 +345,10 @@ QStringList ConfigurationThread::getServersForDatabase(const QString &db)
         retlist.append(retstr);
     }
 
-    return retlist;
+    PERFORM_RETURN(Configuration::GetServersForDatabase, retlist);
 }
 
-QStringList ConfigurationThread::getMirrorList(Configuration::MirrorType type) const
+QStringList ConfigurationThread::getMirrorList(Configuration::MirrorType type)
 {
     QFile file;
 
@@ -350,14 +358,14 @@ QStringList ConfigurationThread::getMirrorList(Configuration::MirrorType type) c
         if (QFile::exists("/etc/pacman.d/kdemodmirrorlist")) {
             file.setFileName("/etc/pacman.d/kdemodmirrorlist");
         } else {
-            return QStringList();
+            PERFORM_RETURN(Configuration::GetMirrorList, QStringList());
         }
     }
 
     QStringList retlist;
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return QStringList();
+        PERFORM_RETURN(Configuration::GetMirrorList, QStringList());
     }
 
     QTextStream in(&file);
@@ -384,7 +392,7 @@ QStringList ConfigurationThread::getMirrorList(Configuration::MirrorType type) c
 
     file.close();
 
-    return retlist;
+    PERFORM_RETURN(Configuration::GetMirrorList, retlist);
 
 }
 
@@ -397,7 +405,7 @@ bool ConfigurationThread::addMirrorToMirrorList(const QString &mirror, Configura
     addMirrorToMirrorListAsync(mirror, type);
     e.exec();
 
-    return d->lastResult;
+    PERFORM_RETURN(Configuration::AddMirrorToMirrorList, d->lastResult);
 }
 
 void ConfigurationThread::addMirrorToMirrorListAsync(const QString &mirror, Configuration::MirrorType type)
@@ -406,7 +414,7 @@ void ConfigurationThread::addMirrorToMirrorListAsync(const QString &mirror, Conf
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.addmirror")) {
             qDebug() << "User unauthorized";
             configuratorResult(false);
-            return;
+            PERFORM_RETURN_VOID(Configuration::AddMirrorToMirrorList);
         }
     }
 
@@ -422,6 +430,8 @@ void ConfigurationThread::addMirrorToMirrorListAsync(const QString &mirror, Conf
     message << mirror;
     message << (int)type;
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+
+    PERFORM_RETURN_VOID(Configuration::AddMirrorToMirrorList);
 }
 
 void ConfigurationThread::remove(const QString &key)
@@ -429,6 +439,8 @@ void ConfigurationThread::remove(const QString &key)
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     settings->remove(key);
     settings->deleteLater();
+
+    PERFORM_RETURN_VOID(Configuration::Remove);
 }
 
 bool ConfigurationThread::exists(const QString &key, const QString &val)
@@ -443,7 +455,7 @@ bool ConfigurationThread::exists(const QString &key, const QString &val)
 
     settings->deleteLater();
 
-    return result;
+    PERFORM_RETURN(Configuration::Exists, result);
 }
 
 void ConfigurationThread::setOrUnset(bool set, const QString &key, const QString &val)
@@ -453,6 +465,8 @@ void ConfigurationThread::setOrUnset(bool set, const QString &key, const QString
     } else {
         remove(key);
     }
+
+    PERFORM_RETURN_VOID(Configuration::SetOrUnset);
 }
 
 void ConfigurationThread::setDatabases(const QStringList &databases)
@@ -460,6 +474,8 @@ void ConfigurationThread::setDatabases(const QStringList &databases)
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     settings->setValue("DbOrder", databases);
     settings->deleteLater();
+
+    PERFORM_RETURN_VOID(Configuration::SetDatabases);
 }
 
 void ConfigurationThread::setDatabasesForMirror(const QStringList &databases, const QString &mirror)
@@ -467,6 +483,8 @@ void ConfigurationThread::setDatabasesForMirror(const QStringList &databases, co
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     settings->setValue("mirrors/" + mirror + "/Databases", databases);
     settings->deleteLater();
+
+    PERFORM_RETURN_VOID(Configuration::SetDatabasesForMirror);
 }
 
 QStringList ConfigurationThread::serversForMirror(const QString &mirror)
@@ -484,6 +502,8 @@ QStringList ConfigurationThread::serversForMirror(const QString &mirror)
     settings->endGroup();
     settings->endGroup();
     settings->deleteLater();
+
+    PERFORM_RETURN(Configuration::ServersForMirror, retlist);
 }
 
 void ConfigurationThread::setServersForMirror(const QStringList &servers, const QString &mirror)
@@ -504,6 +524,8 @@ void ConfigurationThread::setServersForMirror(const QStringList &servers, const 
     settings->endGroup();
     settings->endGroup();
     settings->deleteLater();
+
+    PERFORM_RETURN_VOID(Configuration::SetServersForMirror);
 }
 
 QStringList ConfigurationThread::mirrors(bool thirdpartyonly)
@@ -519,14 +541,15 @@ QStringList ConfigurationThread::mirrors(bool thirdpartyonly)
     }
 
     settings->deleteLater();
-    return retlist;
+    PERFORM_RETURN(Configuration::Mirrors, retlist);
 }
 
 QStringList ConfigurationThread::databasesForMirror(const QString &mirror)
 {
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
-    settings->value("mirrors/" + mirror + "/Databases").toStringList();
+    QStringList retlist = settings->value("mirrors/" + mirror + "/Databases").toStringList();
     settings->deleteLater();
+    PERFORM_RETURN(Configuration::DatabasesForMirror, retlist);
 }
 
 }

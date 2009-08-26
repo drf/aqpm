@@ -79,7 +79,7 @@ Configuration::Configuration()
     Q_ASSERT(!s_globalConfiguration()->q);
     s_globalConfiguration()->q = this;
 
-    reload();
+    connect (d->thread, SIGNAL(configurationSaved(bool)), this, SIGNAL(configurationSaved(bool)));
 }
 
 Configuration::~Configuration()

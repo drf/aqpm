@@ -2,6 +2,7 @@
 #define CONFIGURATIONTHREAD_H
 
 #include <QObject>
+#include <QVariantMap>
 
 #include "Configuration.h"
 
@@ -25,7 +26,7 @@ public:
     QString getServerForDatabase(const QString &db);
     QStringList getServersForDatabase(const QString &db);
 
-    QStringList getMirrorList(Configuration::MirrorType type) const;
+    QStringList getMirrorList(Configuration::MirrorType type);
 
     bool addMirrorToMirrorList(const QString &mirror, Configuration::MirrorType type);
     void addMirrorToMirrorListAsync(const QString &mirror, Configuration::MirrorType type);
@@ -54,6 +55,7 @@ protected:
 
 Q_SIGNALS:
     void configurationSaved(bool result);
+    void actionPerformed(int type, QVariantMap result);
 
 private:
     class Private;
