@@ -57,18 +57,12 @@ public:
     QString convertPacmanConfToAqpmConf() const;
 
     QTemporaryFile *tempfile;
-    QString arch;
     bool lastResult;
 };
 
 ConfigurationThread::Private::Private()
          : tempfile(0)
 {
-    QProcess proc;
-    proc.start("arch");
-    proc.waitForFinished(20000);
-
-    arch = QString(proc.readAllStandardOutput()).remove('\n').remove(' ');
 }
 
 ConfigurationThread::ConfigurationThread()
@@ -85,7 +79,7 @@ ConfigurationThread::~ConfigurationThread()
 
 void ConfigurationThread::customEvent(QEvent *event)
 {
-    if (event->type() == Backend::instance()->getEventTypeFor(Backend::PerformAction)) {
+    if (event->type() == Configuration::instance()->eventType()) {
         ActionEvent *ae = dynamic_cast<ActionEvent*>(event);
 
         if (!ae) {
@@ -341,7 +335,7 @@ QStringList ConfigurationThread::getServersForDatabase(const QString &db)
     for (int i = 1; i <= settings->childKeys().size(); ++i) {
         QString retstr = settings->value(QString("Server%1").arg(i)).toString();
         retstr.replace("$repo", db);
-        retstr.replace("$arch", d->arch);
+        retstr.replace("$arch", value("options/Arch").toString());
         retlist.append(retstr);
     }
 

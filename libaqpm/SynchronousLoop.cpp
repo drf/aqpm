@@ -52,7 +52,7 @@ SynchronousLoop::SynchronousLoop(Configuration::ActionType type, const QVariantM
             this, SLOT(actionPerformed(int,QVariantMap)));
 
     QCoreApplication::postEvent(Configuration::instance()->getInnerThread(),
-                                new ActionEvent(Backend::instance()->getEventTypeFor(Backend::PerformAction), type, args));
+                                new ActionEvent(Configuration::instance()->eventType(), type, args));
 
     exec();
 }

@@ -289,6 +289,14 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
 
     writeSettings.setValue("DbOrder", databases);
 
+    QProcess proc;
+    proc.start("arch");
+    proc.waitForFinished(20000);
+
+    QString arch = QString(proc.readAllStandardOutput()).remove('\n').remove(' ');
+
+    writeSettings.setValue("Arch", arch);
+
     writeSettings.endGroup();
     writeSettings.sync();
 

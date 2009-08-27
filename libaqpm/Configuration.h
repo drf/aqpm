@@ -22,6 +22,7 @@
 #define CONFIGURATION_H
 
 #include <QObject>
+#include <QEvent>
 
 namespace Aqpm
 {
@@ -64,6 +65,8 @@ public:
     static Configuration *instance();
 
     virtual ~Configuration();
+
+    QEvent::Type eventType();
 
     bool saveConfiguration() const;
     void saveConfigurationAsync();

@@ -49,6 +49,7 @@ public:
     Private() : thread(new ConfigurationThread()) {}
 
     ConfigurationThread *thread;
+    QEvent::Type type;
 };
 
 class ConfigurationHelper
@@ -79,6 +80,8 @@ Configuration::Configuration()
     Q_ASSERT(!s_globalConfiguration()->q);
     s_globalConfiguration()->q = this;
 
+    d->type = (QEvent::Type)QEvent::registerEventType();
+
     connect (d->thread, SIGNAL(configurationSaved(bool)), this, SIGNAL(configurationSaved(bool)));
 }
 
@@ -86,6 +89,11 @@ Configuration::~Configuration()
 {
     d->thread->deleteLater();
     delete d;
+}
+
+QEvent::Type Configuration::eventType()
+{
+    return d->type;
 }
 
 void Configuration::reload()
