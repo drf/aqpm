@@ -75,7 +75,7 @@ Downloader::Downloader(bool temporize, QObject *parent)
     d->manager = new QNetworkAccessManager(this);
     connect(d->manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(downloadFinished(QNetworkReply*)));
     setIsTemporized(temporize);
-    setTimeout(2000);
+    setTimeout(3000);
     startTemporizing();
 }
 

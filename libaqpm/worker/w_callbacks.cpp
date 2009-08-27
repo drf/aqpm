@@ -318,6 +318,11 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     qDebug() << "fetching: " << url << localpath;
 
+    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmdownloader")) {
+        qDebug() << "Requesting service start";
+        QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmdownloader");
+    }
+
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
