@@ -106,6 +106,10 @@ void Worker::setUpAlpm()
     alpm_option_set_dbpath("/var/lib/pacman");
     alpm_option_add_cachedir("/var/cache/pacman/pkg");
 
+    alpm_option_set_fetchcb(cb_fetch);
+    alpm_option_set_totaldlcb(cb_dl_total);
+    alpm_option_set_logcb(cb_log);
+
     d->db_local = alpm_db_register_local();
 
     if (Aqpm::Configuration::instance()->value("options/LogFile").toString().isEmpty()) {
