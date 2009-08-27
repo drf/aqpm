@@ -87,7 +87,7 @@ Worker::Worker(bool temporized, QObject *parent)
     setUpAlpm();
 
     setIsTemporized(temporized);
-    setTimeout(2000);
+    setTimeout(3000);
     startTemporizing();
 }
 

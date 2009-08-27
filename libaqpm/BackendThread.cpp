@@ -105,6 +105,11 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
 {
     Q_Q(BackendThread);
 
+    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
+        qDebug() << "Requesting service start";
+        QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmworker");
+    }
+
     QDBusMessage message;
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
@@ -114,15 +119,19 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
     if (reply.type() == QDBusMessage::ReplyMessage
             && reply.arguments().size() == 1) {
         if (!reply.arguments().first().toBool()) {
+            qDebug() << "Waiting for worker ready";
             QEventLoop e;
             QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                                  "workerReady", &e, SLOT(quit()));
             e.exec();
+            qDebug() << "Worker ready";
         }
     } else if (reply.type() == QDBusMessage::MethodCallMessage) {
         qWarning() << "Message did not receive a reply (timeout by message bus)";
         return false;
     }
+
+    qDebug() << "Worker has been set up, let's move";
 
     if (handleAuth) {
         if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
