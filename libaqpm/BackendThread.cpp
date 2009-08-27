@@ -113,7 +113,12 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
     QDBusMessage reply = QDBusConnection::systemBus().call(message);
     if (reply.type() == QDBusMessage::ReplyMessage
             && reply.arguments().size() == 1) {
-        qDebug() << reply.arguments().first().toBool();
+        if (!reply.arguments().first().toBool()) {
+            QEventLoop e;
+            QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                                 "workerReady", &e, SLOT(quit()));
+            e.exec();
+        }
     } else if (reply.type() == QDBusMessage::MethodCallMessage) {
         qWarning() << "Message did not receive a reply (timeout by message bus)";
         return false;
