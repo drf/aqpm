@@ -394,7 +394,7 @@ bool ConfigurationThread::addMirrorToMirrorList(const QString &mirror, Configura
 {
     QEventLoop e;
 
-    connect(this, SIGNAL(ConfigurationThreadSaved(bool)), &e, SLOT(quit()));
+    connect(this, SIGNAL(configurationSaved(bool)), &e, SLOT(quit()));
 
     addMirrorToMirrorListAsync(mirror, type);
     e.exec();
