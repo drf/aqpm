@@ -91,8 +91,8 @@ void Configurator::saveConfiguration(const QString &conf)
 
     qDebug() << "About to write:" << conf;
 
-    QFile::remove("/etc/aqpm.conf");
-    QFile file("/etc/aqpm.conf");
+    QFile::remove(AQPM_CONFIGURATION_FILE);
+    QFile file(AQPM_CONFIGURATION_FILE);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         operationPerformed(false);
@@ -325,8 +325,8 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
     writeSettings.sync();
 
     if (writeconf) {
-        QFile::copy(tmpconf->fileName(), "/etc/aqpm.conf");
-        QProcess::execute("chmod 755 /etc/aqpm.conf");
+        QFile::copy(tmpconf->fileName(), AQPM_CONFIGURATION_FILE);
+        QProcess::execute(QString("chmod 755 ") + AQPM_CONFIGURATION_FILE);
     }
 
     tmpconf->open();

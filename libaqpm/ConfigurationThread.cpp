@@ -24,6 +24,8 @@
 
 #include "ActionEvent.h"
 
+#include <config-aqpm.h>
+
 #include <QSettings>
 #include <QFile>
 #include <QTemporaryFile>
@@ -161,9 +163,7 @@ void ConfigurationThread::reload()
 {
     qDebug() << "reloading";
 
-    if (!QFile::exists("/etc/aqpm.conf")) {
-        QCoreApplication::processEvents();
-
+    if (!QFile::exists(AQPM_CONFIGURATION_FILE)) {
         qDebug() << "Loading...";
 
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.convertconfiguration")) {
@@ -192,7 +192,7 @@ void ConfigurationThread::reload()
     d->tempfile = new QTemporaryFile(this);
     d->tempfile->open();
 
-    QFile file("/etc/aqpm.conf");
+    QFile file(AQPM_CONFIGURATION_FILE);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "prcd!";

@@ -57,6 +57,10 @@ INCLUDE_DIRECTORIES(
     ${POLKITQT_INCLUDE_DIR}
 )
 
+if (NOT AQPM_CONFIGURATION_FILE)
+    set (AQPM_CONFIGURATION_FILE "/etc/aqpm.conf")
+endif (NOT AQPM_CONFIGURATION_FILE)
+
 CONFIGURE_FILE(
        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/cmake_uninstall.cmake.in"
        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"

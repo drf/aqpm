@@ -30,4 +30,6 @@
 /* Defines the Version */
 #define AQPM_VERSION "${AQPM_VERSION_STRING}"
 
+#define AQPM_CONFIGURATION_FILE "${AQPM_CONFIGURATION_FILE}"
+
 #endif /*CONFIG_AQPM_H*/ 

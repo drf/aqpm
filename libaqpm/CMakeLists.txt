@@ -30,7 +30,7 @@ SET(aqpm_HEADERS
 	Configuration.h
     Maintenance.h
 )
-                      
+
 automoc4_add_library(aqpm SHARED
     ${aqpm_SRCS}
 )
