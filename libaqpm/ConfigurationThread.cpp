@@ -166,7 +166,7 @@ void ConfigurationThread::reload()
 
         qDebug() << "Loading...";
 
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.convertConfigurationThread")) {
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.convertconfiguration")) {
             qDebug() << "User unauthorized";
             configuratorResult(false);
             PERFORM_RETURN_VOID(Configuration::Reload)
