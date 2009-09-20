@@ -21,13 +21,10 @@
 #ifndef CONFIGURATOR_H
 #define CONFIGURATOR_H
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <QtDBus/QDBusContext>
-#include <QtDBus/QDBusVariant>
 
 #include "../TemporizedApplication.h"
-
-class QNetworkReply;
 
 namespace AqpmConfigurator
 {

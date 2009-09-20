@@ -6,7 +6,7 @@ add_subdirectory(configurator)
 SET(aqpm_SRCS 
     Backend.cpp
     BackendThread.cpp
-    ConfigurationParser.cpp
+    #ConfigurationParser.cpp
     QueueItem.cpp
     Package.cpp
     Group.cpp
@@ -21,14 +21,14 @@ SET(aqpm_SRCS
 
 SET(aqpm_HEADERS
 	Backend.h
-	ConfigurationParser.h
+	#ConfigurationParser.h
 	QueueItem.h
 	Globals.h
 	Package.h
 	Group.h
 	Database.h
 	Configuration.h
-        Maintenance.h
+    Maintenance.h
 )
                       
 automoc4_add_library(aqpm SHARED
