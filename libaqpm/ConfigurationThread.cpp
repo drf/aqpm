@@ -95,7 +95,7 @@ void ConfigurationThread::customEvent(QEvent *event)
             saveConfigurationAsync();
             break;
         case Configuration::SetValue:
-            setValue(ae->args()["key"].toString(), ae->args()["val"].toString());
+            setValue(ae->args()["key"].toString(), ae->args()["val"]);
             break;
         case Configuration::Value:
             value(ae->args()["key"].toString());
