@@ -466,7 +466,7 @@ void ConfigurationThread::setOrUnset(bool set, const QString &key, const QString
 void ConfigurationThread::setDatabases(const QStringList &databases)
 {
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
-    settings->setValue("DbOrder", databases);
+    settings->setValue("options/DbOrder", databases);
     settings->deleteLater();
 
     PERFORM_RETURN_VOID(Configuration::SetDatabases);
