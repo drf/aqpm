@@ -51,12 +51,71 @@ public:
 
     // Q_PRIVATE_SLOTS
     void __k__backendReady();
+    void __k__setUpSelf(BackendThread *t);
+    void __k__streamError(int code, const QVariantMap &args);
+    void __k__doStreamTransProgress(int event, const QString &pkgname, int percent,
+                             int howmany, int remain);
+    void __k__doStreamTransEvent(int event, const QVariantMap &args);
+    void __k__doStreamTransQuestion(int event, const QVariantMap &args);
 };
 
 void Backend::Private::__k__backendReady()
 {
     ready = true;
     emit q->backendReady();
+}
+
+void Backend::Private::__k__setUpSelf(BackendThread *t)
+{
+    thread = t;
+
+    connect(thread, SIGNAL(dbQty(const QStringList&)),
+            q, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
+    connect(thread, SIGNAL(dbStatusChanged(const QString&, int)),
+            q, SIGNAL(dbStatusChanged(const QString&, int)), Qt::QueuedConnection);
+    connect(thread, SIGNAL(transactionStarted()),
+            q, SIGNAL(transactionStarted()));
+    connect(thread, SIGNAL(transactionReleased()),
+            q, SIGNAL(transactionReleased()));
+    connect(thread, SIGNAL(operationFinished(bool)),
+            q, SIGNAL(operationFinished(bool)));
+    connect(thread, SIGNAL(threadInitialized()),
+            q, SLOT(__k__backendReady()));
+    connect(thread, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
+            q, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
+    connect(thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
+            q, SLOT(__k__doStreamTransProgress(int, const QString&, int, int, int)));
+    connect(thread, SIGNAL(streamTransEvent(int, QVariantMap)),
+            q, SLOT(__k__doStreamTransEvent(int, QVariantMap)));
+    connect(thread, SIGNAL(errorOccurred(int,QVariantMap)),
+            q, SLOT(__k__streamError(int,QVariantMap)));
+    connect(thread, SIGNAL(logMessageStreamed(QString)),
+            q, SIGNAL(logMessageStreamed(QString)));
+    connect(thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
+            q, SLOT(__k__doStreamTransQuestion(int, QVariantMap)));
+
+    QCoreApplication::postEvent(thread, new QEvent(q->getEventTypeFor(Initialization)));
+}
+
+void Backend::Private::__k__streamError(int code, const QVariantMap &args)
+{
+    emit q->errorOccurred((Globals::Errors) code, args);
+}
+
+void Backend::Private::__k__doStreamTransProgress(int event, const QString &pkgname, int percent,
+                           int howmany, int remain)
+{
+    emit q->streamTransProgress((Aqpm::Globals::TransactionProgress)event, pkgname, percent, howmany, remain);
+}
+
+void Backend::Private::__k__doStreamTransEvent(int event, const QVariantMap &args)
+{
+    emit q->streamTransEvent((Aqpm::Globals::TransactionEvent) event, args);
+}
+
+void Backend::Private::__k__doStreamTransQuestion(int event, const QVariantMap &args)
+{
+    emit q->streamTransQuestion((Aqpm::Globals::TransactionQuestion) event, args);
 }
 
 class BackendHelper
@@ -110,7 +169,7 @@ Backend::Backend()
     qDebug() << d->events;
 
     d->containerThread = new ContainerThread();
-    connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(setUpSelf(BackendThread*)));
+    connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(__k__setUpSelf(BackendThread*)));
     d->containerThread->start();
 }
 
@@ -124,38 +183,6 @@ Backend::~Backend()
 QString Backend::version()
 {
     return AQPM_VERSION;
-}
-
-void Backend::setUpSelf(BackendThread *t)
-{
-    d->thread = t;
-
-    connect(d->thread, SIGNAL(dbQty(const QStringList&)),
-            this, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
-    connect(d->thread, SIGNAL(dbStatusChanged(const QString&, int)),
-            this, SIGNAL(dbStatusChanged(const QString&, int)), Qt::QueuedConnection);
-    connect(d->thread, SIGNAL(transactionStarted()),
-            this, SIGNAL(transactionStarted()));
-    connect(d->thread, SIGNAL(transactionReleased()),
-            this, SIGNAL(transactionReleased()));
-    connect(d->thread, SIGNAL(operationFinished(bool)),
-            this, SIGNAL(operationFinished(bool)));
-    connect(d->thread, SIGNAL(threadInitialized()),
-            this, SLOT(__k__backendReady()));
-    connect(d->thread, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
-            this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
-    connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
-            this, SLOT(doStreamTransProgress(int, const QString&, int, int, int)));
-    connect(d->thread, SIGNAL(streamTransEvent(int, QVariantMap)),
-            this, SLOT(doStreamTransEvent(int, QVariantMap)));
-    connect(d->thread, SIGNAL(errorOccurred(int,QVariantMap)),
-            this, SLOT(streamError(int,QVariantMap)));
-    connect(d->thread, SIGNAL(logMessageStreamed(QString)),
-            this, SIGNAL(logMessageStreamed(QString)));
-    connect(d->thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
-            this, SLOT(doStreamTransQuestion(int, QVariantMap)));
-
-    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(Initialization)));
 }
 
 QEvent::Type Backend::getEventTypeFor(ActionType event)
@@ -408,27 +435,6 @@ void Backend::setAnswer(int answer)
     QVariantMap args;
     args["answer"] = QVariant::fromValue(answer);
     SynchronousLoop s(SetAnswer, args);
-}
-
-void Backend::streamError(int code, const QVariantMap &args)
-{
-    emit errorOccurred((Globals::Errors) code, args);
-}
-
-void Backend::doStreamTransProgress(int event, const QString &pkgname, int percent,
-                           int howmany, int remain)
-{
-    emit streamTransProgress((Aqpm::Globals::TransactionProgress)event, pkgname, percent, howmany, remain);
-}
-
-void Backend::doStreamTransEvent(int event, const QVariantMap &args)
-{
-    emit streamTransEvent((Aqpm::Globals::TransactionEvent) event, args);
-}
-
-void Backend::doStreamTransQuestion(int event, const QVariantMap &args)
-{
-    emit streamTransQuestion((Aqpm::Globals::TransactionQuestion) event, args);
 }
 
 BackendThread *Backend::getInnerThread()
