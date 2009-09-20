@@ -71,7 +71,7 @@ public:
     bool saveConfiguration() const;
     void saveConfigurationAsync();
 
-    void setValue(const QString &key, const QString &val);
+    void setValue(const QString &key, const QVariant &val);
     QVariant value(const QString &key) const;
 
     QStringList databases() const;

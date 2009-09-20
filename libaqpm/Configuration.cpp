@@ -112,11 +112,11 @@ void Configuration::saveConfigurationAsync()
     SynchronousLoop s(SaveConfigurationAsync, QVariantMap());
 }
 
-void Configuration::setValue(const QString &key, const QString &val)
+void Configuration::setValue(const QString &key, const QVariant &val)
 {
     QVariantMap args;
     args["key"] = QVariant::fromValue(key);
-    args["val"] = QVariant::fromValue(val);
+    args["val"] = val;
     SynchronousLoop s(SetValue, args);
 }
 

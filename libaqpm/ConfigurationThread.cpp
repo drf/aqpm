@@ -276,7 +276,7 @@ void ConfigurationThread::configuratorResult(bool result)
     emit configurationSaved(result);
 }
 
-void ConfigurationThread::setValue(const QString &key, const QString &val)
+void ConfigurationThread::setValue(const QString &key, const QVariant &val)
 {
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     settings->setValue(key, val);
