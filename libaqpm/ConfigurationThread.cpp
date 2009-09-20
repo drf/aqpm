@@ -45,7 +45,7 @@
         emit actionPerformed((int)ty, retmap); \
         return val;
 
-#define PERFORM_RETURN_VOID(ty) emit actionPerformed((int)ty, QVariantMap());
+#define PERFORM_RETURN_VOID(ty) emit actionPerformed((int)ty, QVariantMap()); return;
 
 namespace Aqpm
 {

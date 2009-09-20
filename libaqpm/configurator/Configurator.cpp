@@ -91,8 +91,8 @@ void Configurator::saveConfiguration(const QString &conf)
 
     qDebug() << "About to write:" << conf;
 
-    QFile::remove("/etc/pacman.conf");
-    QFile file("/etc/pacman.conf");
+    QFile::remove("/etc/aqpm.conf");
+    QFile file("/etc/aqpm.conf");
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         operationPerformed(false);
@@ -234,8 +234,32 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
 
     QTemporaryFile *tmpconf = new QTemporaryFile(this);
     tmpconf->open();
+    QTemporaryFile *tmppacmanconf = new QTemporaryFile(this);
+    tmppacmanconf->open();
 
-    QSettings settings("/etc/pacman.conf", QSettings::IniFormat);
+    // Strip comments out of pacman.conf first
+    QFile file("/etc/pacman.conf");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return QString();
+    }
+
+    QTextStream out(tmppacmanconf);
+    QByteArray toWrite;
+
+    while (!file.atEnd()) {
+        QString line = file.readLine();
+        if (!line.startsWith(QChar('#'))) {
+            toWrite.append(line);
+        }
+    }
+
+    tmppacmanconf->write(toWrite);
+    tmppacmanconf->flush();
+    tmppacmanconf->reset();
+
+    qDebug() << "BIZNEZ\n" << tmppacmanconf->readAll();
+
+    QSettings settings(tmppacmanconf->fileName(), QSettings::IniFormat);
     QSettings writeSettings(tmpconf->fileName(), QSettings::IniFormat);
 
     QStringList databases = settings.childGroups();
@@ -310,6 +334,7 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
     qDebug() << result;
     tmpconf->close();
     tmpconf->deleteLater();
+    tmppacmanconf->deleteLater();
 
     operationPerformed(true);
     qDebug() << result;
