@@ -108,7 +108,8 @@ public:
         Initialization,
         SystemUpgrade,
         PerformAction,
-        InterruptTransaction
+        InterruptTransaction,
+        Ready
     };
 
     /**
@@ -119,6 +120,8 @@ public:
      * @return Aqpm's version
      */
     static QString version();
+
+    bool ready() const;
 
     virtual ~Backend();
 
@@ -248,6 +251,8 @@ private:
 
     class Private;
     Private * const d;
+
+    Q_PRIVATE_SLOT(d, void __k__backendReady())
 };
 
 }

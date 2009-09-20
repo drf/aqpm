@@ -41,12 +41,23 @@ namespace Aqpm
 class Backend::Private
 {
 public:
-    Private() {}
+    Private() : ready(false) {}
 
+    Backend *q;
     BackendThread *thread;
     ContainerThread *containerThread;
     QMap<Backend::ActionType, QEvent::Type> events;
+    bool ready;
+
+    // Q_PRIVATE_SLOTS
+    void __k__backendReady();
 };
+
+void Backend::Private::__k__backendReady()
+{
+    ready = true;
+    emit q->backendReady();
+}
 
 class BackendHelper
 {
@@ -75,6 +86,8 @@ Backend::Backend()
 {
     Q_ASSERT(!s_globalBackend()->q);
     s_globalBackend()->q = this;
+
+    d->q = this;
 
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
@@ -128,7 +141,7 @@ void Backend::setUpSelf(BackendThread *t)
     connect(d->thread, SIGNAL(operationFinished(bool)),
             this, SIGNAL(operationFinished(bool)));
     connect(d->thread, SIGNAL(threadInitialized()),
-            this, SIGNAL(backendReady()));
+            this, SLOT(__k__backendReady()));
     connect(d->thread, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
             this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(d->thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
@@ -159,6 +172,11 @@ bool Backend::testLibrary()
 {
     SynchronousLoop s(TestLibrary, QVariantMap());
     return s.result()["retvalue"].toBool();
+}
+
+bool Backend::ready() const
+{
+    return d->ready;
 }
 
 bool Backend::isOnTransaction()
@@ -424,3 +442,5 @@ void Backend::interruptTransaction()
 }
 
 }
+
+#include "Backend.moc"

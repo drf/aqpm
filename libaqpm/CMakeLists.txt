@@ -1,4 +1,6 @@
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 add_subdirectory(worker)
 add_subdirectory(downloader)
 add_subdirectory(configurator)
