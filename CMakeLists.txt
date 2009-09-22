@@ -91,3 +91,9 @@ install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
 
 #INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/help/de/main.htm DESTINATION share/shaman/help/de)
  
+### Source tarball autogeneration ###
+set(ARCHIVE_NAME ${CMAKE_PROJECT_NAME}-${AQPM_VERSION_STRING})
+add_custom_target(dist
+    COMMAND git archive --prefix=${ARCHIVE_NAME}/ HEAD
+        | bzip2 > ${CMAKE_BINARY_DIR}/${ARCHIVE_NAME}.tar.bz2
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
