@@ -5,10 +5,9 @@ add_subdirectory(worker)
 add_subdirectory(downloader)
 add_subdirectory(configurator)
 
-SET(aqpm_SRCS 
+set(aqpm_SRCS
     Backend.cpp
     BackendThread.cpp
-    #ConfigurationParser.cpp
     QueueItem.cpp
     Package.cpp
     Group.cpp
@@ -21,15 +20,14 @@ SET(aqpm_SRCS
     TemporizedApplication.cpp
 )
 
-SET(aqpm_HEADERS
-	Backend.h
-	#ConfigurationParser.h
-	QueueItem.h
-	Globals.h
-	Package.h
-	Group.h
-	Database.h
-	Configuration.h
+set(aqpm_HEADERS
+    Backend.h
+    QueueItem.h
+    Globals.h
+    Package.h
+    Group.h
+    Database.h
+    Configuration.h
     Maintenance.h
 )
 
@@ -41,17 +39,15 @@ set_target_properties(aqpm PROPERTIES VERSION ${MAJOR_AQPM_VERSION}.${MINOR_AQPM
                                       SOVERSION ${MAJOR_AQPM_VERSION}
                       )
 
-TARGET_LINK_LIBRARIES(aqpm
+target_link_libraries(aqpm
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${ALPM_LIBS}
     ${POLKITQT_CORE_LIBRARY}
 )
 
-INSTALL(CODE "message(\"Installing Aqpm...\")")
-install(TARGETS aqpm RUNTIME DESTINATION bin
-                     LIBRARY DESTINATION lib
-                     ARCHIVE DESTINATION lib)
-INSTALL(FILES ${aqpm_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/aqpm)
+install(CODE "message(\"Installing Aqpm...\")")
+install(TARGETS aqpm ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES ${aqpm_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 
 add_subdirectory(tests)
