@@ -34,8 +34,7 @@
 #include <QTimer>
 #include <QDebug>
 
-#include <Context>
-#include <Auth>
+#include <polkit-qt/Auth>
 
 namespace AqpmWorker
 {

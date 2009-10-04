@@ -39,7 +39,7 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
 
-#include <Auth>
+#include <polkit-qt/Auth>
 
 #define PERFORM_RETURN(ty, val) \
         QVariantMap retmap; \

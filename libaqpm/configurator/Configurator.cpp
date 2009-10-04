@@ -32,7 +32,7 @@
 #include "../Globals.h"
 #include "../Configuration.h"
 
-#include <Auth>
+#include <polkit-qt/Auth>
 
 namespace AqpmConfigurator
 {

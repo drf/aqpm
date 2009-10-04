@@ -28,7 +28,7 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
 
-#include <Auth>
+#include <polkit-qt/Auth>
 
 namespace Aqpm
 {

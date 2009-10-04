@@ -38,8 +38,6 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
 
-#include <Auth>
-
 namespace Aqpm
 {
 
