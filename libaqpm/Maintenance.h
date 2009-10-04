@@ -48,15 +48,14 @@ public:
 Q_SIGNALS:
     void actionPerformed(bool result);
     void actionOutput(const QString &output);
-    
-private Q_SLOTS:
-    void workerResult(bool result);
 
 private:
     Maintenance();
 
     class Private;
     Private *d;
+
+    Q_PRIVATE_SLOT(d, void __k__workerResult(bool result))
 };
 
 }

@@ -21,7 +21,7 @@
 #ifndef SYNCHRONOUSLOOP_H
 #define SYNCHRONOUSLOOP_H
 
-#include <QEventLoop>
+#include <QtCore/QEventLoop>
 
 #include "Backend.h"
 #include "Configuration.h"

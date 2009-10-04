@@ -36,7 +36,11 @@ namespace Aqpm
 class Maintenance::Private
 {
 public:
-    Private() {}
+    Private(Maintenance *parent) : q(parent) {}
+
+    Maintenance *q;
+
+    void __k__workerResult(bool result);
 };
 
 class MaintenanceHelper
@@ -62,7 +66,7 @@ Maintenance *Maintenance::instance()
 
 Maintenance::Maintenance()
         : QObject(0)
-        , d(new Private())
+        , d(new Private(this))
 {
     Q_ASSERT(!s_globalMaintenance()->q);
     s_globalMaintenance()->q = this;
@@ -90,20 +94,20 @@ void Maintenance::performAction(Action type)
         qDebug() << reply.arguments().first().toBool();
     } else if (reply.type() == QDBusMessage::MethodCallMessage) {
         qWarning() << "Message did not receive a reply (timeout by message bus)";
-        workerResult(false);
+        d->__k__workerResult(false);
         return;
     }
 
     if (Backend::instance()->shouldHandleAuthorization()) {
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.performmaintenance")) {
             qDebug() << "User unauthorized";
-            workerResult(false);
+            d->__k__workerResult(false);
             return;
         }
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "workerResult", this, SLOT(workerResult(bool)));
+                                         "workerResult", this, SLOT(__k__workerResult(bool)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "messageStreamed", this, SIGNAL(actionOutput(QString)));
 
@@ -116,12 +120,14 @@ void Maintenance::performAction(Action type)
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }
 
-void Maintenance::workerResult(bool result)
+void Maintenance::Private::__k__workerResult(bool result)
 {
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                            "workerResult", this, SLOT(workerResult(bool)));
+                                            "workerResult", q, SLOT(__k__workerResult(bool)));
 
-    emit actionPerformed(result);
+    emit q->actionPerformed(result);
 }
 
 }
+
+#include "Maintenance.moc"

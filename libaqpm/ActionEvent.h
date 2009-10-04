@@ -21,7 +21,7 @@
 #ifndef ACTIONEVENT_H
 #define ACTIONEVENT_H
 
-#include <QEvent>
+#include <QtCore/QEvent>
 
 #include "Backend.h"
 
