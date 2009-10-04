@@ -41,7 +41,7 @@ namespace AqpmWorker
 class Worker::Private
 {
 public:
-    Private() : timeout(new QTimer()), ready(false) {}
+    Private() : timeout(new QTimer()), ready(false), chroot(QString()) {}
 
     pmdb_t *db_local;
     pmdb_t *dbs_sync;
@@ -49,6 +49,7 @@ public:
     QProcess *proc;
 
     bool ready;
+    QString chroot;
 };
 
 Worker::Worker(bool temporized, QObject *parent)
@@ -84,8 +85,6 @@ Worker::Worker(bool temporized, QObject *parent)
     connect(this, SIGNAL(streamAnswer(int)),
             AqpmWorker::CallBacks::instance(), SLOT(setAnswer(int)));
 
-    setUpAlpm();
-
     setIsTemporized(temporized);
     setTimeout(3000);
     startTemporizing();
@@ -95,6 +94,13 @@ Worker::~Worker()
 {
 }
 
+void Worker::setAqpmRoot(const QString& root, bool toConfiguration)
+{
+    stopTemporizing();
+    d->chroot = root;
+    startTemporizing();
+}
+
 bool Worker::isWorkerReady()
 {
     return d->ready;
@@ -102,9 +108,11 @@ bool Worker::isWorkerReady()
 
 void Worker::setUpAlpm()
 {
-    alpm_option_set_root("/");
-    alpm_option_set_dbpath("/var/lib/pacman");
-    alpm_option_add_cachedir("/var/cache/pacman/pkg");
+    stopTemporizing();
+
+    alpm_option_set_root(QString(d->chroot + '/').toAscii().data());
+    alpm_option_set_dbpath(QString(d->chroot + "/var/lib/pacman").toAscii().data());
+    alpm_option_add_cachedir(QString(d->chroot + "/var/cache/pacman/pkg").toAscii().data());
 
     alpm_option_set_fetchcb(cb_fetch);
     alpm_option_set_totaldlcb(cb_dl_total);
@@ -113,9 +121,10 @@ void Worker::setUpAlpm()
     d->db_local = alpm_db_register_local();
 
     if (Aqpm::Configuration::instance()->value("options/LogFile").toString().isEmpty()) {
-        alpm_option_set_logfile("/var/log/pacman.log");
+        alpm_option_set_logfile(QString(d->chroot + "/var/log/pacman.log").toAscii().data());
     } else {
-        alpm_option_set_logfile(Aqpm::Configuration::instance()->value("options/LogFile").toString().toAscii().data());
+        alpm_option_set_logfile(QString(d->chroot +
+                                        Aqpm::Configuration::instance()->value("options/LogFile").toString()).toAscii().data());
     }
 
     /* Register our sync databases, kindly taken from pacdata */
@@ -165,6 +174,8 @@ void Worker::setUpAlpm()
     emit workerReady();
 
     qDebug() << "Yeah";
+
+    startTemporizing();
 }
 
 void Worker::updateDatabase()

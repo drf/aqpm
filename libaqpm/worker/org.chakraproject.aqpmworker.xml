@@ -23,8 +23,14 @@
 		<method name="setAnswer">
 			<arg type="i" direction="in" />
 		</method>
-                <method name="interruptTransaction">
-                </method>
+        <method name="interruptTransaction">
+        </method>
+        <method name="setUpAlpm">
+        </method>
+        <method name="setAqpmRoot">
+            <arg type="s" direction="in" />
+            <arg type="b" direction="in" />
+        </method>
 
 		<signal name="workerReady">
 		</signal>
@@ -55,24 +61,24 @@
 		</signal>
 		<signal name="streamTransQuestion">
 			<arg type="i" direction="out" />
-                        <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
-                        <arg type="a{sv}" direction="out" />
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+            <arg type="a{sv}" direction="out" />
 		</signal>
-                <signal name="streamTransEvent">
-                        <arg type="i" direction="out" />
-			<annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
-                        <arg type="a{sv}" direction="out" />
-                </signal>
-                <signal name="errorOccurred">
-                        <arg type="i" direction="out" />
-                        <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
-                        <arg type="a{sv}" direction="out" />
-                </signal>
+        <signal name="streamTransEvent">
+            <arg type="i" direction="out" />
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+            <arg type="a{sv}" direction="out" />
+        </signal>
+        <signal name="errorOccurred">
+            <arg type="i" direction="out" />
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+            <arg type="a{sv}" direction="out" />
+        </signal>
 		<signal name="messageStreamed">
-                        <arg type="s" direction="out" />
-                </signal>
+            <arg type="s" direction="out" />
+        </signal>
 		<signal name="logMessageStreamed">
-                        <arg type="s" direction="out" />
-                </signal>
+            <arg type="s" direction="out" />
+        </signal>
 	</interface>
 </node>

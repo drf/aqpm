@@ -60,7 +60,7 @@ void ContainerThread::run()
 class BackendThread::Private
 {
 public:
-    Private() : handleAuth(true) {}
+    Private() : chroot(QString()), confChrooted(false), handleAuth(true) {}
 
     void waitForWorkerReady();
     bool initWorker(const QString &polkitAction);
@@ -73,6 +73,9 @@ public:
 
     QueueItem::List queue;
     Globals::TransactionFlags flags;
+
+    QString chroot;
+    bool confChrooted;
 
     bool handleAuth;
 };
@@ -111,6 +114,26 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
     }
 
     QDBusMessage message;
+
+    // Set the chroot in the worker if needed
+    qDebug() << chroot;
+    if (!chroot.isEmpty()) {
+        message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                                                 "/Worker",
+                                                 "org.chakraproject.aqpmworker",
+                                                 QLatin1String("setAqpmRoot"));
+        message << chroot;
+        message << confChrooted;
+        QDBusConnection::systemBus().call(message);
+    }
+
+    // Then set up alpm in the worker
+    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                                             "/Worker",
+                                             "org.chakraproject.aqpmworker",
+                                             QLatin1String("setUpAlpm"));
+    QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
               "/Worker",
               "org.chakraproject.aqpmworker",
@@ -311,7 +334,7 @@ void BackendThread::customEvent(QEvent *event)
 
 bool BackendThread::testLibrary()
 {
-    PERFORM_RETURN(Backend::TestLibrary, !QFile::exists("/var/lib/pacman/db.lck"));
+    PERFORM_RETURN(Backend::TestLibrary, !QFile::exists(d->chroot + "/var/lib/pacman/db.lck"));
 }
 
 bool BackendThread::isOnTransaction()
@@ -339,7 +362,7 @@ bool BackendThread::reloadPacmanConfiguration()
         alpm_option_remove_noupgrade(str.toAscii().data());
     }
 
-    alpm_option_remove_cachedir("/var/cache/pacman/pkg");
+    alpm_option_remove_cachedir(QString(d->chroot + "/var/cache/pacman/pkg").toAscii().data());
 
     setUpAlpm();
 
@@ -348,16 +371,16 @@ bool BackendThread::reloadPacmanConfiguration()
 
 void BackendThread::setUpAlpm()
 {
-    alpm_option_set_root("/");
-    alpm_option_set_dbpath("/var/lib/pacman");
-    alpm_option_add_cachedir("/var/cache/pacman/pkg");
+    alpm_option_set_root(QString(d->chroot + '/').toAscii().data());
+    alpm_option_set_dbpath(QString(d->chroot + "/var/lib/pacman").toAscii().data());
+    alpm_option_add_cachedir(QString(d->chroot + "/var/cache/pacman/pkg").toAscii().data());
 
     d->db_local = alpm_db_register_local();
 
     if (Configuration::instance()->value("options/LogFile").toString().isEmpty()) {
-        alpm_option_set_logfile("/var/log/pacman.log");
+        alpm_option_set_logfile(QString(d->chroot + "/var/log/pacman.log").toAscii().data());
     } else {
-        alpm_option_set_logfile(Configuration::instance()->value("options/LogFile").toString().toAscii().data());
+        alpm_option_set_logfile(QString(d->chroot + Configuration::instance()->value("options/LogFile").toString()).toAscii().data());
     }
 
     /* Register our sync databases, kindly taken from pacdata */

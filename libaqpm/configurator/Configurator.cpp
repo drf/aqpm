@@ -72,7 +72,7 @@ Configurator::~Configurator()
 {
 }
 
-void Configurator::saveConfiguration(const QString &conf)
+void Configurator::saveConfiguration(const QString& conf, const QString& filename)
 {
     PolkitQt::Auth::Result result;
     result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.saveconfiguration",
@@ -91,8 +91,8 @@ void Configurator::saveConfiguration(const QString &conf)
 
     qDebug() << "About to write:" << conf;
 
-    QFile::remove(AQPM_CONFIGURATION_FILE);
-    QFile file(AQPM_CONFIGURATION_FILE);
+    QFile::remove(filename);
+    QFile file(filename);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         operationPerformed(false);
@@ -213,7 +213,7 @@ QString Configurator::Private::retrieveServerFromPacmanConf(const QString &db) c
     return retstr;
 }
 
-QString Configurator::pacmanConfToAqpmConf(bool writeconf)
+QString Configurator::pacmanConfToAqpmConf(bool writeconf, const QString& filename)
 {
     qDebug() << "IN da call";
 
@@ -325,8 +325,8 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf)
     writeSettings.sync();
 
     if (writeconf) {
-        QFile::copy(tmpconf->fileName(), AQPM_CONFIGURATION_FILE);
-        QProcess::execute(QString("chmod 755 ") + AQPM_CONFIGURATION_FILE);
+        QFile::copy(tmpconf->fileName(), filename);
+        QProcess::execute(QString("chmod 755 ") + filename);
     }
 
     tmpconf->open();

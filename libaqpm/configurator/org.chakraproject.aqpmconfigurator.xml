@@ -3,6 +3,7 @@
 	<interface name="org.chakraproject.aqpmconfigurator">
 		<method name="saveConfiguration">
 			<arg type="s" direction="in" />
+            <arg type="s" direction="in" />
         </method>
 		<method name="addMirror">
 			<arg type="s" direction="in" />
@@ -10,6 +11,7 @@
         </method>
 		<method name="pacmanConfToAqpmConf">
 			<arg type="b" direction="in" />
+            <arg type="s" direction="in" />
 			<arg type="s" direction="out" />
         </method>
 

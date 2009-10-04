@@ -52,6 +52,8 @@ public Q_SLOTS:
     void setAnswer(int answer);
     void performMaintenance(int type);
     void interruptTransaction();
+    void setAqpmRoot(const QString& root, bool toConfiguratio);
+    void setUpAlpm();
 
 private:
     void operationPerformed(bool result);
@@ -60,7 +62,6 @@ private:
     pmtransflag_t processFlags(Aqpm::Globals::TransactionFlags flags);
 
 private Q_SLOTS:
-    void setUpAlpm();
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void errorOutput();
     void standardOutput();

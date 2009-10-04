@@ -329,9 +329,9 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
               QLatin1String("checkHeader"));
 
     message << QString(url);
-    QDBusMessage mreply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+    QDBusMessage mreply = QDBusConnection::systemBus().call(message, QDBus::Block);
 
-    if (mreply.type() == QDBusMessage::ErrorMessage) {
+    if (mreply.type() == QDBusMessage::ErrorMessage || mreply.arguments().count() < 1) {
         // Damn this, there was an error
         return 1;
     }

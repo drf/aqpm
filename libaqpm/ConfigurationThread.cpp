@@ -60,10 +60,12 @@ public:
 
     QTemporaryFile *tempfile;
     bool lastResult;
+
+    QString chroot;
 };
 
 ConfigurationThread::Private::Private()
-         : tempfile(0)
+         : tempfile(0), chroot(QString())
 {
 }
 
@@ -163,7 +165,7 @@ void ConfigurationThread::reload()
 {
     qDebug() << "reloading";
 
-    if (!QFile::exists(AQPM_CONFIGURATION_FILE)) {
+    if (!QFile::exists(d->chroot + AQPM_CONFIGURATION_FILE)) {
         qDebug() << "Loading...";
 
         if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.convertconfiguration")) {
@@ -180,6 +182,7 @@ void ConfigurationThread::reload()
                                                               QLatin1String("pacmanConfToAqpmConf"));
 
         message << true;
+        message << QString(d->chroot + AQPM_CONFIGURATION_FILE);
         QDBusConnection::systemBus().call(message, QDBus::Block);
         qDebug() << QDBusConnection::systemBus().lastError();
     }
@@ -192,7 +195,7 @@ void ConfigurationThread::reload()
     d->tempfile = new QTemporaryFile(this);
     d->tempfile->open();
 
-    QFile file(AQPM_CONFIGURATION_FILE);
+    QFile file(d->chroot + AQPM_CONFIGURATION_FILE);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "prcd!";
@@ -252,6 +255,7 @@ void ConfigurationThread::saveConfigurationAsync()
 
     d->tempfile->open();
     message << QString(d->tempfile->readAll());
+    message << QString(d->chroot + AQPM_CONFIGURATION_FILE);
     QDBusConnection::systemBus().call(message);
     qDebug() << QDBusConnection::systemBus().lastError();
     d->tempfile->close();

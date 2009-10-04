@@ -38,9 +38,9 @@ public:
     virtual ~Configurator();
 
 public Q_SLOTS:
-    void saveConfiguration(const QString &conf);
+    void saveConfiguration(const QString &conf, const QString &filename);
     void addMirror(const QString &mirror, int type);
-    QString pacmanConfToAqpmConf(bool writeconf);
+    QString pacmanConfToAqpmConf(bool writeconf, const QString &filename);
 
 Q_SIGNALS:
     void errorOccurred(int code, const QVariantMap &details);

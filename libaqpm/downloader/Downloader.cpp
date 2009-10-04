@@ -94,6 +94,7 @@ int Downloader::checkHeader(const QString &url)
     qDebug() << "Getting started";
     QEventLoop e;
     connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
+    qDebug() << "Header check " << reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
     return reply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
 }
 
