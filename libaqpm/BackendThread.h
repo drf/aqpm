@@ -46,6 +46,9 @@ private:
     bool testLibrary();
     bool isOnTransaction();
 
+    void setAqpmRoot(const QString &root, bool applyToConfiguration);
+    QString aqpmRoot();
+
     Database::List getAvailableDatabases();
     Database getLocalDatabase();
 

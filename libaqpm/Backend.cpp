@@ -33,8 +33,6 @@
 #include <QDBusMetaType>
 #include <QGlobalStatic>
 
-Q_DECLARE_METATYPE(alpm_list_t*)
-
 namespace Aqpm
 {
 
@@ -204,6 +202,20 @@ bool Backend::testLibrary()
 bool Backend::ready() const
 {
     return d->ready;
+}
+
+void Backend::setAqpmRoot(const QString& root, bool applyToConfiguration)
+{
+    QVariantMap args;
+    args["root"] = QVariant::fromValue(root);
+    args["applyToConfiguration"] = QVariant::fromValue(applyToConfiguration);
+    SynchronousLoop s(SetAqpmRoot, args);
+}
+
+QString Backend::aqpmRoot() const
+{
+    SynchronousLoop s(AqpmRoot, QVariantMap());
+    return s.result()["retvalue"].toString();
 }
 
 bool Backend::isOnTransaction()

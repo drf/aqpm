@@ -32,6 +32,7 @@
 #include <QStringList>
 #include <QEvent>
 #include <QMetaType>
+#include <QPair>
 
 namespace Aqpm
 {
@@ -109,7 +110,9 @@ public:
         SystemUpgrade,
         PerformAction,
         InterruptTransaction,
-        Ready
+        Ready,
+        SetAqpmRoot,
+        AqpmRoot
     };
 
     /**
@@ -137,6 +140,9 @@ public:
      */
     bool testLibrary();
     bool isOnTransaction();
+
+    void setAqpmRoot(const QString &root, bool applyToConfiguration);
+    QString aqpmRoot() const;
 
     /**
      * Performs an action asynchronously. You are not advised to use this method as it is right now,

@@ -325,6 +325,11 @@ void BackendThread::customEvent(QEvent *event)
             case Backend::InterruptTransaction:
                 interruptTransaction();
                 break;
+            case Backend::SetAqpmRoot:
+                setAqpmRoot(ae->args()["root"].toString(), ae->args()["applyToConfiguration"].toBool());
+                break;
+            case Backend::AqpmRoot:
+                aqpmRoot();
             default:
                 qDebug() << "Implement me!!";
                 break;
@@ -425,6 +430,21 @@ void BackendThread::setUpAlpm()
     alpm_option_set_usesyslog(Configuration::instance()->value("options/UseSyslog").toInt());
 
     PERFORM_RETURN_VOID(Backend::SetUpAlpm)
+}
+
+void BackendThread::setAqpmRoot(const QString& root, bool applyToConfiguration)
+{
+    d->chroot = root;
+    d->confChrooted = applyToConfiguration;
+    if (d->confChrooted) {
+        
+    }
+    PERFORM_RETURN_VOID(Backend::SetAqpmRoot);
+}
+
+QString BackendThread::aqpmRoot()
+{
+    PERFORM_RETURN(Backend::AqpmRoot, d->chroot);
 }
 
 Database::List BackendThread::getAvailableDatabases()
