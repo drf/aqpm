@@ -117,46 +117,40 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
 
     QDBusMessage message;
 
-    // Set the chroot in the worker if needed
-    qDebug() << chroot;
-    if (!chroot.isEmpty()) {
-        message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-                                                 "/Worker",
-                                                 "org.chakraproject.aqpmworker",
-                                                 QLatin1String("setAqpmRoot"));
-        message << chroot;
-        message << confChrooted;
-        QDBusConnection::systemBus().call(message);
-    }
-
-    // Then set up alpm in the worker
+    // Check if the worker needs setting up
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
                                              "/Worker",
                                              "org.chakraproject.aqpmworker",
-                                             QLatin1String("setUpAlpm"));
-    QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
-
-    message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("isWorkerReady"));
+                                             QLatin1String("isWorkerReady"));
     QDBusMessage reply = QDBusConnection::systemBus().call(message);
     if (reply.type() == QDBusMessage::ReplyMessage
-            && reply.arguments().size() == 1) {
+        && reply.arguments().size() == 1) {
         if (!reply.arguments().first().toBool()) {
-            qDebug() << "Waiting for worker ready";
-            QEventLoop e;
-            QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                                 "workerReady", &e, SLOT(quit()));
-            e.exec();
-            qDebug() << "Worker ready";
+            // Set the chroot in the worker if needed
+            qDebug() << chroot;
+            if (!chroot.isEmpty()) {
+                message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                                                         "/Worker",
+                                                         "org.chakraproject.aqpmworker",
+                                                         QLatin1String("setAqpmRoot"));
+                message << chroot;
+                message << confChrooted;
+                QDBusConnection::systemBus().call(message);
+            }
+
+            // Then set up alpm in the worker
+            message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+            "/Worker",
+            "org.chakraproject.aqpmworker",
+            QLatin1String("setUpAlpm"));
+            QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+
+            qDebug() << "Worker has been set up, let's move";
         }
     } else if (reply.type() == QDBusMessage::MethodCallMessage) {
         qWarning() << "Message did not receive a reply (timeout by message bus)";
         return false;
     }
-
-    qDebug() << "Worker has been set up, let's move";
 
     if (handleAuth) {
         if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
