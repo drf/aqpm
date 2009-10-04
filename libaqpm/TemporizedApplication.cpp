@@ -31,6 +31,7 @@ TemporizedApplication::TemporizedApplication()
 
 TemporizedApplication::~TemporizedApplication()
 {
+    m_timer->deleteLater();
 }
 
 void TemporizedApplication::setIsTemporized(bool is)
