@@ -204,12 +204,13 @@ bool Backend::ready() const
     return d->ready;
 }
 
-void Backend::setAqpmRoot(const QString& root, bool applyToConfiguration)
+bool Backend::setAqpmRoot(const QString& root, bool applyToConfiguration) const
 {
     QVariantMap args;
     args["root"] = QVariant::fromValue(root);
     args["applyToConfiguration"] = QVariant::fromValue(applyToConfiguration);
     SynchronousLoop s(SetAqpmRoot, args);
+    return s.result()["retvalue"].toBool();
 }
 
 QString Backend::aqpmRoot() const

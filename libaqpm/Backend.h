@@ -141,7 +141,7 @@ public:
     bool testLibrary();
     bool isOnTransaction();
 
-    void setAqpmRoot(const QString &root, bool applyToConfiguration);
+    bool setAqpmRoot(const QString &root, bool applyToConfiguration) const;
     QString aqpmRoot() const;
 
     /**

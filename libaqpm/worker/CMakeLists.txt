@@ -14,7 +14,7 @@ SET(aqpmworker_SRCS
     w_callbacks.cpp
     ../TemporizedApplication.cpp
 )
-                      
+
 automoc4_add_executable(aqpmworker
     ${aqpmworker_SRCS}
     ${aqpmworker_adaptor_SRCS}
@@ -34,5 +34,3 @@ install(TARGETS aqpmworker DESTINATION ${AQPM_HELPER_INSTALL_DIR})
 dbus_add_activation_system_service(org.chakraproject.aqpmworker.service.in)
 
 install(FILES org.chakraproject.aqpmworker.conf DESTINATION /etc/dbus-1/system.d)
-install(FILES org.chakraproject.aqpmworker.policy DESTINATION ${POLICY_FILES_INSTALL_DIR})
-

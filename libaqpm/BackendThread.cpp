@@ -428,8 +428,20 @@ void BackendThread::setUpAlpm()
     PERFORM_RETURN_VOID(Backend::SetUpAlpm)
 }
 
-void BackendThread::setAqpmRoot(const QString& root, bool applyToConfiguration)
+bool BackendThread::setAqpmRoot(const QString& root, bool applyToConfiguration)
 {
+    if (d->handleAuth) {
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.setaqpmroot")) {
+            qDebug() << "User unauthorized, root was not changed";
+            PERFORM_RETURN(Backend::SetAqpmRoot, false)
+        }
+    } else {
+        if (!PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.setaqpmroot", QCoreApplication::applicationPid(), true)) {
+            qDebug() << "User unauthorized, root was not changed";
+            PERFORM_RETURN(Backend::SetAqpmRoot, false)
+        }
+    }
+
     d->chroot = root;
     d->confChrooted = applyToConfiguration;
     if (d->confChrooted) {
@@ -440,7 +452,7 @@ void BackendThread::setAqpmRoot(const QString& root, bool applyToConfiguration)
         Aqpm::Configuration::instance()->reload();
     }
 
-    PERFORM_RETURN_VOID(Backend::SetAqpmRoot);
+    PERFORM_RETURN(Backend::SetAqpmRoot, true)
 }
 
 QString BackendThread::aqpmRoot()

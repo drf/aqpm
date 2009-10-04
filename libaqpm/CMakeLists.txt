@@ -48,7 +48,7 @@ TARGET_LINK_LIBRARIES(aqpm
     ${POLKITQT_CORE_LIBRARY}
 )
 
-INSTALL(CODE "MESSAGE(\"Installing Aqpm...\")")
+INSTALL(CODE "message(\"Installing Aqpm...\")")
 install(TARGETS aqpm RUNTIME DESTINATION bin
                      LIBRARY DESTINATION lib
                      ARCHIVE DESTINATION lib)
