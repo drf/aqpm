@@ -19,24 +19,9 @@
  ***************************************************************************/
 
 #include "Configuration.h"
+
 #include "ConfigurationThread.h"
-
-#include "Backend.h"
-
 #include "SynchronousLoop.h"
-
-#include <QSettings>
-#include <QFile>
-#include <QTemporaryFile>
-#include <QEventLoop>
-#include <QTextStream>
-#include <QDir>
-#include <QDebug>
-#include <QTimer>
-#include <QtDBus/QDBusInterface>
-#include <QtDBus/QDBusReply>
-#include <QtDBus/QDBusConnection>
-#include <QtDBus/QDBusConnectionInterface>
 
 namespace Aqpm
 {
