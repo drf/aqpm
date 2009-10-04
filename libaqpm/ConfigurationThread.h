@@ -16,6 +16,9 @@ public:
     ConfigurationThread();
     virtual ~ConfigurationThread();
 
+    void setAqpmRoot(const QString &root);
+
+private:
     bool saveConfiguration();
     void saveConfigurationAsync();
 
@@ -44,11 +47,9 @@ public:
 
     void setOrUnset(bool set, const QString &key, const QString &val = QString());
 
-public Q_SLOTS:
-    void reload();
-
 private Q_SLOTS:
     void configuratorResult(bool result);
+    void reload();
 
 protected:
     void customEvent(QEvent *event);

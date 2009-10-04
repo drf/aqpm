@@ -81,6 +81,11 @@ ConfigurationThread::~ConfigurationThread()
     delete d;
 }
 
+void ConfigurationThread::setAqpmRoot(const QString& root)
+{
+    d->chroot = root;
+}
+
 void ConfigurationThread::customEvent(QEvent *event)
 {
     if (event->type() == Configuration::instance()->eventType()) {

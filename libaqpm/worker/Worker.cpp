@@ -27,6 +27,8 @@
 #include "w_callbacks.h"
 #include "../Globals.h"
 #include "../QueueItem.h"
+// Private headers
+#include "../ConfigurationThread.h"
 
 #include <QtDBus/QDBusConnection>
 #include <QTimer>
@@ -98,6 +100,13 @@ void Worker::setAqpmRoot(const QString& root, bool toConfiguration)
 {
     stopTemporizing();
     d->chroot = root;
+    if (toConfiguration) {
+        Aqpm::Configuration::instance()->getInnerThread()->setAqpmRoot(root);
+        Aqpm::Configuration::instance()->reload();
+    } else {
+        Aqpm::Configuration::instance()->getInnerThread()->setAqpmRoot(QString());
+        Aqpm::Configuration::instance()->reload();
+    }
     startTemporizing();
 }
 

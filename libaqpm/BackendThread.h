@@ -31,6 +31,8 @@
 namespace Aqpm
 {
 
+class ConfigurationThread;
+
 class BackendThread : public QObject
 {
     Q_OBJECT

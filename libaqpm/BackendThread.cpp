@@ -22,6 +22,8 @@
 
 #include "Configuration.h"
 #include "ActionEvent.h"
+// Private headers
+#include "ConfigurationThread.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -437,8 +439,13 @@ void BackendThread::setAqpmRoot(const QString& root, bool applyToConfiguration)
     d->chroot = root;
     d->confChrooted = applyToConfiguration;
     if (d->confChrooted) {
-        
+        Configuration::instance()->getInnerThread()->setAqpmRoot(root);
+        Configuration::instance()->reload();
+    } else {
+        Aqpm::Configuration::instance()->getInnerThread()->setAqpmRoot(QString());
+        Aqpm::Configuration::instance()->reload();
     }
+
     PERFORM_RETURN_VOID(Backend::SetAqpmRoot);
 }
 
