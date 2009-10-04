@@ -123,8 +123,14 @@ public:
      */
     static QString version();
 
+    /**
+     * @return \c true if the backend is ready to be used, \c false if it's still in the initialization phase
+     */
     bool ready() const;
 
+    /**
+     * Default destructor
+     */
     virtual ~Backend();
 
     /**
@@ -135,12 +141,24 @@ public:
     /**
      * Performs a test on the library to check if Alpm and Aqpm are ready to be used
      *
-     * @return \c true if the library is ready, \c false if there was a problem while testing itt
+     * @return \c true if the library is ready, \c false if there was a problem while testing it
      */
     bool testLibrary();
     bool isOnTransaction();
 
+    /**
+     * Attempts to change the root directory of package management to \c root. This has the effect
+     * of "chrooting" Aqpm to a new root, letting you also use the configuration present in the new root
+     * @note This method is mapped to the org.chakraproject.aqpm.setaqpmroot action
+     *
+     * @p root The new root, without the ending slash (e.g.: "/media/myotherdisk")
+     * @p applyToConfiguration Whether to use the configuration found in \c root or the standard config file
+     * @returns Whether the change was successful or not
+     */
     bool setAqpmRoot(const QString &root, bool applyToConfiguration) const;
+    /**
+     * @returns The current root directory used by aqpm, without the ending slash
+     */
     QString aqpmRoot() const;
 
     /**
