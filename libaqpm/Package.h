@@ -23,9 +23,9 @@
 
 #include "Visibility.h"
 
-#include <QMetaType>
-#include <QString>
-#include <QDateTime>
+#include <QtCore/QMetaType>
+#include <QtCore/QString>
+#include <QtCore/QDateTime>
 
 typedef struct __pmpkg_t pmpkg_t;
 

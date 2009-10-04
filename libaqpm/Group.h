@@ -21,8 +21,8 @@
 #ifndef GROUP_H
 #define GROUP_H
 
-#include <QString>
-#include <QMetaType>
+#include <QtCore/QString>
+#include <QtCore/QMetaType>
 
 #include "Visibility.h"
 

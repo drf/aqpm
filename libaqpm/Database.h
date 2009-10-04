@@ -21,8 +21,8 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <QList>
-#include <QMetaType>
+#include <QtCore/QList>
+#include <QtCore/QMetaType>
 
 #include "Package.h"
 

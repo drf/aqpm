@@ -21,8 +21,8 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include <QObject>
-#include <QEvent>
+#include <QtCore/QObject>
+#include <QtCore/QEvent>
 
 namespace Aqpm
 {

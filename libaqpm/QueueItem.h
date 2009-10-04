@@ -23,8 +23,8 @@
 
 #include "Visibility.h"
 
-#include <QMetaType>
-#include <QDBusArgument>
+#include <QtCore/QMetaType>
+#include <QtDBus/QDBusArgument>
 
 namespace Aqpm
 {

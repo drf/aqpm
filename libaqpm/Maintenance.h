@@ -21,7 +21,7 @@
 #ifndef MAINTENANCE_H
 #define MAINTENANCE_H
 
-#include <QObject>
+#include <QtCore/QObject>
 
 namespace Aqpm {
 

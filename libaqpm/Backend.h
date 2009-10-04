@@ -28,11 +28,10 @@
 #include "Database.h"
 #include "Group.h"
 
-#include <QThread>
-#include <QStringList>
-#include <QEvent>
-#include <QMetaType>
-#include <QPair>
+#include <QtCore/QThread>
+#include <QtCore/QStringList>
+#include <QtCore/QEvent>
+#include <QtCore/QMetaType>
 
 namespace Aqpm
 {

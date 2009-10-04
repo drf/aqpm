@@ -21,7 +21,7 @@
 #ifndef GLOBALSH
 #define GLOBALSH
 
-#include <QFlags>
+#include <QtCore/QFlags>
 
 namespace Aqpm
 {

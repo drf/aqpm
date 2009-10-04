@@ -21,7 +21,7 @@
 #ifndef TEMPORIZEDAPPLICATION_H
 #define TEMPORIZEDAPPLICATION_H
 
-#include <QTimer>
+#include <QtCore/QTimer>
 
 class TemporizedApplication
 {
