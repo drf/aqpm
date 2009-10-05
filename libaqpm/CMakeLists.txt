@@ -17,7 +17,6 @@ set(aqpm_SRCS
     Configuration.cpp
     ConfigurationThread.cpp
     Maintenance.cpp
-    TemporizedApplication.cpp
 )
 
 set(aqpm_HEADERS
