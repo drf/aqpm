@@ -28,7 +28,7 @@
 
 #include <alpm.h>
 
-#include "../TemporizedApplication.h"
+#include "TemporizedApplication.h"
 #include "../Globals.h"
 
 namespace AqpmWorker

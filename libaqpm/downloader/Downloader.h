@@ -25,7 +25,7 @@
 #include <QtDBus/QDBusContext>
 #include <QtDBus/QDBusVariant>
 
-#include "../TemporizedApplication.h"
+#include "TemporizedApplication.h"
 
 class QNetworkReply;
 

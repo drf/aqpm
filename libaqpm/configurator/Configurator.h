@@ -24,7 +24,7 @@
 #include <QtCore/QObject>
 #include <QtDBus/QDBusContext>
 
-#include "../TemporizedApplication.h"
+#include "TemporizedApplication.h"
 
 namespace AqpmConfigurator
 {

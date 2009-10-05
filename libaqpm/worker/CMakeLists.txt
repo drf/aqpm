@@ -10,7 +10,7 @@ set(aqpmworker_SRCS
     main.cpp
     Worker.cpp
     w_callbacks.cpp
-    ../TemporizedApplication.cpp
+    ${CMAKE_SOURCE_DIR}/misc/TemporizedApplication.cpp
 )
 
 automoc4_add_executable(aqpmworker

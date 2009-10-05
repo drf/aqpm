@@ -10,7 +10,7 @@ qt4_add_dbus_adaptor(aqpmconfigurator_adaptor_SRCS org.chakraproject.aqpmconfigu
 set(aqpmconfigurator_SRCS
     main.cpp
     Configurator.cpp
-    ../TemporizedApplication.cpp
+    ${CMAKE_SOURCE_DIR}/misc/TemporizedApplication.cpp
 )
 
 automoc4_add_executable(aqpmconfigurator
