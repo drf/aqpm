@@ -5,7 +5,7 @@ includedir=@CMAKE_INSTALL_PREFIX@/include/aqpm
 
 Name: aqpm
 Description: Qt Wrapper around Alpm, with extra functionalities
-Version: @MAJOR_AQPM_VERSION@.@MINOR_AQPM_VERSION@.@PATCH_AQPM_VERSION@
+Version: @AQPM_VERSION_STRING@
 
 Libs: -L${libdir} -laqpm
 Cflags: -I${includedir}
