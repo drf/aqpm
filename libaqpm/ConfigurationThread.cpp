@@ -497,7 +497,7 @@ QStringList ConfigurationThread::serversForMirror(const QString &mirror)
     settings->beginGroup("mirrors");
     settings->beginGroup(mirror);
     foreach (const QString &key, settings->childKeys()) {
-        if (key.startsWith("Server")) {
+        if (key.startsWith(QLatin1String("Server"))) {
             retlist.append(settings->value(key).toString());
         }
     }
@@ -515,7 +515,7 @@ void ConfigurationThread::setServersForMirror(const QStringList &servers, const 
     settings->beginGroup("mirrors");
     settings->beginGroup(mirror);
     foreach (const QString &key, settings->childKeys()) {
-        if (key.startsWith("Server")) {
+        if (key.startsWith(QLatin1String("Server"))) {
             settings->remove(key);
         }
     }

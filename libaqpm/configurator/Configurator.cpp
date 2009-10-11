@@ -166,16 +166,17 @@ QString Configurator::Private::retrieveServerFromPacmanConf(const QString &db) c
         QString line = in.readLine();
         if (line.startsWith('[' + db)) {
             // Let's go to the next line
-            QString nextLine = "#";
+            QString nextLine;
+            nextLine.clear();
 
             while (retstr.isEmpty() && !in.atEnd()) {
                 while ((nextLine.startsWith('#') || nextLine.isEmpty()) && !in.atEnd()) {
                     nextLine = in.readLine();
                 }
                 // Cool, let's see if it's valid
-                if (!nextLine.startsWith("Server") && !nextLine.startsWith("Include")) {
+                if (!nextLine.startsWith(QLatin1String("Server")) && !nextLine.startsWith(QLatin1String("Include"))) {
                     retstr.clear();
-                } else if (nextLine.startsWith("Server")) {
+                } else if (nextLine.startsWith(QLatin1String("Server"))) {
                     nextLine.remove(' ');
                     nextLine.remove('=');
                     nextLine.remove("Server", Qt::CaseSensitive);
@@ -194,7 +195,7 @@ QString Configurator::Private::retrieveServerFromPacmanConf(const QString &db) c
 
                     while (!incin.atEnd()) {
                         QString incLine = incin.readLine();
-                        if (incLine.startsWith("Server")) {
+                        if (incLine.startsWith(QLatin1String("Server"))) {
                             incLine.remove(' ');
                             incLine.remove('=');
                             incLine.remove("Server", Qt::CaseSensitive);
