@@ -39,7 +39,7 @@ class Worker : public QObject, protected QDBusContext, private TemporizedApplica
     Q_OBJECT
 
 public:
-    Worker(bool temporized, QObject *parent = 0);
+    explicit Worker(bool temporized, QObject *parent = 0);
     virtual ~Worker();
 
     bool isWorkerReady();

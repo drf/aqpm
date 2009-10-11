@@ -61,7 +61,7 @@ public:
     QString retrieveChangelog() const;
     QString retrieveLoggedActions() const;
 
-    bool operator ==(const Package &pkg);
+    bool operator ==(const Package &pkg) const;
 
 private:
     class Private;

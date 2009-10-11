@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef WORKER_H
-#define WORKER_H
+#ifndef DOWNLOADER_H
+#define DOWNLOADER_H
 
 #include <QObject>
 #include <QtDBus/QDBusContext>
@@ -37,7 +37,7 @@ class Downloader : public QObject, protected QDBusContext, private TemporizedApp
     Q_OBJECT
 
 public:
-    Downloader(bool temporize, QObject *parent = 0);
+    explicit Downloader(bool temporize, QObject *parent = 0);
     virtual ~Downloader();
 
 public Q_SLOTS:
@@ -61,4 +61,4 @@ private:
 
 }
 
-#endif /* WORKER_H */
+#endif /* DOWNLOADER_H */

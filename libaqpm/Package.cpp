@@ -208,7 +208,7 @@ QStringList Package::files() const
     return retlist;
 }
 
-bool Package::operator==(const Package &pkg)
+bool Package::operator==(const Package &pkg) const
 {
     return pkg.alpmPackage() == d->underlying;
 }

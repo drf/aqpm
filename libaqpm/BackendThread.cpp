@@ -743,7 +743,7 @@ Package BackendThread::getPackage(const QString &name, const QString &repo)
 
 Group BackendThread::getGroup(const QString &name)
 {
-    foreach (Group g, getAvailableGroups()) {
+    foreach (const Group &g, getAvailableGroups()) {
         if (g.name() == name) {
             PERFORM_RETURN(Backend::GetGroup, g)
         }
@@ -752,7 +752,7 @@ Group BackendThread::getGroup(const QString &name)
 
 Database BackendThread::getDatabase(const QString &name)
 {
-    foreach (Database d, getAvailableDatabases()) {
+    foreach (const Database &d, getAvailableDatabases()) {
         if (d.name() == name) {
             PERFORM_RETURN(Backend::GetDatabase, d)
         }
@@ -766,7 +766,7 @@ Group::List BackendThread::getPackageGroups(const Package &package)
     Group::List groups = getAvailableGroups();
 
     while (list != NULL) {
-        foreach (Group g, groups) {
+        foreach (const Group &g, groups) {
             if (g.name() == (char*)alpm_list_getdata(list)) {
                 retlist.append(g);
             }

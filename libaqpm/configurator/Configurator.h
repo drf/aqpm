@@ -34,7 +34,7 @@ class Configurator : public QObject, protected QDBusContext, private TemporizedA
     Q_OBJECT
 
 public:
-    Configurator(bool temporize, QObject *parent = 0);
+    explicit Configurator(bool temporize, QObject *parent = 0);
     virtual ~Configurator();
 
 public Q_SLOTS:
