@@ -89,12 +89,12 @@ int Downloader::checkHeader(const QString &url)
     stopTemporizing();
 
     qDebug() << "About to check";
-    QNetworkReply *reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
+    QNetworkReply *reply = d->manager->head(QNetworkRequest(QUrl(url)));
     reply->setProperty("is_Header_Check", true);
     qDebug() << "Getting started";
     QEventLoop e;
     connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
-    qDebug() << "Header check " << reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
+    e.exec();
     return reply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
 }
 
@@ -113,6 +113,9 @@ void Downloader::download(const QString &url, const QString &to)
 void Downloader::downloadFinished(QNetworkReply *reply)
 {
     if (reply->property("is_Header_Check").toBool()) {
+        // First of all notify that the head check has taken place
+        emit headCheckFinished(reply);
+
         // Skip that
         if (d->replies.isEmpty()) {
             startTemporizing();

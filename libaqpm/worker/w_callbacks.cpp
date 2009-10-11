@@ -344,7 +344,9 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     time_t newtime = mreply.arguments().first().toInt();
     qDebug() << "Header says" << newtime;
-    mtimenew = &newtime;
+    qDebug() << "Old file says" << mtimeold;
+    mtimenew = new time_t;
+    *mtimenew = newtime;
 
     qDebug() << "Comparing";
 
