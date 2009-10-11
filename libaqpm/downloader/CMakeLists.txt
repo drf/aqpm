@@ -9,7 +9,6 @@ qt4_add_dbus_adaptor(aqpmdownloader_adaptor_SRCS org.chakraproject.aqpmdownloade
 set(aqpmdownloader_SRCS
     main.cpp
     Downloader.cpp
-    LoopQNetworkReply.cpp
     ${CMAKE_SOURCE_DIR}/misc/TemporizedApplication.cpp
 )
 
