@@ -386,7 +386,6 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
                                             "org.chakraproject.aqpmdownloader",
                                             "downloadProgress", this, SLOT(computeDownloadProgress(qint64,qint64)));
 
-    QCoreApplication::processEvents();
     return 0;
 }
 
