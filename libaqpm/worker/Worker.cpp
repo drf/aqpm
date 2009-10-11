@@ -263,6 +263,9 @@ void Worker::updateDatabase()
 
     qDebug() << "Database Update Performed";
 
+    // Clear up our download progress data
+    CallBacks::instance()->cb_dl_total(0);
+
     operationPerformed(true);
 }
 
