@@ -89,9 +89,9 @@ int Downloader::checkHeader(const QString &url)
     stopTemporizing();
 
     qDebug() << "About to check";
-    QNetworkReply *reply = d->manager->head(QNetworkRequest(QUrl(url)));
+    QNetworkReply *reply = d->manager->head(d->createNetworkRequest(QUrl(url)));
     reply->setProperty("is_Header_Check", true);
-    qDebug() << "Getting started";
+    qDebug() << "Head check done";
     QEventLoop e;
     connect(reply, SIGNAL(finished()), &e, SLOT(quit()));
     e.exec();
