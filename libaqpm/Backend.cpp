@@ -178,6 +178,17 @@ Backend::~Backend()
     delete d;
 }
 
+void Backend::safeInitialization()
+{
+    if (!ready()) {
+        QEventLoop e;
+        connect(this, SIGNAL(backendReady()), &e, SLOT(quit()));
+        e.exec();
+
+        setUpAlpm();
+    }
+}
+
 QString Backend::version()
 {
     return AQPM_VERSION;

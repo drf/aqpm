@@ -129,6 +129,17 @@ public:
     bool ready() const;
 
     /**
+     * This method initializes Aqpm safely, if needed, and sets up Aqpm. Once this method has returned, Aqpm
+     * is ready to be used. setUpAlpm() is already called by this function, you don't need to call it again.
+     * If the backend had been already initialized elsewhere, this function will simply return immediately.
+     * It is strongly advised to always use this function to initialize Aqpm.
+     *
+     * \note this function will work only if it will be the VERY FIRST CALL to Backend::instance(). Failure in
+     * doing so might lead to undefined behavior.
+     */
+    void safeInitialization();
+
+    /**
      * Default destructor
      */
     virtual ~Backend();
