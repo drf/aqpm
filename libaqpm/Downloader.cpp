@@ -62,10 +62,34 @@ QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
     return request;
 }
 
+class DownloaderHelper
+{
+    public:
+        DownloaderHelper() : q(0) {}
+        ~DownloaderHelper() {
+            delete q;
+        }
+        Downloader *q;
+};
+
+Q_GLOBAL_STATIC(DownloaderHelper, s_globalDownloader)
+
+Downloader *Downloader::instance()
+{
+    if (!s_globalDownloader()->q) {
+        new Downloader;
+    }
+
+    return s_globalDownloader()->q;
+}
+
 Downloader::Downloader(QObject *parent)
         : QObject(parent)
         , d(new Private())
 {
+    Q_ASSERT(!s_globalDownloader()->q);
+    s_globalDownloader()->q = this;
+
     new AqpmdownloaderAdaptor(this);
 
     if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmdownloader")) {
