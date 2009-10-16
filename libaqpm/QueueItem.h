@@ -73,7 +73,7 @@ Q_DECLARE_METATYPE(Aqpm::QueueItem)
 Q_DECLARE_METATYPE(Aqpm::QueueItem::List)
 Q_DECLARE_METATYPE(Aqpm::QueueItem::Action)
 
-QDBusArgument &operator<<(QDBusArgument &argument, const Aqpm::QueueItem &item);
-const QDBusArgument &operator>>(const QDBusArgument &argument, Aqpm::QueueItem &item);
+AQPM_EXPORT QDBusArgument &operator<<(QDBusArgument &argument, const Aqpm::QueueItem &item);
+AQPM_EXPORT const QDBusArgument &operator>>(const QDBusArgument &argument, Aqpm::QueueItem &item);
 
 #endif /* QUEUEITEM_H */

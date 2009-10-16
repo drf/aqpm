@@ -21,6 +21,8 @@
 #ifndef CONFIGURATIONTHREAD_H
 #define CONFIGURATIONTHREAD_H
 
+#include "Visibility.h"
+
 #include <QObject>
 #include <QVariantMap>
 
@@ -28,7 +30,7 @@
 
 namespace Aqpm {
 
-class ConfigurationThread : public QObject
+class AQPM_IMPORT ConfigurationThread : public QObject
 {
     Q_OBJECT
 
