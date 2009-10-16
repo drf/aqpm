@@ -27,7 +27,15 @@
 #include <QtDBus/QDBusConnection>
 #include <QTimer>
 #include <QDebug>
+
+#ifndef KDE4_INTEGRATION
 #include <QtNetwork/QNetworkAccessManager>
+typedef QNetworkAccessManager AqpmNetworkAccessManager;
+#else
+#include <kio/accessmanager.h>
+typedef KIO::AccessManager AqpmNetworkAccessManager;
+#endif
+
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkProxy>
@@ -42,7 +50,7 @@ public:
 
     QNetworkRequest createNetworkRequest(const QUrl &url);
 
-    QNetworkAccessManager *manager;
+    AqpmNetworkAccessManager *manager;
     QList<QNetworkReply*> replies;
 };
 
@@ -72,7 +80,7 @@ Downloader::Downloader(bool temporize, QObject *parent)
         return;
     }
 
-    d->manager = new QNetworkAccessManager(this);
+    d->manager = new AqpmNetworkAccessManager(this);
     connect(d->manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(downloadFinished(QNetworkReply*)));
     setIsTemporized(temporize);
     setTimeout(3000);

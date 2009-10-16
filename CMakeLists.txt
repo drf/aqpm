@@ -22,8 +22,19 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
 # requires minimal Qt 4.4
 set(QT_MIN_VERSION "4.4.0")
 
-find_package(Qt4 REQUIRED)
-find_package(Automoc4 REQUIRED)
+if (KDE4_INTEGRATION)
+    find_package(KDE4 REQUIRED)
+
+    include (MacroLibrary)
+    include (FindPackageHandleStandardArgs)
+    include (KDE4Defaults)
+
+    include_directories(${KDE4_INCLUDES})
+else (KDE4_INTEGRATION)
+    find_package(Qt4 REQUIRED)
+    find_package(Automoc4 REQUIRED)
+endif (KDE4_INTEGRATION)
+
 find_package(Alpm REQUIRED)
 set(POLKITQT_MIN_VERSION 0.9.2)
 find_package(PolkitQt REQUIRED)

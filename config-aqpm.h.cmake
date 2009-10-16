@@ -32,4 +32,7 @@
 
 #define AQPM_CONFIGURATION_FILE "${AQPM_CONFIGURATION_FILE}"
 
+/* KDE4 Integration */
+#cmakedefine KDE4_INTEGRATION 1
+
 #endif /*CONFIG_AQPM_H*/ 

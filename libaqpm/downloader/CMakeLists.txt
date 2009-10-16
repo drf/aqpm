@@ -23,6 +23,10 @@ target_link_libraries(aqpmdownloader
     ${QT_QTNETWORK_LIBRARY}
 )
 
+if (KDE4_INTEGRATION)
+    target_link_libraries(aqpmdownloader ${KDE4_KIO_LIBRARY})
+endif (KDE4_INTEGRATION)
+
 install(CODE "message(\"Installing Aqpm downloader...\")")
 install(TARGETS aqpmdownloader DESTINATION ${AQPM_HELPER_INSTALL_DIR})
 
