@@ -44,6 +44,7 @@ public:
     Backend *q;
     BackendThread *thread;
     ContainerThread *containerThread;
+    ContainerThread *downloaderThread;
     QMap<Backend::ActionType, QEvent::Type> events;
     bool ready;
 
@@ -66,6 +67,10 @@ void Backend::Private::__k__backendReady()
 void Backend::Private::__k__setUpSelf(BackendThread *t)
 {
     thread = t;
+
+    // Create also the thread for Downloader
+    downloaderThread = new ContainerThread("Downloader");
+    downloaderThread->start();
 
     connect(thread, SIGNAL(dbQty(const QStringList&)),
             q, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
@@ -166,7 +171,7 @@ Backend::Backend()
 
     qDebug() << d->events;
 
-    d->containerThread = new ContainerThread();
+    d->containerThread = new ContainerThread("Backend");
     connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(__k__setUpSelf(BackendThread*)));
     d->containerThread->start();
 }
@@ -175,6 +180,8 @@ Backend::~Backend()
 {
     d->containerThread->quit();
     d->containerThread->deleteLater();
+    d->downloaderThread->quit();
+    d->downloaderThread->deleteLater();
     delete d;
 }
 

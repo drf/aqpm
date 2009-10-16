@@ -4,7 +4,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-qt4_add_dbus_adaptor(aqpmdownloader_adaptor_SRCS org.chakraproject.aqpmdownloader.xml Downloader.h AqpmDownloader::Downloader)
+qt4_add_dbus_adaptor(aqpmdownloader_helper_adaptor_SRCS org.chakraproject.aqpmdownloader.xml Downloader.h AqpmDownloader::Downloader)
 
 set(aqpmdownloader_SRCS
     main.cpp
@@ -14,7 +14,7 @@ set(aqpmdownloader_SRCS
 
 automoc4_add_executable(aqpmdownloader
     ${aqpmdownloader_SRCS}
-    ${aqpmdownloader_adaptor_SRCS}
+    ${aqpmdownloader_helper_adaptor_SRCS}
 )
 
 target_link_libraries(aqpmdownloader

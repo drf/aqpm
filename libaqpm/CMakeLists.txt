@@ -1,5 +1,10 @@
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+qt4_add_dbus_adaptor(aqpmdownloader_adaptor_SRCS org.chakraproject.aqpmdownloader.xml Downloader.h Aqpm::Downloader)
 
 add_subdirectory(worker)
 add_subdirectory(downloader)
@@ -8,6 +13,7 @@ add_subdirectory(configurator)
 set(aqpm_SRCS
     Backend.cpp
     BackendThread.cpp
+    Downloader.cpp
     QueueItem.cpp
     Package.cpp
     Group.cpp
@@ -32,6 +38,7 @@ set(aqpm_HEADERS
 
 automoc4_add_library(aqpm SHARED
     ${aqpm_SRCS}
+    ${aqpmdownloader_adaptor_SRCS}
 )
 
 set_target_properties(aqpm PROPERTIES VERSION ${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQPM_VERSION}
@@ -44,6 +51,10 @@ target_link_libraries(aqpm
     ${ALPM_LIBS}
     ${POLKITQT_CORE_LIBRARY}
 )
+
+if (KDE4_INTEGRATION)
+    target_link_libraries(aqpm ${KDE4_KIO_LIBRARY})
+endif (KDE4_INTEGRATION)
 
 install(CODE "message(\"Installing Aqpm...\")")
 install(TARGETS aqpm ${INSTALL_TARGETS_DEFAULT_ARGS})
