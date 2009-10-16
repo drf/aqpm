@@ -748,6 +748,7 @@ Group BackendThread::getGroup(const QString &name)
             PERFORM_RETURN(Backend::GetGroup, g)
         }
     }
+    PERFORM_RETURN(Backend::GetGroup, Group())
 }
 
 Database BackendThread::getDatabase(const QString &name)
@@ -757,6 +758,7 @@ Database BackendThread::getDatabase(const QString &name)
             PERFORM_RETURN(Backend::GetDatabase, d)
         }
     }
+    PERFORM_RETURN(Backend::GetDatabase, Database())
 }
 
 Group::List BackendThread::getPackageGroups(const Package &package)

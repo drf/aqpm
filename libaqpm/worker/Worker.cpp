@@ -559,7 +559,7 @@ void Worker::systemUpgrade(int flags, bool downgrade)
 
     int dwng = downgrade ? 1 : 0;
 
-    if (alpm_trans_sysupgrade(downgrade) == -1) {
+    if (alpm_trans_sysupgrade(dwng) == -1) {
         qDebug() << "Creating a sysupgrade transaction failed!!";
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());

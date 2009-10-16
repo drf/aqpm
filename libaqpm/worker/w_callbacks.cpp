@@ -83,16 +83,15 @@ CallBacks *CallBacks::instance()
 
 CallBacksPrivate::CallBacksPrivate()
         : answer(-1)
-        , averageRateTime()
+        , list_total(0)
         , list_xfered(0)
         , list_last(0)
-        , list_total(0)
+        , averageRateTime()
 {
 }
 
 void CallBacksPrivate::init()
 {
-    Q_Q(CallBacks);
 }
 
 CallBacks::CallBacks(QObject *parent)
@@ -244,7 +243,7 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
     qDebug() << "Alpm is asking a question.";
 
     QVariantMap args;
-    Aqpm::Globals::TransactionQuestion question;
+    Aqpm::Globals::TransactionQuestion question = Aqpm::Globals::InvalidQuestion;
 
     switch (event) {
     case PM_TRANS_CONV_INSTALL_IGNOREPKG:
@@ -434,8 +433,6 @@ void CallBacks::cb_dl_total(off_t total)
 void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
                                   int howmany, int remain)
 {
-    Q_D(CallBacks);
-
     Aqpm::Globals::TransactionProgress evt;
 
     if (percent > 0 && percent < 100) {
