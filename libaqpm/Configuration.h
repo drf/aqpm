@@ -21,6 +21,8 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include "Visibility.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QEvent>
 
@@ -29,7 +31,7 @@ namespace Aqpm
 
 class ConfigurationThread;
 
-class Configuration : public QObject
+class AQPM_EXPORT Configuration : public QObject
 {
     Q_OBJECT
 
