@@ -26,6 +26,7 @@
 #include "BackendThread.h"
 #include "SynchronousLoop.h"
 #include "ActionEvent.h"
+#include "Downloader.h"
 
 #include <QMetaType>
 #include <QDebug>
@@ -44,7 +45,7 @@ public:
     Backend *q;
     BackendThread *thread;
     ContainerThread *containerThread;
-    ContainerThread *downloaderThread;
+    //ContainerThread *downloaderThread;
     QMap<Backend::ActionType, QEvent::Type> events;
     bool ready;
 
@@ -69,8 +70,10 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
     thread = t;
 
     // Create also the thread for Downloader
-    downloaderThread = new ContainerThread("Downloader");
-    downloaderThread->start();
+    /*downloaderThread = new ContainerThread("Downloader");
+    downloaderThread->start();*/
+    // Start up downloader
+    Downloader::instance();
 
     connect(thread, SIGNAL(dbQty(const QStringList&)),
             q, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
@@ -180,8 +183,8 @@ Backend::~Backend()
 {
     d->containerThread->quit();
     d->containerThread->deleteLater();
-    d->downloaderThread->quit();
-    d->downloaderThread->deleteLater();
+/*    d->downloaderThread->quit();
+    d->downloaderThread->deleteLater();*/
     delete d;
 }
 

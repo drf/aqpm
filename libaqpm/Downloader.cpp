@@ -92,7 +92,7 @@ Downloader::Downloader(QObject *parent)
 
     new AqpmdownloaderAdaptor(this);
 
-    if (!QDBusConnection::sessionBus().registerObject("/Downloader", this)) {
+    if (!QDBusConnection::systemBus().registerObject("/Downloader", this)) {
         qDebug() << "unable to register service interface to dbus";
         QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
@@ -128,7 +128,7 @@ QString Downloader::download(const QString& url) const
     connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(progress(qint64,qint64)));
 
     QEventLoop e;
-    connect(this, SIGNAL(finished(QString)), &e, SLOT(quit()));
+    connect(this, SIGNAL(aqpmDownloadfinished(QString)), &e, SLOT(quit()));
     e.exec();
 
     QString retstring = reply->property("aqpm_Temporary_Download_Location").toString();
@@ -155,9 +155,8 @@ void Downloader::downloadFinished(QNetworkReply *reply)
 
     // Set the filename as the property for the reply
     reply->setProperty("aqpm_Temporary_Download_Location", file.fileName());
-    qDebug() << "The temporary download is at " << file.fileName();
 
-    emit finished(reply->url().toString());
+    emit aqpmDownloadfinished(reply->url().toString());
 
     d->replies.removeOne(reply);
 

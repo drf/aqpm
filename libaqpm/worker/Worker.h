@@ -58,7 +58,7 @@ public Q_SLOTS:
     void setUpAlpm();
 
     QDBusConnection dbusConnection() const;
-    QDBusMessage dbusMessage() const;
+    QString dbusService() const;
 
 private:
     void operationPerformed(bool result);

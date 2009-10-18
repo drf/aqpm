@@ -53,7 +53,7 @@ public:
     QString chroot;
 
     QDBusConnection lastConnection;
-    QDBusMessage lastMessage;
+    QString lastService;
 };
 
 Worker::Worker(bool temporized, QObject *parent)
@@ -77,7 +77,7 @@ Worker::Worker(bool temporized, QObject *parent)
     alpm_initialize();
 
     // Set the worker in callbacks
-    
+    CallBacks::instance()->setWorker(this);
 
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
             this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
@@ -197,7 +197,7 @@ void Worker::updateDatabase()
     stopTemporizing();
 
     d->lastConnection = connection();
-    d->lastMessage = message();
+    d->lastService = message().service();
 
     qDebug() << "Starting DB Update";
 
@@ -283,7 +283,7 @@ void Worker::processQueue(const QVariantList &packages, int flags)
     stopTemporizing();
 
     d->lastConnection = connection();
-    d->lastMessage = message();
+    d->lastService = message().service();
 
     qDebug() << "Starting Queue Processing";
 
@@ -444,7 +444,7 @@ void Worker::downloadQueue(const QVariantList &packages)
     stopTemporizing();
 
     d->lastConnection = connection();
-    d->lastMessage = message();
+    d->lastService = message().service();
 
     qDebug() << "Starting Queue Download";
 
@@ -536,7 +536,7 @@ void Worker::systemUpgrade(int flags, bool downgrade)
     stopTemporizing();
 
     d->lastConnection = connection();
-    d->lastMessage = message();
+    d->lastService = message().service();
 
     qDebug() << "Starting System Upgrade";
 
@@ -887,9 +887,9 @@ QDBusConnection Worker::dbusConnection() const
     return d->lastConnection;
 }
 
-QDBusMessage Worker::dbusMessage() const
+QString Worker::dbusService() const
 {
-    return d->lastMessage;
+    return d->lastService;
 }
 
 }

@@ -52,7 +52,7 @@ private Q_SLOTS:
 
 Q_SIGNALS:
     void downloadProgress(int, int);
-    void finished(const QString &url);
+    void aqpmDownloadfinished(const QString &url);
     void headCheckFinished(QNetworkReply *reply);
 
 private:

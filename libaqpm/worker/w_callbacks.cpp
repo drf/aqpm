@@ -328,7 +328,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     qDebug() << "fetching: " << url << localpath;
 
-    QDBusMessage message = QDBusMessage::createMethodCall(d->worker->dbusMessage().service(),
+    QDBusMessage message = QDBusMessage::createMethodCall(d->worker->dbusService(),
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
               QLatin1String("checkHeader"));
@@ -339,6 +339,9 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     if (mreply.type() == QDBusMessage::ErrorMessage || mreply.arguments().count() < 1) {
         // Damn this, there was an error
         qDebug() << "Error in the DBus reply of the header check!";
+        qDebug() << mreply.errorMessage();
+        qDebug() << d->worker->dbusService();
+        qDebug() << d->worker->dbusConnection().lastError();
         return 1;
     }
 
@@ -364,20 +367,23 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     // If we got here, it's time to download the file.
 
-    d->worker->dbusConnection().connect(d->worker->dbusMessage().service(), "/Downloader", "org.chakraproject.aqpmdownloader",
+    d->worker->dbusConnection().connect(d->worker->dbusService(), "/Downloader", "org.chakraproject.aqpmdownloader",
                                         "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
 
-    QDBusMessage qmessage = QDBusMessage::createMethodCall(d->worker->dbusMessage().service(),
+    QDBusMessage qmessage = QDBusMessage::createMethodCall(d->worker->dbusService(),
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
               QLatin1String("download"));
 
     qmessage << QString(url);
-    QDBusMessage reply = d->worker->dbusConnection().call(qmessage, QDBus::BlockWithGui);
+    QDBusMessage reply = d->worker->dbusConnection().call(qmessage, QDBus::Block);
 
     if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() < 1) {
         // Damn this, there was an error
         qDebug() << "Error in the DBus reply of the download check!";
+        qDebug() << mreply.errorMessage();
+        qDebug() << d->worker->dbusConnection().lastError();
+        qDebug() << reply.arguments();
         return 1;
     }
 
@@ -387,7 +393,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     // cleanup
     QFile::remove(downloadedFile);
 
-    d->worker->dbusConnection().disconnect(d->worker->dbusMessage().service(), "/Downloader",
+    d->worker->dbusConnection().disconnect(d->worker->dbusService(), "/Downloader",
                                            "org.chakraproject.aqpmdownloader",
                                            "downloadProgress", this, SLOT(computeDownloadProgress(qint64,qint64)));
 
