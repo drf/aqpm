@@ -194,7 +194,6 @@ void Downloader::abortDownload()
 
 void Downloader::progress(qint64 done, qint64 total)
 {
-    qDebug() << "Progress" << done << total;
     emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
 }
 

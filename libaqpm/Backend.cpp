@@ -100,6 +100,8 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
             q, SIGNAL(operationFinished(bool)));
     connect(thread, SIGNAL(threadInitialized()),
             q, SLOT(__k__backendReady()));
+    connect(thread, SIGNAL(streamTotalOffset(int)),
+            q, SLOT(__k__totalOffsetReceived(int)));
     connect(thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             q, SLOT(__k__doStreamTransProgress(int, const QString&, int, int, int)));
     connect(thread, SIGNAL(streamTransEvent(int, QVariantMap)),
@@ -159,7 +161,6 @@ void Backend::Private::__k__computeDownloadProgress(qint64 downloaded, qint64 to
         rate = (int)(list_last / seconds);
     }
 
-    qDebug() << filename << (int)downloaded << (int)total << (int)rate << (int)list_last << (int)list_total;
     emit q->streamDlProg(filename, (int)downloaded, (int)total, (int)rate, (int)list_last, (int)list_total);
 }
 
