@@ -3,7 +3,6 @@
     <interface name="org.chakraproject.aqpmdownloader">
         <method name="download">
             <arg type="s" direction="in" />
-            <arg type="s" direction="in" />
             <arg type="s" direction="out" />
         </method>
         <method name="checkHeader">

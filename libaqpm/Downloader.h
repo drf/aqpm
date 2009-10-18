@@ -43,7 +43,7 @@ public:
 
 public Q_SLOTS:
     int checkHeader(const QString &url);
-    QString download(const QString &url, const QString &to) const;
+    QString download(const QString &url) const;
     void abortDownload();
 
 private Q_SLOTS:

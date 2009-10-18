@@ -25,6 +25,8 @@
 #include <QVariantList>
 #include <QProcess>
 #include <QtDBus/QDBusContext>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusMessage>
 
 #include <alpm.h>
 
@@ -54,6 +56,9 @@ public Q_SLOTS:
     void interruptTransaction();
     void setAqpmRoot(const QString& root, bool toConfiguratio);
     void setUpAlpm();
+
+    QDBusConnection dbusConnection() const;
+    QDBusMessage dbusMessage() const;
 
 private:
     void operationPerformed(bool result);

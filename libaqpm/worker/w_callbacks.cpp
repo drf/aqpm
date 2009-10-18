@@ -38,6 +38,7 @@
 #include <QtDBus/QDBusConnectionInterface>
 
 #include "alpm.h"
+#include "Worker.h"
 
 namespace AqpmWorker
 {
@@ -58,6 +59,8 @@ public:
     QDateTime averageRateTime;
     QTime busControlTime;
     QString currentFile;
+
+    Worker *worker;
 };
 
 class CallBacksHelper
@@ -108,6 +111,14 @@ CallBacks::CallBacks(QObject *parent)
 CallBacks::~CallBacks()
 {
     delete d_ptr;
+}
+
+
+void CallBacks::setWorker(Worker *w)
+{
+    Q_D(CallBacks);
+
+    d->worker = w;
 }
 
 void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
@@ -317,18 +328,13 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     qDebug() << "fetching: " << url << localpath;
 
-    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmdownloader")) {
-        qDebug() << "Requesting service start";
-        QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmdownloader");
-    }
-
-    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
+    QDBusMessage message = QDBusMessage::createMethodCall(d->worker->dbusMessage().service(),
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
               QLatin1String("checkHeader"));
 
     message << QString(url);
-    QDBusMessage mreply = QDBusConnection::systemBus().call(message, QDBus::Block);
+    QDBusMessage mreply = d->worker->dbusConnection().call(message, QDBus::Block);
 
     if (mreply.type() == QDBusMessage::ErrorMessage || mreply.arguments().count() < 1) {
         // Damn this, there was an error
@@ -358,17 +364,16 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     // If we got here, it's time to download the file.
 
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmdownloader", "/Downloader", "org.chakraproject.aqpmdownloader",
-                                         "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
+    d->worker->dbusConnection().connect(d->worker->dbusMessage().service(), "/Downloader", "org.chakraproject.aqpmdownloader",
+                                        "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
 
-    QDBusMessage qmessage = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
+    QDBusMessage qmessage = QDBusMessage::createMethodCall(d->worker->dbusMessage().service(),
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
               QLatin1String("download"));
 
     qmessage << QString(url);
-    qmessage << QString(localpath + d->currentFile);
-    QDBusMessage reply = QDBusConnection::systemBus().call(qmessage, QDBus::BlockWithGui);
+    QDBusMessage reply = d->worker->dbusConnection().call(qmessage, QDBus::BlockWithGui);
 
     if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() < 1) {
         // Damn this, there was an error
@@ -382,9 +387,9 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     // cleanup
     QFile::remove(downloadedFile);
 
-    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmdownloader", "/Downloader",
-                                            "org.chakraproject.aqpmdownloader",
-                                            "downloadProgress", this, SLOT(computeDownloadProgress(qint64,qint64)));
+    d->worker->dbusConnection().disconnect(d->worker->dbusMessage().service(), "/Downloader",
+                                           "org.chakraproject.aqpmdownloader",
+                                           "downloadProgress", this, SLOT(computeDownloadProgress(qint64,qint64)));
 
     return 0;
 }

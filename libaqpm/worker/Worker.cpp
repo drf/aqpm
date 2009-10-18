@@ -42,7 +42,7 @@ namespace AqpmWorker
 class Worker::Private
 {
 public:
-    Private() : timeout(new QTimer()), ready(false), chroot(QString()) {}
+    Private() : timeout(new QTimer()), ready(false), chroot(QString()), lastConnection(QDBusConnection::systemBus()) {}
 
     pmdb_t *db_local;
     pmdb_t *dbs_sync;
@@ -51,6 +51,9 @@ public:
 
     bool ready;
     QString chroot;
+
+    QDBusConnection lastConnection;
+    QDBusMessage lastMessage;
 };
 
 Worker::Worker(bool temporized, QObject *parent)
@@ -72,6 +75,9 @@ Worker::Worker(bool temporized, QObject *parent)
     }
 
     alpm_initialize();
+
+    // Set the worker in callbacks
+    
 
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
             this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
@@ -190,6 +196,9 @@ void Worker::updateDatabase()
 {
     stopTemporizing();
 
+    d->lastConnection = connection();
+    d->lastMessage = message();
+
     qDebug() << "Starting DB Update";
 
     PolkitQt::Auth::Result result;
@@ -272,6 +281,9 @@ void Worker::updateDatabase()
 void Worker::processQueue(const QVariantList &packages, int flags)
 {
     stopTemporizing();
+
+    d->lastConnection = connection();
+    d->lastMessage = message();
 
     qDebug() << "Starting Queue Processing";
 
@@ -431,6 +443,9 @@ void Worker::downloadQueue(const QVariantList &packages)
 {
     stopTemporizing();
 
+    d->lastConnection = connection();
+    d->lastMessage = message();
+
     qDebug() << "Starting Queue Download";
 
     PolkitQt::Auth::Result result;
@@ -519,6 +534,9 @@ void Worker::downloadQueue(const QVariantList &packages)
 void Worker::systemUpgrade(int flags, bool downgrade)
 {
     stopTemporizing();
+
+    d->lastConnection = connection();
+    d->lastMessage = message();
 
     qDebug() << "Starting System Upgrade";
 
@@ -862,6 +880,16 @@ pmtransflag_t Worker::processFlags(Aqpm::Globals::TransactionFlags flags)
     }
 
     return retflags;
+}
+
+QDBusConnection Worker::dbusConnection() const
+{
+    return d->lastConnection;
+}
+
+QDBusMessage Worker::dbusMessage() const
+{
+    return d->lastMessage;
 }
 
 }

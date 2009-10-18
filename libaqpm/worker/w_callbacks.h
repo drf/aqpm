@@ -33,6 +33,7 @@ namespace AqpmWorker
 {
 
 class CallBacksPrivate;
+class Worker;
 
 class CallBacks : public QObject
 {
@@ -55,6 +56,8 @@ public:
     void cb_dl_total(off_t total);
     void cb_log(pmloglevel_t level, char *fmt, va_list args);
     int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
+
+    void setWorker(Worker *worker);
 
 public Q_SLOTS:
     void setAnswer(int answer);

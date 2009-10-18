@@ -92,13 +92,7 @@ Downloader::Downloader(QObject *parent)
 
     new AqpmdownloaderAdaptor(this);
 
-    if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmdownloader")) {
-        qDebug() << "another downloader is already running";
-        QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
-        return;
-    }
-
-    if (!QDBusConnection::systemBus().registerObject("/Downloader", this)) {
+    if (!QDBusConnection::sessionBus().registerObject("/Downloader", this)) {
         qDebug() << "unable to register service interface to dbus";
         QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
         return;
@@ -125,9 +119,9 @@ int Downloader::checkHeader(const QString &url)
     return reply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
 }
 
-QString Downloader::download(const QString &url, const QString &to) const
+QString Downloader::download(const QString& url) const
 {
-    qDebug() << "About to get " << url << " into " << to;
+    qDebug() << "About to get " << url;
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
     qDebug() << "Getting started";
     d->replies.append(reply);
@@ -137,7 +131,7 @@ QString Downloader::download(const QString &url, const QString &to) const
     connect(this, SIGNAL(finished(QString)), &e, SLOT(quit()));
     e.exec();
 
-    QString retstring = reply->property("to_FileName_p").toString();
+    QString retstring = reply->property("aqpm_Temporary_Download_Location").toString();
     reply->deleteLater();
     return retstring;
 }
