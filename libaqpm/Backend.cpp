@@ -40,7 +40,11 @@ namespace Aqpm
 class Backend::Private
 {
 public:
-    Private() : ready(false) {}
+    Private()   : ready(false)
+                , list_total(0)
+                , list_xfered(0)
+                , list_last(0)
+                , averageRateTime() {}
 
     Backend *q;
     BackendThread *thread;
@@ -48,6 +52,11 @@ public:
     //ContainerThread *downloaderThread;
     QMap<Backend::ActionType, QEvent::Type> events;
     bool ready;
+
+    qint64 list_total;
+    qint64 list_xfered;
+    qint64 list_last;
+    QDateTime averageRateTime;
 
     // Q_PRIVATE_SLOTS
     void __k__backendReady();
@@ -57,6 +66,8 @@ public:
                              int howmany, int remain);
     void __k__doStreamTransEvent(int event, const QVariantMap &args);
     void __k__doStreamTransQuestion(int event, const QVariantMap &args);
+    void __k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename);
+    void __k__totalOffsetReceived(int offset);
 };
 
 void Backend::Private::__k__backendReady()
@@ -74,6 +85,8 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
     downloaderThread->start();*/
     // Start up downloader
     Downloader::instance();
+    connect(Downloader::instance(), SIGNAL(downloadProgress(qint64,qint64,QString)),
+            q, SLOT(__k__computeDownloadProgress(qint64,qint64,QString)));
 
     connect(thread, SIGNAL(dbQty(const QStringList&)),
             q, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
@@ -87,8 +100,6 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
             q, SIGNAL(operationFinished(bool)));
     connect(thread, SIGNAL(threadInitialized()),
             q, SLOT(__k__backendReady()));
-    connect(thread, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
-            q, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
     connect(thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             q, SLOT(__k__doStreamTransProgress(int, const QString&, int, int, int)));
     connect(thread, SIGNAL(streamTransEvent(int, QVariantMap)),
@@ -116,12 +127,53 @@ void Backend::Private::__k__doStreamTransProgress(int event, const QString &pkgn
 
 void Backend::Private::__k__doStreamTransEvent(int event, const QVariantMap &args)
 {
+    if ((Aqpm::Globals::TransactionEvent) event == Aqpm::Globals::RetrieveStart) {
+        if (averageRateTime.isNull()) {
+            averageRateTime = QDateTime::currentDateTime();
+        }
+    }
+
     emit q->streamTransEvent((Aqpm::Globals::TransactionEvent) event, args);
 }
 
 void Backend::Private::__k__doStreamTransQuestion(int event, const QVariantMap &args)
 {
     emit q->streamTransQuestion((Aqpm::Globals::TransactionQuestion) event, args);
+}
+
+void Backend::Private::__k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename)
+{
+    if (downloaded == total) {
+        list_xfered += downloaded;
+        return;
+    }
+
+    list_last = list_xfered + downloaded;
+
+    // Update Rate
+    int seconds = averageRateTime.secsTo(QDateTime::currentDateTime());
+
+    int rate = 0;
+
+    if (seconds != 0 && list_last != 0) {
+        rate = (int)(list_last / seconds);
+    }
+
+    qDebug() << filename << (int)downloaded << (int)total << (int)rate << (int)list_last << (int)list_total;
+    emit q->streamDlProg(filename, (int)downloaded, (int)total, (int)rate, (int)list_last, (int)list_total);
+}
+
+void Backend::Private::__k__totalOffsetReceived(int offset)
+{
+    list_total = offset;
+    qDebug() << "total called, offset" << offset;
+    /* if we get a 0 value, it means this list has finished downloading,
+    * so clear out our list_xfered as well */
+    if (offset == 0) {
+        list_xfered = 0;
+        list_last = 0;
+        list_total = 0;
+    }
 }
 
 class BackendHelper

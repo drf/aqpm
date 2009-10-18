@@ -85,8 +85,7 @@ Q_SIGNALS:
 
     void streamTransQuestion(int event, const QVariantMap &args);
 
-    void streamDlProg(const QString &pkg, int package_done, int package_total,
-                          int rate, int list_done, int list_total);
+    void streamTotalOffset(int offset);
 
     void errorOccurred(int code, const QVariantMap &details);
 

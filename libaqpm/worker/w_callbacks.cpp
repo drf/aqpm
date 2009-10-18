@@ -53,10 +53,6 @@ public:
     CallBacks *q_ptr;
 
     int answer;
-    qint64 list_total;
-    qint64 list_xfered;
-    qint64 list_last;
-    QDateTime averageRateTime;
     QTime busControlTime;
     QString currentFile;
 
@@ -86,10 +82,6 @@ CallBacks *CallBacks::instance()
 
 CallBacksPrivate::CallBacksPrivate()
         : answer(-1)
-        , list_total(0)
-        , list_xfered(0)
-        , list_last(0)
-        , averageRateTime()
 {
 }
 
@@ -123,8 +115,6 @@ void CallBacks::setWorker(Worker *w)
 
 void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
 {
-    Q_D(CallBacks);
-
     QVariantMap args;
     QString logmsg;
 
@@ -205,9 +195,6 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         break;
     case PM_TRANS_EVT_RETRIEVE_START:
         args["Repo"] = QString((char*)data1);
-        if (d->averageRateTime.isNull()) {
-            d->averageRateTime = QDateTime::currentDateTime();
-        }
         emit streamTransEvent((int) Aqpm::Globals::RetrieveStart, args);
         break;
     case PM_TRANS_EVT_FILECONFLICTS_DONE:
@@ -367,9 +354,6 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     // If we got here, it's time to download the file.
 
-    d->worker->dbusConnection().connect(d->worker->dbusService(), "/Downloader", "org.chakraproject.aqpmdownloader",
-                                        "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
-
     QDBusMessage qmessage = QDBusMessage::createMethodCall(d->worker->dbusService(),
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
@@ -393,53 +377,13 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     // cleanup
     QFile::remove(downloadedFile);
 
-    d->worker->dbusConnection().disconnect(d->worker->dbusService(), "/Downloader",
-                                           "org.chakraproject.aqpmdownloader",
-                                           "downloadProgress", this, SLOT(computeDownloadProgress(qint64,qint64)));
-
     return 0;
-}
-
-void CallBacks::computeDownloadProgress(int downloaded, int total)
-{
-    Q_D(CallBacks);
-
-    if (downloaded == total) {
-        d->list_xfered += downloaded;
-        return;
-    }
-
-    d->list_last = d->list_xfered + downloaded;
-
-    // Update Rate
-    int seconds = d->averageRateTime.secsTo(QDateTime::currentDateTime());
-
-    int rate = 0;
-
-    if (seconds != 0 && d->list_last != 0) {
-        rate = (int)(d->list_last / seconds);
-    }
-
-    // Don't you fucking hog the bus! Update maximum each 0.250 seconds
-    if (d->busControlTime.msecsTo(QTime::currentTime()) > 250 || !d->busControlTime.isValid()) {
-        emit streamDlProg(d->currentFile, (int)downloaded, (int)total, (int)rate, (int)d->list_last, (int)d->list_total);
-        d->busControlTime = QTime::currentTime();
-    }
 }
 
 void CallBacks::cb_dl_total(off_t total)
 {
-    Q_D(CallBacks);
-
-    d->list_total = total;
     qDebug() << "total called, offset" << total;
-    /* if we get a 0 value, it means this list has finished downloading,
-     * so clear out our list_xfered as well */
-    if (total == 0) {
-        d->list_xfered = 0;
-        d->list_last = 0;
-        d->list_total = 0;
-    }
+    emit streamTotalOffset(total);
 }
 
 void CallBacks::cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,

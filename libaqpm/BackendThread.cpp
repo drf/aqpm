@@ -176,7 +176,7 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "dbStatusChanged", q, SIGNAL(dbStatusChanged(const QString&, int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "streamDlProg", q, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
+                                         "streamTotalOffset", q, SIGNAL(streamTotalOffset(int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "streamTransProgress", q, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
@@ -929,7 +929,7 @@ void BackendThread::workerResult(bool result)
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "dbStatusChanged", this, SIGNAL(dbStatusChanged(const QString&, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                            "streamDlProg", this, SIGNAL(streamTransDlProg(const QString&, int, int, int, int, int)));
+                                            "streamTotalOffset", this, SIGNAL(streamTotalOffset(int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "streamTransProgress", this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",

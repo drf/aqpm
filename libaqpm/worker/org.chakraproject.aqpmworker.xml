@@ -44,12 +44,7 @@
 		<signal name="dbQty">
 			<arg type="as" direction="out" />
 		</signal>
-		<signal name="streamDlProg">
-			<arg type="s" direction="out" />
-			<arg type="i" direction="out" />
-			<arg type="i" direction="out" />
-			<arg type="i" direction="out" />
-			<arg type="i" direction="out" />
+		<signal name="streamTotalOffset">
 			<arg type="i" direction="out" />
 		</signal>
 		<signal name="streamTransProgress">

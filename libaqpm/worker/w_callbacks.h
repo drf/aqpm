@@ -62,16 +62,12 @@ public:
 public Q_SLOTS:
     void setAnswer(int answer);
 
-private Q_SLOTS:
-    void computeDownloadProgress(int downloaded, int total);
-
 signals:
     void streamTransEvent(int event, QVariantMap args);
     void streamTransQuestion(int event, QVariantMap args);
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);
-    void streamDlProg(const QString &pkg, int package_done, int package_total,
-                          int rate, int list_done, int list_total);
+    void streamTotalOffset(int offset);
     void logMessageStreamed(const QString &msg);
 
     // Internal use

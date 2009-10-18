@@ -125,10 +125,9 @@ QString Downloader::download(const QString& url) const
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
     qDebug() << "Getting started";
     d->replies.append(reply);
-    connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(progress(qint64,qint64)));
 
     QEventLoop e;
-    connect(this, SIGNAL(aqpmDownloadfinished(QString)), &e, SLOT(quit()));
+    connect(this, SIGNAL(finished(QString)), &e, SLOT(quit()));
     e.exec();
 
     QString retstring = reply->property("aqpm_Temporary_Download_Location").toString();
@@ -156,7 +155,7 @@ void Downloader::downloadFinished(QNetworkReply *reply)
     // Set the filename as the property for the reply
     reply->setProperty("aqpm_Temporary_Download_Location", file.fileName());
 
-    emit aqpmDownloadfinished(reply->url().toString());
+    emit finished(reply->url().toString());
 
     d->replies.removeOne(reply);
 
@@ -175,7 +174,7 @@ void Downloader::abortDownload()
 
 void Downloader::progress(qint64 done, qint64 total)
 {
-    emit downloadProgress(done, total);
+    emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
 }
 
 }

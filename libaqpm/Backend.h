@@ -285,6 +285,8 @@ private:
                              int howmany, int remain))
     Q_PRIVATE_SLOT(d, void __k__doStreamTransEvent(int event, const QVariantMap &args))
     Q_PRIVATE_SLOT(d, void __k__doStreamTransQuestion(int event, const QVariantMap &args))
+    Q_PRIVATE_SLOT(d, void __k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename))
+    Q_PRIVATE_SLOT(d, void __k__totalOffsetReceived(int offset))
 };
 
 }

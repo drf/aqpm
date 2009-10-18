@@ -51,8 +51,8 @@ private Q_SLOTS:
     void progress(qint64 done, qint64 total);
 
 Q_SIGNALS:
-    void downloadProgress(int, int);
-    void aqpmDownloadfinished(const QString &url);
+    void downloadProgress(qint64, qint64, QString);
+    void finished(const QString &url);
     void headCheckFinished(QNetworkReply *reply);
 
 private:

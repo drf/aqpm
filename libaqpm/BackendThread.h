@@ -116,8 +116,7 @@ Q_SIGNALS:
     void transactionStarted();
     void transactionReleased();
 
-    void streamDlProg(const QString &c, int bytedone, int bytetotal, int speed,
-                      int listdone, int listtotal);
+    void streamTotalOffset(int offset);
 
     void streamTransProgress(int event, const QString &pkgname, int percent,
                              int howmany, int remain);

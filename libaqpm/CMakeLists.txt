@@ -7,7 +7,7 @@ include_directories(
 qt4_add_dbus_adaptor(aqpmdownloader_adaptor_SRCS org.chakraproject.aqpmdownloader.xml Downloader.h Aqpm::Downloader)
 
 add_subdirectory(worker)
-add_subdirectory(downloader)
+#add_subdirectory(downloader)
 add_subdirectory(configurator)
 
 set(aqpm_SRCS
@@ -54,6 +54,8 @@ target_link_libraries(aqpm
 
 if (KDE4_INTEGRATION)
     target_link_libraries(aqpm ${KDE4_KIO_LIBRARY})
+else (KDE4_INTEGRATION)
+    target_link_libraries(aqpm ${QT_QTNETWORK_LIBRARY})
 endif (KDE4_INTEGRATION)
 
 install(CODE "message(\"Installing Aqpm...\")")

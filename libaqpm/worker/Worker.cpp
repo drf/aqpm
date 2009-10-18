@@ -79,8 +79,8 @@ Worker::Worker(bool temporized, QObject *parent)
     // Set the worker in callbacks
     CallBacks::instance()->setWorker(this);
 
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamDlProg(const QString&, int, int, int, int, int)),
-            this, SIGNAL(streamDlProg(const QString&, int, int, int, int, int)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTotalOffset(int)),
+            this, SIGNAL(streamTotalOffset(int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransQuestion(int,QVariantMap)),
@@ -812,13 +812,11 @@ void Worker::standardOutput()
 
 void Worker::interruptTransaction()
 {
-    if (QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmdownloader")) {
-        QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmdownloader",
-                                                              "/Downloader",
-                                                              "org.chakraproject.aqpmdownloader",
-                                                              QLatin1String("abortDownload"));
-        QDBusConnection::systemBus().call(message, QDBus::NoBlock);
-    }
+    QDBusMessage message = QDBusMessage::createMethodCall(d->lastService,
+                                                          "/Downloader",
+                                                          "org.chakraproject.aqpmdownloader",
+                                                          QLatin1String("abortDownload"));
+    d->lastConnection.call(message, QDBus::NoBlock);
 
     if (alpm_trans_interrupt() == 0) {
         alpm_trans_release();
