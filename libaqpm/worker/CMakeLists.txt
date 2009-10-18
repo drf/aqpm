@@ -32,3 +32,4 @@ install(TARGETS aqpmworker DESTINATION ${AQPM_HELPER_INSTALL_DIR})
 dbus_add_activation_system_service(org.chakraproject.aqpmworker.service.in)
 
 install(FILES org.chakraproject.aqpmworker.conf DESTINATION /etc/dbus-1/system.d)
+install(FILES org.chakraproject.aqpmdownloader.conf DESTINATION /etc/dbus-1/system.d)
