@@ -332,6 +332,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     if (mreply.type() == QDBusMessage::ErrorMessage || mreply.arguments().count() < 1) {
         // Damn this, there was an error
+        qDebug() << "Error in the DBus reply of the header check!";
         return 1;
     }
 
@@ -356,12 +357,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     qDebug() << "Compare successful";
 
     // If we got here, it's time to download the file.
-    // We should handle the request synchronously, so get ready for some loops.
 
-    QEventLoop e;
-
-    QDBusConnection::systemBus().connect("org.chakraproject.aqpmdownloader", "/Downloader", "org.chakraproject.aqpmdownloader",
-                                         "finished", &e, SLOT(quit()));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmdownloader", "/Downloader", "org.chakraproject.aqpmdownloader",
                                          "downloadProgress", this, SLOT(computeDownloadProgress(int,int)));
 
@@ -374,12 +370,17 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     qmessage << QString(localpath + d->currentFile);
     QDBusMessage reply = QDBusConnection::systemBus().call(qmessage, QDBus::BlockWithGui);
 
-    if (reply.type() == QDBusMessage::ErrorMessage) {
+    if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() < 1) {
         // Damn this, there was an error
+        qDebug() << "Error in the DBus reply of the download check!";
         return 1;
     }
 
-    e.exec();
+    QString downloadedFile = reply.arguments().first().toString();
+    qDebug() << "Moving downloaded file " << downloadedFile << " to " << localpath + d->currentFile;
+    QFile::copy(downloadedFile, localpath + d->currentFile);
+    // cleanup
+    QFile::remove(downloadedFile);
 
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmdownloader", "/Downloader",
                                             "org.chakraproject.aqpmdownloader",
