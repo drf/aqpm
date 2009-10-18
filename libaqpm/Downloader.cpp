@@ -130,12 +130,16 @@ QString Downloader::download(const QString &url, const QString &to) const
     qDebug() << "About to get " << url << " into " << to;
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
     qDebug() << "Getting started";
-    reply->setProperty("to_FileName_p", to);
     d->replies.append(reply);
     connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(progress(qint64,qint64)));
+
     QEventLoop e;
     connect(this, SIGNAL(finished(QString)), &e, SLOT(quit()));
     e.exec();
+
+    QString retstring = reply->property("to_FileName_p").toString();
+    reply->deleteLater();
+    return retstring;
 }
 
 void Downloader::downloadFinished(QNetworkReply *reply)
@@ -147,16 +151,23 @@ void Downloader::downloadFinished(QNetworkReply *reply)
         return;
     }
 
-    QFile file(reply->property("to_FileName_p").toString());
+    QTemporaryFile file;
+    file.setAutoRemove(false);
 
-    file.open(QIODevice::ReadWrite);
+    file.open();
     file.write(reply->readAll());
+    file.flush();
+    file.close();
+
+    // Set the filename as the property for the reply
+    reply->setProperty("aqpm_Temporary_Download_Location", file.fileName());
+    qDebug() << "The temporary download is at " << file.fileName();
 
     emit finished(reply->url().toString());
 
     d->replies.removeOne(reply);
 
-    reply->deleteLater();
+    // The reply should be deleted by download Function
 }
 
 void Downloader::abortDownload()
