@@ -140,6 +140,7 @@ QString Downloader::download(const QString& url) const
 {
     qDebug() << "About to get " << url;
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
+    connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(progress(qint64,qint64)));
     qDebug() << "Getting started";
     d->replies.append(reply);
 
