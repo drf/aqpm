@@ -23,9 +23,11 @@
 
 #include <QtCore/QObject>
 
+#include "Visibility.h"
+
 namespace Aqpm {
 
-class Maintenance : public QObject
+class AQPM_EXPORT Maintenance : public QObject
 {
     Q_OBJECT
 
