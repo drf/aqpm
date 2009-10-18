@@ -29,14 +29,12 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    
+
     QEventLoop e;
-    
-    e.connect(Aqpm::Backend::instance(), SIGNAL(backendReady()), &e, SLOT(quit()));
-    e.exec();
-    
-    Aqpm::Backend::instance()->setUpAlpm();
-    
+
+    Aqpm::Backend::instance()->safeInitialization();
+    Aqpm::Backend::instance()->setShouldHandleAuthorization(true);
+
     foreach(const Aqpm::Database &db, Aqpm::Backend::instance()->getAvailableDatabases()) {
         qDebug() << db.name();
     }
@@ -50,6 +48,6 @@ int main(int argc, char *argv[])
     e.exec();
 
     qDebug() << "Done";
-    
+
     return 0;
 }

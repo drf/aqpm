@@ -54,6 +54,23 @@ public:
     QList<QNetworkReply*> replies;
 };
 
+StringConditionalEventLoop::StringConditionalEventLoop(const QString &str, QObject *parent)
+        : QEventLoop(parent)
+        , m_cond(str)
+{
+}
+
+StringConditionalEventLoop::~StringConditionalEventLoop()
+{
+}
+
+void StringConditionalEventLoop::requestQuit(const QString &str)
+{
+    if (str == m_cond) {
+        quit();
+    }
+}
+
 QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
 {
     QNetworkRequest request;
@@ -126,9 +143,11 @@ QString Downloader::download(const QString& url) const
     qDebug() << "Getting started";
     d->replies.append(reply);
 
-    QEventLoop e;
-    connect(this, SIGNAL(finished(QString)), &e, SLOT(quit()));
+    StringConditionalEventLoop e(reply->url().toString());
+    connect(this, SIGNAL(finished(QString)), &e, SLOT(requestQuit(QString)));
     e.exec();
+
+    qDebug() << "Getting done";
 
     QString retstring = reply->property("aqpm_Temporary_Download_Location").toString();
     reply->deleteLater();
@@ -174,6 +193,7 @@ void Downloader::abortDownload()
 
 void Downloader::progress(qint64 done, qint64 total)
 {
+    qDebug() << "Progress" << done << total;
     emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
 }
 

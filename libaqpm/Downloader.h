@@ -21,7 +21,7 @@
 #ifndef DOWNLOADER_H
 #define DOWNLOADER_H
 
-#include <QObject>
+#include <QEventLoop>
 #include <QtDBus/QDBusContext>
 #include <QtDBus/QDBusVariant>
 
@@ -60,6 +60,21 @@ private:
 
     class Private;
     Private *d;
+};
+
+class StringConditionalEventLoop : public QEventLoop
+{
+    Q_OBJECT
+
+    public:
+        StringConditionalEventLoop(const QString &str, QObject *parent = 0);
+        virtual ~StringConditionalEventLoop();
+
+    public Q_SLOTS:
+        void requestQuit(const QString &str);
+
+    private:
+        QString m_cond;
 };
 
 }
