@@ -37,6 +37,19 @@ typedef QNetworkAccessManager AqpmNetworkAccessManager;
 typedef KIO::AccessManager AqpmNetworkAccessManager;
 #endif
 
+// VTables...
+PackageConditionalEventLoop::~PackageConditionalEventLoop()
+{
+}
+
+void PackageListConditionalEventLoop::requestQuit(const QString &str, const Aqpm::Aur::Package::List &p)
+{
+    if (m_cond == str) {
+        m_list = p;
+        quit();
+    }
+}
+
 namespace Aqpm {
 
 namespace Aur {

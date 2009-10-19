@@ -21,7 +21,7 @@
 #include "Configuration.h"
 
 #include "ConfigurationThread.h"
-#include "SynchronousLoop.h"
+#include "Loops.h"
 
 namespace Aqpm
 {

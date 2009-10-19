@@ -27,15 +27,10 @@ class PackageListConditionalEventLoop : public QEventLoop
 
     public:
         PackageListConditionalEventLoop(const QString &str, QObject *parent = 0) : QEventLoop(parent), m_cond(str) {}
-        virtual ~PackageListConditionalEventLoop();
+        ~PackageListConditionalEventLoop() {};
 
     public Q_SLOTS:
-        void requestQuit(const QString &str, const Aqpm::Aur::Package::List &p) {
-            if (m_cond == str) {
-                m_list = p;
-                quit();
-            }
-        }
+        void requestQuit(const QString &str, const Aqpm::Aur::Package::List &p);
 
         inline Aqpm::Aur::Package::List packageList() const { return m_list; }
 
@@ -50,7 +45,7 @@ class PackageConditionalEventLoop : public QEventLoop
 
     public:
         PackageConditionalEventLoop(int id, QObject *parent = 0) : QEventLoop(parent), m_id(id) {}
-        virtual ~PackageConditionalEventLoop();
+        ~PackageConditionalEventLoop();
 
     public Q_SLOTS:
         void requestQuit(int id, const Aqpm::Aur::Package &p) {
