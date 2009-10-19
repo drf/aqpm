@@ -166,7 +166,7 @@ void Backend::info(int id) const
 Package::List Backend::searchSync(const QString& subject) const
 {
     PackageListConditionalEventLoop e(subject);
-    connect(this, SIGNAL(searchCompleted(QString,Package::List)), &e, SLOT(requestQuit(QString,Aqpm::Aur::Package::List)));
+    connect(this, SIGNAL(searchCompleted(QString,Aqpm::Aur::Package::List)), &e, SLOT(requestQuit(QString,Aqpm::Aur::Package::List)));
     search(subject);
     e.exec();
     return e.packageList();
@@ -175,7 +175,7 @@ Package::List Backend::searchSync(const QString& subject) const
 Package Backend::infoSync(int id) const
 {
     PackageConditionalEventLoop e(id);
-    connect(this, SIGNAL(infoCompleted(int,Package)), &e, SLOT(requestQuit(int,Aqpm::Aur::Package)));
+    connect(this, SIGNAL(infoCompleted(int,Aqpm::Aur::Package)), &e, SLOT(requestQuit(int,Aqpm::Aur::Package)));
     info(id);
     e.exec();
     return e.package();

@@ -62,8 +62,8 @@ public:
     Package infoSync(int id) const;
 
 Q_SIGNALS:
-    void searchCompleted(const QString &searchSubject, const Package::List &results);
-    void infoCompleted(int id, const Package &result);
+    void searchCompleted(const QString &searchSubject, const Aqpm::Aur::Package::List &results);
+    void infoCompleted(int id, const Aqpm::Aur::Package &result);
 
 private:
     Backend(QObject* parent = 0);
