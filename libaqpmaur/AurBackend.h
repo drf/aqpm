@@ -58,6 +58,9 @@ public:
     void search(const QString &subject);
     void info(int id);
 
+    Package::List searchSync(const QString &subject) const;
+    Package infoSync(int id) const;
+
 Q_SIGNALS:
     void searchCompleted(const QString &searchSubject, const Package::List &results);
     void infoCompleted(int id, const Package &result);

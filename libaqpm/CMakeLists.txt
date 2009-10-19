@@ -18,7 +18,7 @@ set(aqpm_SRCS
     Package.cpp
     Group.cpp
     Database.cpp
-    SynchronousLoop.cpp
+    ../misc/Loops.cpp
     ActionEvent.cpp
     Configuration.cpp
     ConfigurationThread.cpp

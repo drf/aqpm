@@ -24,7 +24,7 @@
 
 #include "Configuration.h"
 #include "BackendThread.h"
-#include "SynchronousLoop.h"
+#include "Loops.h"
 #include "ActionEvent.h"
 #include "Downloader.h"
 

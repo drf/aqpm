@@ -18,56 +18,49 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "SynchronousLoop.h"
+#ifndef LOOPS_H
+#define LOOPS_H
 
-#include <QCoreApplication>
-#include <QDebug>
+#include <QtCore/QEventLoop>
 
-#include "BackendThread.h"
-#include "ConfigurationThread.h"
-#include "ActionEvent.h"
+#include "libaqpm/Backend.h"
+#include "libaqpm/Configuration.h"
 
 namespace Aqpm {
 
-SynchronousLoop::SynchronousLoop(Backend::ActionType type, const QVariantMap &args)
-        : QEventLoop(0)
-        , m_result(QVariantMap())
-        , m_type((int)type)
+class SynchronousLoop : public QEventLoop
 {
-    connect(Backend::instance()->getInnerThread(), SIGNAL(actionPerformed(int,QVariantMap)),
-            this, SLOT(actionPerformed(int,QVariantMap)));
+    Q_OBJECT
 
-    QCoreApplication::postEvent(Backend::instance()->getInnerThread(),
-                                new ActionEvent(Backend::instance()->getEventTypeFor(Backend::PerformAction), type, args));
+public:
+    SynchronousLoop(Backend::ActionType type, const QVariantMap &args);
+    SynchronousLoop(Configuration::ActionType type, const QVariantMap &args);
 
-    exec();
-}
+    QVariantMap result() const;
 
-SynchronousLoop::SynchronousLoop(Configuration::ActionType type, const QVariantMap &args)
-        : QEventLoop(0)
-        , m_result(QVariantMap())
-        , m_type((int)type)
+public Q_SLOTS:
+    void actionPerformed(int type, const QVariantMap &result);
+
+private:
+    QVariantMap m_result;
+    int m_type;
+};
+
+class StringConditionalEventLoop : public QEventLoop
 {
-    connect(Configuration::instance()->getInnerThread(), SIGNAL(actionPerformed(int,QVariantMap)),
-            this, SLOT(actionPerformed(int,QVariantMap)));
+    Q_OBJECT
 
-    QCoreApplication::postEvent(Configuration::instance()->getInnerThread(),
-                                new ActionEvent(Configuration::instance()->eventType(), type, args));
+    public:
+        StringConditionalEventLoop(const QString &str, QObject *parent = 0);
+        virtual ~StringConditionalEventLoop();
 
-    exec();
-}
+    public Q_SLOTS:
+        void requestQuit(const QString &str);
 
-void SynchronousLoop::actionPerformed(int type, const QVariantMap &result)
-{
-    if ((Backend::ActionType)type == m_type) {
-        m_result = result;
-        exit();
-    }
-}
-
-QVariantMap SynchronousLoop::result() const
-{
-    return m_result;
-}
+    private:
+        QString m_cond;
+};
 
 }
+
+#endif // SYNCHRONOUSLOOP_H

@@ -21,6 +21,7 @@
 #include "Downloader.h"
 
 #include "aqpmdownloaderadaptor.h"
+#include "Loops.h"
 
 #include <config-aqpm.h>
 
@@ -53,23 +54,6 @@ public:
     AqpmNetworkAccessManager *manager;
     QList<QNetworkReply*> replies;
 };
-
-StringConditionalEventLoop::StringConditionalEventLoop(const QString &str, QObject *parent)
-        : QEventLoop(parent)
-        , m_cond(str)
-{
-}
-
-StringConditionalEventLoop::~StringConditionalEventLoop()
-{
-}
-
-void StringConditionalEventLoop::requestQuit(const QString &str)
-{
-    if (str == m_cond) {
-        quit();
-    }
-}
 
 QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
 {
