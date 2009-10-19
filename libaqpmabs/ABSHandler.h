@@ -41,13 +41,13 @@ public:
     ABSHandler();
     virtual ~ABSHandler();
 
-    static QString getABSPath(const QString &package);
+    static QString absPath(const QString &package);
     bool setUpBuildingEnvironment(const QString &package, const QString &p);
     bool cleanBuildingEnvironment(const QString &package, const QString &p);
 
-    void updateABSTree();
+    void updateTree();
 
-    static QStringList getMakeDepends(const QString &package);
+    static QStringList makeDepends(const QString &package);
 
 private Q_SLOTS:
     void slotABSUpdated(int code, QProcess::ExitStatus e);

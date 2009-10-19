@@ -73,7 +73,7 @@ ABSHandler::~ABSHandler()
     delete d;
 }
 
-QString ABSHandler::getABSPath(const QString &package)
+QString ABSHandler::absPath(const QString &package)
 {
     QDir absDir("/var/abs");
     absDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
@@ -142,7 +142,7 @@ bool ABSHandler::setUpBuildingEnvironment(const QString &package, const QString 
         return false;
     }
 
-    QString abspath(getABSPath(package));
+    QString abspath(absPath(package));
 
     if (abspath.isEmpty()) {
         qDebug() << "Couldn't find a matching ABS Dir!!";
@@ -170,7 +170,7 @@ bool ABSHandler::setUpBuildingEnvironment(const QString &package, const QString 
     return true;
 }
 
-QStringList ABSHandler::getMakeDepends(const QString &package)
+QStringList ABSHandler::makeDepends(const QString &package)
 {
     QStringList retList;
 
@@ -179,7 +179,7 @@ QStringList ABSHandler::getMakeDepends(const QString &package)
     QDir absDir("/var/abs");
     absDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
-    QString absSource(ABSHandler::getABSPath(package));
+    QString absSource(ABSHandler::absPath(package));
 
     if (absSource.isEmpty())
         return retList;
@@ -246,7 +246,7 @@ QStringList ABSHandler::getMakeDepends(const QString &package)
     return retList;
 }
 
-void ABSHandler::updateABSTree()
+void ABSHandler::updateTree()
 {
     d->process = new QProcess(this);
     connect(d->process, SIGNAL(readyReadStandardOutput()), SLOT(slotOutputReady()));

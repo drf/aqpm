@@ -194,7 +194,12 @@ void Downloader::abortDownload()
 
 void Downloader::progress(qint64 done, qint64 total)
 {
+#ifndef KDE4_INTEGRATION
     emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
+#else
+    qDebug() << done << total;
+    emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
+#endif
 }
 
 }

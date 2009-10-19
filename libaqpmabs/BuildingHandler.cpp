@@ -98,7 +98,7 @@ void BuildingHandler::processNextItem()
     /* Let's build the path we need */
 
     if ((*d->iterator)->env_path.isEmpty()) {
-        (*d->iterator)->env_path = ABSHandler::getABSPath((*d->iterator)->name);
+        (*d->iterator)->env_path = ABSHandler::absPath((*d->iterator)->name);
     }
 
     QString path = d->working_dir;
