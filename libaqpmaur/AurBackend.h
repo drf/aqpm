@@ -23,6 +23,7 @@
 
 #include <QtCore/QObject>
 
+class QNetworkReply;
 namespace Aqpm {
 
 namespace Aur {
@@ -54,6 +55,8 @@ private:
 
     class Private;
     Private *d;
+
+    Q_PRIVATE_SLOT(d, void __k__replyFinished(QNetworkReply *reply))
 };
 
 }

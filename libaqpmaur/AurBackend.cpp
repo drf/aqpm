@@ -23,6 +23,7 @@
 #include <config-aqpm.h>
 
 #include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
 
 #ifndef KDE4_INTEGRATION
 #include <QtNetwork/QNetworkAccessManager>
@@ -41,14 +42,18 @@ class Backend::Private
     public:
         Private() : manager(new AqpmNetworkAccessManager) {}
 
-        QNetworkRequest createNetworkRequest(const QUrl &url) const;
+        QNetworkRequest createNetworkRequest(const QString &type, const QString &arg) const;
+
+        // Private slots
+        void __k__replyFinished(QNetworkReply *reply);
 
         AqpmNetworkAccessManager *manager;
 };
 
-QNetworkRequest Backend::Private::createNetworkRequest(const QUrl &url) const
+QNetworkRequest Backend::Private::createNetworkRequest(const QString& type, const QString& arg) const
 {
     QNetworkRequest request;
+    QUrl url(AQPM_AUR_REQUEST_URL + QString("type=%1&arg=%2").arg(type).arg(arg));
     request.setUrl(url);
     request.setRawHeader("User-Agent", ("Aqpm/" + QString(AQPM_VERSION)).toUtf8());
     return request;
@@ -81,6 +86,8 @@ Backend::Backend(QObject* parent)
 {
     Q_ASSERT(!s_globalAurBackend()->q);
     s_globalAurBackend()->q = this;
+
+    connect(d->manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(__k__replyFinished(QNetworkReply*)));
 }
 
 Backend::~Backend()
@@ -91,9 +98,17 @@ Backend::~Backend()
 
 void Backend::search(const QString& subject)
 {
-    // Create the request
+    // Stream the request
+    QNetworkReply *reply = d->manager->get(d->createNetworkRequest("search", subject));
+    reply->setProperty("aqpm_AUR_Request_Type", "search");
 }
 
+void Backend::info(int id)
+{
+
+}
 
 }
 }
+
+#include "AurBackend.moc"
