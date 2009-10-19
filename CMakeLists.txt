@@ -18,6 +18,9 @@ set(AQPM_VERSION_STRING "${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQP
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
                @ONLY )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpmaur.pc.cmake
+${CMAKE_CURRENT_BINARY_DIR}/aqpmaur.pc
+@ONLY )
 
 # requires minimal Qt 4.4
 set(QT_MIN_VERSION "4.4.0")
@@ -87,6 +90,9 @@ else (BUILD_AQPM_AUR AND QJSON_FOUND)
 endif (BUILD_AQPM_AUR AND QJSON_FOUND)
 
 install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
+         COMPONENT Devel )
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpmaur.pc
          DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
          COMPONENT Devel )
  
