@@ -29,7 +29,7 @@ class PackageListConditionalEventLoop : public QEventLoop
     Q_OBJECT
 
     public:
-        PackageListConditionalEventLoop(const QString &str, QObject *parent = 0) : QEventLoop(parent), m_cond(str) {}
+        explicit PackageListConditionalEventLoop(const QString &str, QObject *parent = 0) : QEventLoop(parent), m_cond(str) {}
         ~PackageListConditionalEventLoop() {}
 
     public Q_SLOTS:
@@ -47,7 +47,7 @@ class PackageConditionalEventLoop : public QEventLoop
     Q_OBJECT
 
     public:
-        PackageConditionalEventLoop(int id, QObject *parent = 0) : QEventLoop(parent), m_id(id) {}
+        explicit PackageConditionalEventLoop(int id, QObject *parent = 0) : QEventLoop(parent), m_id(id) {}
         ~PackageConditionalEventLoop() {}
 
     public Q_SLOTS:
@@ -70,7 +70,7 @@ class IntConditionalEventLoop : public QEventLoop
     Q_OBJECT
 
     public:
-        IntConditionalEventLoop(int id, QObject *parent = 0);
+        explicit IntConditionalEventLoop(int id, QObject *parent = 0);
         virtual ~IntConditionalEventLoop();
 
     public Q_SLOTS:

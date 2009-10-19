@@ -51,7 +51,7 @@ class StringConditionalEventLoop : public QEventLoop
     Q_OBJECT
 
     public:
-        StringConditionalEventLoop(const QString &str, QObject *parent = 0);
+        explicit StringConditionalEventLoop(const QString &str, QObject *parent = 0);
         virtual ~StringConditionalEventLoop();
 
     public Q_SLOTS:
