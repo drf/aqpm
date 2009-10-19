@@ -18,6 +18,9 @@
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
 
+#ifndef PACKAGE_LOOPS_P_H
+#define PACKAGE_LOOPS_P_H
+
 #include <QEventLoop>
 #include <libaqpmaur/AurBackend.h>
 
@@ -61,3 +64,20 @@ class PackageConditionalEventLoop : public QEventLoop
         int m_id;
         Aqpm::Aur::Package m_package;
 };
+
+class IntConditionalEventLoop : public QEventLoop
+{
+    Q_OBJECT
+
+    public:
+        IntConditionalEventLoop(int id, QObject *parent = 0);
+        virtual ~IntConditionalEventLoop();
+
+    public Q_SLOTS:
+        void requestQuit(int id);
+
+    private:
+        int m_id;
+};
+
+#endif

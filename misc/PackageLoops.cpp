@@ -27,3 +27,22 @@ void PackageListConditionalEventLoop::requestQuit(const QString &str, const Aqpm
         quit();
     }
 }
+
+IntConditionalEventLoop::IntConditionalEventLoop(int id, QObject* parent)
+: QEventLoop(parent)
+, m_id(id)
+{
+
+}
+
+IntConditionalEventLoop::~IntConditionalEventLoop()
+{
+
+}
+
+void IntConditionalEventLoop::requestQuit(int id)
+{
+    if (m_id == id) {
+        quit();
+    }
+}

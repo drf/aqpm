@@ -62,6 +62,7 @@ public:
     Package infoSync(int id) const;
 
     void prepareBuildEnvironment(int id, const QString &envpath) const;
+    void prepareBuildEnvironmentSync(int id, const QString &envpath) const;
 
 Q_SIGNALS:
     void searchCompleted(const QString &searchSubject, const Aqpm::Aur::Package::List &results);

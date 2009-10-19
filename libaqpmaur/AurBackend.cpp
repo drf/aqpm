@@ -21,6 +21,7 @@
 #include "AurBackend.h"
 
 #include "PackageLoops_p.h"
+#include "Loops.h"
 
 #include <config-aqpm.h>
 
@@ -233,6 +234,14 @@ void Backend::prepareBuildEnvironment(int id, const QString& envpath) const
     reply->setProperty("aqpm_AUR_ID", id);
     reply->setProperty("aqpm_AUR_is_Download", true);
     reply->setProperty("aqpm_AUR_extract_path", envpath);
+}
+
+void Backend::prepareBuildEnvironmentSync(int id, const QString& envpath) const
+{
+    IntConditionalEventLoop e(id);
+    connect(this, SIGNAL(buildEnvironmentReady(int,QString)), &e, SLOT(requestQuit(int)));
+    prepareBuildEnvironment(id, envpath);
+    e.exec();
 }
 
 }
