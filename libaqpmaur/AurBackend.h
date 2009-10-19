@@ -32,6 +32,18 @@ class Package
 {
     public:
         typedef QList<Package> List;
+
+        int id;
+        QString name;
+        QString version;
+        QString description;
+        int category;
+        int location;
+        QString url;
+        QString path;
+        QString license;
+        int votes;
+        bool outOfDate;
 };
 
 class Backend : public QObject
