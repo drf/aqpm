@@ -79,12 +79,13 @@ void Backend::Private::__k__replyFinished(QNetworkReply* reply)
         Package::List retlist;
 
         foreach (const QVariant &ent, result["results"].toList()) {
-            QVariantMap valuesMap = result["results"].toMap();
+            QVariantMap valuesMap = ent.toMap();
             retlist.append(packageFromMap(valuesMap));
         }
 
         emit q->searchCompleted(reply->property("aqpm_AUR_Subject").toString(), retlist);
     } else if (reply->property("aqpm_AUR_Request_Type").toString() == "info") {
+        emit q->infoCompleted(reply->property("aqpm_AUR_ID").toInt(), packageFromMap(result["results"].toMap()));
     }
 }
 
