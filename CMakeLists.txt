@@ -55,9 +55,11 @@ include_directories(
     ${POLKITQT_INCLUDE_DIR}
 )
 
-if (NOT AQPM_CONFIGURATION_FILE)
-    set (AQPM_CONFIGURATION_FILE "/etc/aqpm.conf")
-endif (NOT AQPM_CONFIGURATION_FILE)
+set (AQPM_CONFIGURATION_FILE "/etc/aqpm.conf" CACHE STRING "The configuration file aqpm will use. Change only if 
+                                                           you know what you're doing")
+set (AUR_JSON_URL "http://aur.archlinux.org/rpc.php?" CACHE STRING "The URL that will be used by aqpmaur to access the
+                                                                   aur. Change if you want to use your own installation. 
+                                                                   It needs to end with an '?'")
 
 configure_file(
        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/cmake_uninstall.cmake.in"

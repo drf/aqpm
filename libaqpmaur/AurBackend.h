@@ -27,6 +27,12 @@ namespace Aqpm {
 
 namespace Aur {
 
+class Package
+{
+    public:
+        typedef QList<Package> List;
+};
+
 class Backend : public QObject
 {
     Q_OBJECT
@@ -35,6 +41,13 @@ public:
     static Backend *instance();
 
     virtual ~Backend();
+
+    void search(const QString &subject);
+    void info(int id);
+
+Q_SIGNALS:
+    void searchCompleted(const QString &searchSubject, const Package::List &results);
+    void infoCompleted(int id, const Package &result);
 
 private:
     Backend(QObject* parent = 0);

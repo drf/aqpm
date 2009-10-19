@@ -32,6 +32,8 @@
 
 #define AQPM_CONFIGURATION_FILE "${AQPM_CONFIGURATION_FILE}"
 
+#define AQPM_AUR_REQUEST_URL "${AUR_JSON_URL}"
+
 /* KDE4 Integration */
 #cmakedefine KDE4_INTEGRATION 1
 

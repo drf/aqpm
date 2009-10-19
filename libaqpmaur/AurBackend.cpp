@@ -20,9 +20,39 @@
 
 #include "AurBackend.h"
 
+#include <config-aqpm.h>
+
+#include <QtNetwork/QNetworkRequest>
+
+#ifndef KDE4_INTEGRATION
+#include <QtNetwork/QNetworkAccessManager>
+typedef QNetworkAccessManager AqpmNetworkAccessManager;
+#else
+#include <kio/accessmanager.h>
+typedef KIO::AccessManager AqpmNetworkAccessManager;
+#endif
+
 namespace Aqpm {
 
 namespace Aur {
+
+class Backend::Private
+{
+    public:
+        Private() : manager(new AqpmNetworkAccessManager) {}
+
+        QNetworkRequest createNetworkRequest(const QUrl &url) const;
+
+        AqpmNetworkAccessManager *manager;
+};
+
+QNetworkRequest Backend::Private::createNetworkRequest(const QUrl &url) const
+{
+    QNetworkRequest request;
+    request.setUrl(url);
+    request.setRawHeader("User-Agent", ("Aqpm/" + QString(AQPM_VERSION)).toUtf8());
+    return request;
+}
 
 class AurBackendHelper
 {
@@ -47,6 +77,7 @@ Backend *Backend::instance()
 
 Backend::Backend(QObject* parent)
         : QObject(parent)
+        , d(new Private)
 {
     Q_ASSERT(!s_globalAurBackend()->q);
     s_globalAurBackend()->q = this;
@@ -54,8 +85,15 @@ Backend::Backend(QObject* parent)
 
 Backend::~Backend()
 {
-
+    d->manager->deleteLater();
+    delete d;
 }
+
+void Backend::search(const QString& subject)
+{
+    // Create the request
+}
+
 
 }
 }
