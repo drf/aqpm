@@ -20,6 +20,8 @@
 
 #include "AurBackend.h"
 
+#include "PackageLoops_p.h"
+
 #include <config-aqpm.h>
 
 #include <QtNetwork/QNetworkRequest>
@@ -145,7 +147,7 @@ Backend::~Backend()
     delete d;
 }
 
-void Backend::search(const QString& subject)
+void Backend::search(const QString& subject) const
 {
     // Stream the request
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest("search", subject));
@@ -153,12 +155,30 @@ void Backend::search(const QString& subject)
     reply->setProperty("aqpm_AUR_Subject", subject);
 }
 
-void Backend::info(int id)
+void Backend::info(int id) const
 {
     // Stream the request
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest("info", QString::number(id)));
     reply->setProperty("aqpm_AUR_Request_Type", "info");
     reply->setProperty("aqpm_AUR_ID", id);
+}
+
+Package::List Backend::searchSync(const QString& subject) const
+{
+    PackageListConditionalEventLoop e(subject);
+    connect(this, SIGNAL(searchCompleted(QString,Package::List)), &e, SLOT(requestQuit(QString,Aqpm::Aur::Package::List)));
+    search(subject);
+    e.exec();
+    return e.packageList();
+}
+
+Package Backend::infoSync(int id) const
+{
+    PackageConditionalEventLoop e(id);
+    connect(this, SIGNAL(infoCompleted(int,Package)), &e, SLOT(requestQuit(int,Aqpm::Aur::Package)));
+    info(id);
+    e.exec();
+    return e.package();
 }
 
 }

@@ -18,63 +18,51 @@
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
 
-#ifndef AURBACKEND_H
-#define AURBACKEND_H
+#include <QEventLoop>
+#include <libaqpmaur/AurBackend.h>
 
-#include <QtCore/QObject>
-
-class QNetworkReply;
-namespace Aqpm {
-
-namespace Aur {
-
-class Package
-{
-    public:
-        typedef QList<Package> List;
-
-        int id;
-        QString name;
-        QString version;
-        QString description;
-        int category;
-        int location;
-        QString url;
-        QString path;
-        QString license;
-        int votes;
-        bool outOfDate;
-};
-
-class Backend : public QObject
+class PackageListConditionalEventLoop : public QEventLoop
 {
     Q_OBJECT
 
-public:
-    static Backend *instance();
+    public:
+        PackageListConditionalEventLoop(const QString &str, QObject *parent = 0) : QEventLoop(parent), m_cond(str) {}
+        virtual ~PackageListConditionalEventLoop();
 
-    virtual ~Backend();
+    public Q_SLOTS:
+        void requestQuit(const QString &str, const Aqpm::Aur::Package::List &p) {
+            if (m_cond == str) {
+                m_list = p;
+                quit();
+            }
+        }
 
-    void search(const QString &subject) const;
-    void info(int id) const;
+        inline Aqpm::Aur::Package::List packageList() const { return m_list; }
 
-    Package::List searchSync(const QString &subject) const;
-    Package infoSync(int id) const;
-
-Q_SIGNALS:
-    void searchCompleted(const QString &searchSubject, const Package::List &results);
-    void infoCompleted(int id, const Package &result);
-
-private:
-    Backend(QObject* parent = 0);
-
-    class Private;
-    Private * const d;
-
-    Q_PRIVATE_SLOT(d, void __k__replyFinished(QNetworkReply *reply))
+    private:
+        QString m_cond;
+        Aqpm::Aur::Package::List m_list;
 };
 
-}
-}
+class PackageConditionalEventLoop : public QEventLoop
+{
+    Q_OBJECT
 
-#endif // AURBACKEND_H
+    public:
+        PackageConditionalEventLoop(int id, QObject *parent = 0) : QEventLoop(parent), m_id(id) {}
+        virtual ~PackageConditionalEventLoop();
+
+    public Q_SLOTS:
+        void requestQuit(int id, const Aqpm::Aur::Package &p) {
+            if (m_id == id) {
+                m_package = p;
+                quit();
+            }
+        }
+
+        inline Aqpm::Aur::Package package() const { return m_package; }
+
+    private:
+        int m_id;
+        Aqpm::Aur::Package m_package;
+};
