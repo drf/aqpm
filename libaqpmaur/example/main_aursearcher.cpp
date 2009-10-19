@@ -24,19 +24,35 @@
 
 #include "../AurBackend.h"
 #include <QStringList>
+#include <QDir>
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    if (QCoreApplication::arguments().count() < 2) {
-        qFatal("You need to specify a name to search for");
+    if (QCoreApplication::arguments().count() != 3) {
+        printf("Usage: aursearcher (search|info|download) <package>\n<package> is a string for search, "
+               "and a number (the package ID) for the other commands\n");
+        return 0;
     }
 
-    Aqpm::Aur::Package::List retlist = Aqpm::Aur::Backend::instance()->searchSync(QCoreApplication::arguments().at(1));
+    if (QCoreApplication::arguments().at(1) == "search") {
+        Aqpm::Aur::Package::List retlist = Aqpm::Aur::Backend::instance()->searchSync(QCoreApplication::arguments().at(2));
 
-    foreach (const Aqpm::Aur::Package &result, retlist) {
-        printf("%s - %s\n", result.name.toAscii().data(), result.version.toAscii().data());
+        foreach (const Aqpm::Aur::Package &result, retlist) {
+            printf("%s - %s (ID: %i)\n", result.name.toAscii().data(), result.version.toAscii().data(), result.id);
+        }
+    } else if (QCoreApplication::arguments().at(1) == "info") {
+        Aqpm::Aur::Package package = Aqpm::Aur::Backend::instance()->infoSync(QCoreApplication::arguments().at(2).toInt());
+
+        printf("Name: %s\nVersion: %s\nDescription: %s\nUrl: %s\nVotes: %i\n%s\n", package.name.toAscii().data(),
+               package.version.toAscii().data(), package.description.toAscii().data(), package.url.toAscii().data(),
+               package.votes, package.outOfDate ? "The package is out of date" : "");
+    } else if (QCoreApplication::arguments().at(1) == "download") {
+        Aqpm::Aur::Backend::instance()->prepareBuildEnvironmentSync(QCoreApplication::arguments().at(2).toInt(), QDir::currentPath());
+    } else {
+        printf("Usage: aursearcher (search|info|download) <package>\n<package> is a string for search, "
+               "and a number (the package ID) for the other commands\n");
     }
 
     return 0;
