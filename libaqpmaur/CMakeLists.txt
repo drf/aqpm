@@ -6,6 +6,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 
 set(aqpm_aur_SRCS
 AurBackend.cpp
+../misc/PackageLoops.cpp
 )
 
 set(aqpm_aur_HEADERS

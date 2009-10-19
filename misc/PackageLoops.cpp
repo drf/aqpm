@@ -18,46 +18,12 @@
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
 
-#include <QEventLoop>
-#include <libaqpmaur/AurBackend.h>
+#include "PackageLoops_p.h"
 
-class PackageListConditionalEventLoop : public QEventLoop
+void PackageListConditionalEventLoop::requestQuit(const QString &str, const Aqpm::Aur::Package::List &p)
 {
-    Q_OBJECT
-
-    public:
-        PackageListConditionalEventLoop(const QString &str, QObject *parent = 0) : QEventLoop(parent), m_cond(str) {}
-        ~PackageListConditionalEventLoop() {}
-
-    public Q_SLOTS:
-        void requestQuit(const QString &str, const Aqpm::Aur::Package::List &p);
-
-        inline Aqpm::Aur::Package::List packageList() const { return m_list; }
-
-    private:
-        QString m_cond;
-        Aqpm::Aur::Package::List m_list;
-};
-
-class PackageConditionalEventLoop : public QEventLoop
-{
-    Q_OBJECT
-
-    public:
-        PackageConditionalEventLoop(int id, QObject *parent = 0) : QEventLoop(parent), m_id(id) {}
-        ~PackageConditionalEventLoop() {}
-
-    public Q_SLOTS:
-        void requestQuit(int id, const Aqpm::Aur::Package &p) {
-            if (m_id == id) {
-                m_package = p;
-                quit();
-            }
-        }
-
-        inline Aqpm::Aur::Package package() const { return m_package; }
-
-    private:
-        int m_id;
-        Aqpm::Aur::Package m_package;
-};
+    if (m_cond == str) {
+        m_list = p;
+        quit();
+    }
+}
