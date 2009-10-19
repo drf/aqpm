@@ -38,6 +38,7 @@ endif (KDE4_INTEGRATION)
 find_package(Alpm REQUIRED)
 set(POLKITQT_MIN_VERSION 0.9.2)
 find_package(PolkitQt REQUIRED)
+find_package(QJSON)
 
 include(${QT_USE_FILE})
 
@@ -71,6 +72,15 @@ add_subdirectory(libaqpm)
 add_subdirectory(libaqpmabs)
 add_subdirectory(misc)
 
+option(BUILD_AQPM_AUR "Builds libaqpmaur, a library which can be used to access AUR" OFF)
+
+if (BUILD_AQPM_AUR AND QJSON_FOUND)
+    add_subdirectory(libaqpmaur)
+    message(STATUS "aqpmaur will be built")
+else (BUILD_AQPM_AUR AND QJSON_FOUND)
+    message(STATUS "aqpmaur will NOT be built")
+endif (BUILD_AQPM_AUR AND QJSON_FOUND)
+
 install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
          DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
          COMPONENT Devel )
@@ -81,3 +91,5 @@ add_custom_target(dist
     COMMAND git archive --prefix=${ARCHIVE_NAME}/ HEAD
         | bzip2 > ${CMAKE_BINARY_DIR}/${ARCHIVE_NAME}.tar.bz2
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+
