@@ -60,6 +60,9 @@ set (AQPM_CONFIGURATION_FILE "/etc/aqpm.conf" CACHE STRING "The configuration fi
 set (AUR_JSON_URL "http://aur.archlinux.org/rpc.php?" CACHE STRING "The URL that will be used by aqpmaur to access the
                                                                    aur. Change if you want to use your own installation. 
                                                                    It needs to end with an '?'")
+set (AUR_BASE_URL "http://aur.archlinux.org" CACHE STRING "The URL that will be used by aqpmaur to download pkgbuilds from
+                                                           aur. Change if you want to use your own installation. It should not
+                                                           end with an '/'")
 
 configure_file(
        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/cmake_uninstall.cmake.in"

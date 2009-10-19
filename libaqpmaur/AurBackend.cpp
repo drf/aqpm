@@ -27,6 +27,10 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 
+#include <QTemporaryFile>
+#include <QDir>
+#include <QProcess>
+
 #include <qjson/parser.h>
 
 #ifndef KDE4_INTEGRATION
@@ -47,6 +51,7 @@ class Backend::Private
         Private() : manager(new AqpmNetworkAccessManager) {}
 
         QNetworkRequest createNetworkRequest(const QString &type, const QString &arg) const;
+        QNetworkRequest createDownloadRequest(const Package &package) const;
         Package packageFromMap(const QVariantMap &map) const;
 
         // Private slots
@@ -65,8 +70,36 @@ QNetworkRequest Backend::Private::createNetworkRequest(const QString& type, cons
     return request;
 }
 
+QNetworkRequest Backend::Private::createDownloadRequest(const Aqpm::Aur::Package& package) const
+{
+    QNetworkRequest request;
+    QUrl url(AQPM_AUR_BASE_URL + package.path);
+    request.setUrl(url);
+    request.setRawHeader("User-Agent", ("Aqpm/" + QString(AQPM_VERSION)).toUtf8());
+    return request;
+}
+
 void Backend::Private::__k__replyFinished(QNetworkReply* reply)
 {
+    if (reply->property("aqpm_AUR_is_archive_Download").toBool()) {
+        // We got an archive. Let's save and extract it where requested
+        QTemporaryFile file;
+        file.open();
+        file.write(reply->readAll());
+        file.flush();
+
+        QString filepath = QDir::tempPath() + '/' + file.fileName();
+        QProcess process;
+        process.setWorkingDirectory(reply->property("aqpm_AUR_extract_path").toString());
+        process.start(QString("tar -zxf %1").arg(filepath));
+        process.waitForFinished();
+        file.close();
+
+        // Stream the success
+        emit q->buildEnvironmentReady(reply->property("aqpm_AUR_ID").toInt(), reply->property("aqpm_AUR_pkg_name").toString());
+        return;
+    }
+
     // Parse it!
     QJson::Parser parser;
     bool ok;
@@ -87,7 +120,18 @@ void Backend::Private::__k__replyFinished(QNetworkReply* reply)
 
         emit q->searchCompleted(reply->property("aqpm_AUR_Subject").toString(), retlist);
     } else if (reply->property("aqpm_AUR_Request_Type").toString() == "info") {
-        emit q->infoCompleted(reply->property("aqpm_AUR_ID").toInt(), packageFromMap(result["results"].toMap()));
+        if (reply->property("aqpm_AUR_is_Download").toBool()) {
+            // We are not really looking for info, we actually need to download the package we got.
+            Package p = packageFromMap(result["results"].toMap());
+            QNetworkReply *nreply = manager->get(createDownloadRequest(p));
+            nreply->setProperty("aqpm_AUR_is_archive_Download", true);
+            nreply->setProperty("aqpm_AUR_extract_path", reply->property("aqpm_AUR_extract_path").toString());
+            nreply->setProperty("aqpm_AUR_ID", reply->property("aqpm_AUR_ID").toInt());
+            nreply->setProperty("aqpm_AUR_pkg_name", p.name);
+        } else {
+            // A simple info request, just notify and pass by
+            emit q->infoCompleted(reply->property("aqpm_AUR_ID").toInt(), packageFromMap(result["results"].toMap()));
+        }
     }
 }
 
@@ -179,6 +223,16 @@ Package Backend::infoSync(int id) const
     info(id);
     e.exec();
     return e.package();
+}
+
+void Backend::prepareBuildEnvironment(int id, const QString& envpath) const
+{
+    // First we have to do an info request to get the URL. We will add an additional property
+    QNetworkReply *reply = d->manager->get(d->createNetworkRequest("info", QString::number(id)));
+    reply->setProperty("aqpm_AUR_Request_Type", "info");
+    reply->setProperty("aqpm_AUR_ID", id);
+    reply->setProperty("aqpm_AUR_is_Download", true);
+    reply->setProperty("aqpm_AUR_extract_path", envpath);
 }
 
 }
