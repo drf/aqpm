@@ -145,7 +145,7 @@ Package Backend::Private::packageFromMap(const QVariantMap& map) const
     p.license = map["License"].toString();
     p.location = map["LocationID"].toInt();
     p.name = map["Name"].toString();
-    p.outOfDate = map["OutOfDate"].toInt() == 0 ? true : false;
+    p.outOfDate = map["OutOfDate"].toInt() == 0 ? false : true;
     p.path = map["URLPath"].toString();
     p.url = map["URL"].toString();
     p.version = map["Version"].toString();
