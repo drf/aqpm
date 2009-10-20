@@ -29,7 +29,6 @@
 #include <QtNetwork/QNetworkReply>
 
 #include <QTemporaryFile>
-#include <QDir>
 #include <QProcess>
 
 #include <qjson/parser.h>
@@ -85,14 +84,14 @@ void Backend::Private::__k__replyFinished(QNetworkReply* reply)
     if (reply->property("aqpm_AUR_is_archive_Download").toBool()) {
         // We got an archive. Let's save and extract it where requested
         QTemporaryFile file;
+        file.setAutoRemove(false);
         file.open();
         file.write(reply->readAll());
         file.flush();
 
-        QString filepath = QDir::tempPath() + '/' + file.fileName();
         QProcess process;
         process.setWorkingDirectory(reply->property("aqpm_AUR_extract_path").toString());
-        process.start(QString("tar -zxf %1").arg(filepath));
+        process.start(QString("tar -zxf %1").arg(file.fileName()));
         process.waitForFinished();
         file.close();
 
