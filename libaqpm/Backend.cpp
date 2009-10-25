@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "Backend.h"
+#include "Backend_p.h"
 
 #include <config-aqpm.h>
 
@@ -37,39 +38,6 @@
 namespace Aqpm
 {
 
-class Backend::Private
-{
-public:
-    Private()   : ready(false)
-                , list_total(0)
-                , list_xfered(0)
-                , list_last(0)
-                , averageRateTime() {}
-
-    Backend *q;
-    BackendThread *thread;
-    ContainerThread *containerThread;
-    //ContainerThread *downloaderThread;
-    QMap<Backend::ActionType, QEvent::Type> events;
-    bool ready;
-
-    qint64 list_total;
-    qint64 list_xfered;
-    qint64 list_last;
-    QDateTime averageRateTime;
-
-    // Q_PRIVATE_SLOTS
-    void __k__backendReady();
-    void __k__setUpSelf(BackendThread *t);
-    void __k__streamError(int code, const QVariantMap &args);
-    void __k__doStreamTransProgress(int event, const QString &pkgname, int percent,
-                             int howmany, int remain);
-    void __k__doStreamTransEvent(int event, const QVariantMap &args);
-    void __k__doStreamTransQuestion(int event, const QVariantMap &args);
-    void __k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename);
-    void __k__totalOffsetReceived(int offset);
-};
-
 void Backend::Private::__k__backendReady()
 {
     ready = true;
@@ -86,9 +54,9 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
             q, SLOT(__k__computeDownloadProgress(qint64,qint64,QString)));
 
     connect(thread, SIGNAL(dbQty(const QStringList&)),
-            q, SIGNAL(dbQty(const QStringList&)), Qt::QueuedConnection);
+            q, SIGNAL(dbQty(const QStringList&)));
     connect(thread, SIGNAL(dbStatusChanged(const QString&, int)),
-            q, SIGNAL(dbStatusChanged(const QString&, int)), Qt::QueuedConnection);
+            q, SIGNAL(dbStatusChanged(const QString&, int)));
     connect(thread, SIGNAL(transactionStarted()),
             q, SIGNAL(transactionStarted()));
     connect(thread, SIGNAL(transactionReleased()),
@@ -110,7 +78,7 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
     connect(thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
             q, SLOT(__k__doStreamTransQuestion(int, QVariantMap)));
 
-    QCoreApplication::postEvent(thread, new QEvent(q->getEventTypeFor(Initialization)));
+    QCoreApplication::postEvent(thread, new QEvent(getEventTypeFor(Initialization)));
 }
 
 void Backend::Private::__k__streamError(int code, const QVariantMap &args)
@@ -250,14 +218,14 @@ QString Backend::version()
     return AQPM_VERSION;
 }
 
-QEvent::Type Backend::getEventTypeFor(ActionType event)
+QEvent::Type Backend::Private::getEventTypeFor(ActionType event) const
 {
-    return d->events[event];
+    return events[event];
 }
 
 void Backend::performAsyncAction(ActionType type, const QVariantMap &args)
 {
-    QCoreApplication::postEvent(d->thread, new ActionEvent(getEventTypeFor(Backend::PerformAction), type, args));
+    QCoreApplication::postEvent(d->thread, new ActionEvent(d->getEventTypeFor(Backend::PerformAction), type, args));
 }
 
 bool Backend::testLibrary()
@@ -447,7 +415,7 @@ Database Backend::getDatabase(const QString &name) const
 
 bool Backend::updateDatabase()
 {
-    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(UpdateDatabase)));
+    QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(UpdateDatabase)));
     qDebug() << "Thread is running";
     return true;
 }
@@ -459,7 +427,7 @@ void Backend::fullSystemUpgrade(Globals::TransactionFlags flags, bool downgrade)
     args["downgrade"] = downgrade;
     SynchronousLoop s(SetFlags, args);
     QCoreApplication::postEvent(d->thread,
-                                new ActionEvent(getEventTypeFor(SystemUpgrade), SystemUpgrade, args));
+                                new ActionEvent(d->getEventTypeFor(SystemUpgrade), SystemUpgrade, args));
     qDebug() << "Thread is running";
 }
 
@@ -487,7 +455,7 @@ void Backend::processQueue(Globals::TransactionFlags flags)
     QVariantMap args;
     args["flags"] = QVariant::fromValue((int)flags);
     SynchronousLoop s(SetFlags, args);
-    QCoreApplication::postEvent(d->thread, new QEvent(getEventTypeFor(ProcessQueue)));
+    QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(ProcessQueue)));
     qDebug() << "Thread is running";
 }
 

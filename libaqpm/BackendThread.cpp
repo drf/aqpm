@@ -25,6 +25,7 @@
 #include "Downloader.h"
 // Private headers
 #include "ConfigurationThread.h"
+#include "Backend_p.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -219,16 +220,16 @@ void BackendThread::customEvent(QEvent *event)
 {
     //qDebug() << "Received event of type" << event->type();
 
-    if (event->type() == Backend::instance()->getEventTypeFor(Backend::UpdateDatabase)) {
+    if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::UpdateDatabase)) {
         updateDatabase();
-    } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::ProcessQueue)) {
+    } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::ProcessQueue)) {
         processQueue();
-    } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::Initialization)) {
+    } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::Initialization)) {
         init();
-    } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::SystemUpgrade)) {
+    } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::SystemUpgrade)) {
         ActionEvent *ae = dynamic_cast<ActionEvent*>(event);
         fullSystemUpgrade(ae->args()["downgrade"].toBool());
-    } else if (event->type() == Backend::instance()->getEventTypeFor(Backend::PerformAction)) {
+    } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::PerformAction)) {
         ActionEvent *ae = dynamic_cast<ActionEvent*>(event);
 
         if (!ae) {

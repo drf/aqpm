@@ -145,11 +145,6 @@ public:
     virtual ~Backend();
 
     /**
-     * Internal method
-     */
-    QEvent::Type getEventTypeFor(ActionType event);
-
-    /**
      * Performs a test on the library to check if Alpm and Aqpm are ready to be used
      *
      * @return \c true if the library is ready, \c false if there was a problem while testing it
@@ -277,6 +272,9 @@ private:
 
     class Private;
     Private * const d;
+
+    friend class BackendThread;
+    friend class SynchronousLoop;
 
     Q_PRIVATE_SLOT(d, void __k__backendReady())
     Q_PRIVATE_SLOT(d, void __k__setUpSelf(BackendThread *t))
