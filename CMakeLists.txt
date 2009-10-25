@@ -8,6 +8,8 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy) 
 
 include(InstallSettings)
+# Documentation
+include(TargetDoc)
 
 set(MAJOR_AQPM_VERSION "1")
 set(MINOR_AQPM_VERSION "3")
