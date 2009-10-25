@@ -85,6 +85,19 @@ Downloader *Downloader::instance()
     return s_globalDownloader()->q;
 }
 
+void Downloader::destroyInstance()
+{
+    if (s_globalDownloader()->q) {
+        s_globalDownloader()->q->deleteLater();
+        s_globalDownloader()->q = 0;
+    }
+}
+
+bool Downloader::hasInstance()
+{
+    return s_globalDownloader()->q;
+}
+
 Downloader::Downloader(QObject *parent)
         : QObject(parent)
         , d(new Private())
@@ -93,6 +106,11 @@ Downloader::Downloader(QObject *parent)
     s_globalDownloader()->q = this;
 
     new AqpmdownloaderAdaptor(this);
+
+    if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmdownloader")) {
+        qDebug() << "unable to register the downloader service";
+        d->error = true;
+    }
 
     if (!QDBusConnection::systemBus().registerObject("/Downloader", this)) {
         qDebug() << "unable to register service interface to dbus";

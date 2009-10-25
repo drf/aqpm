@@ -37,6 +37,21 @@
 
 namespace Aqpm
 {
+void Backend::Private::startUpDownloader()
+{
+    // Start up Downloader
+    if (!Downloader::hasInstance()) {
+        connect(Downloader::instance(), SIGNAL(downloadProgress(qint64,qint64,QString)),
+                q, SLOT(__k__computeDownloadProgress(qint64,qint64,QString)));
+    }
+}
+
+void Backend::Private::shutdownDownloader()
+{
+    if (Downloader::hasInstance()) {
+        Downloader::destroyInstance();
+    }
+}
 
 void Backend::Private::__k__backendReady()
 {
@@ -48,11 +63,6 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
 {
     thread = t;
 
-    // Start up downloader
-    Downloader::instance();
-    connect(Downloader::instance(), SIGNAL(downloadProgress(qint64,qint64,QString)),
-            q, SLOT(__k__computeDownloadProgress(qint64,qint64,QString)));
-
     connect(thread, SIGNAL(dbQty(const QStringList&)),
             q, SIGNAL(dbQty(const QStringList&)));
     connect(thread, SIGNAL(dbStatusChanged(const QString&, int)),
@@ -62,7 +72,7 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
     connect(thread, SIGNAL(transactionReleased()),
             q, SIGNAL(transactionReleased()));
     connect(thread, SIGNAL(operationFinished(bool)),
-            q, SIGNAL(operationFinished(bool)));
+            q, SLOT(__k__operationFinished(bool)));
     connect(thread, SIGNAL(threadInitialized()),
             q, SLOT(__k__backendReady()));
     connect(thread, SIGNAL(streamTotalOffset(int)),
@@ -140,6 +150,12 @@ void Backend::Private::__k__totalOffsetReceived(int offset)
         list_last = 0;
         list_total = 0;
     }
+}
+
+void Backend::Private::__k__operationFinished(bool result)
+{
+    shutdownDownloader();
+    emit q->operationFinished(result);
 }
 
 class BackendHelper
@@ -415,6 +431,7 @@ Database Backend::getDatabase(const QString &name) const
 
 bool Backend::updateDatabase()
 {
+    d->startUpDownloader();
     QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(UpdateDatabase)));
     qDebug() << "Thread is running";
     return true;
@@ -422,6 +439,7 @@ bool Backend::updateDatabase()
 
 void Backend::fullSystemUpgrade(Globals::TransactionFlags flags, bool downgrade)
 {
+    d->startUpDownloader();
     QVariantMap args;
     args["flags"] = QVariant::fromValue((int)flags);
     args["downgrade"] = downgrade;
@@ -452,6 +470,7 @@ QueueItem::List Backend::queue() const
 
 void Backend::processQueue(Globals::TransactionFlags flags)
 {
+    d->startUpDownloader();
     QVariantMap args;
     args["flags"] = QVariant::fromValue((int)flags);
     SynchronousLoop s(SetFlags, args);
@@ -461,7 +480,8 @@ void Backend::processQueue(Globals::TransactionFlags flags)
 
 void Backend::downloadQueue()
 {
-    SynchronousLoop s(DownloadQueue, QVariantMap());
+    d->startUpDownloader();
+    QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(DownloadQueue)));
     qDebug() << "Thread is running";
 }
 

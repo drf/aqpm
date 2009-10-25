@@ -39,7 +39,6 @@ public:
     Backend *q;
     BackendThread *thread;
     ContainerThread *containerThread;
-    //ContainerThread *downloaderThread;
     QMap<Backend::ActionType, QEvent::Type> events;
     bool ready;
 
@@ -50,6 +49,8 @@ public:
 
     // privates
     QEvent::Type getEventTypeFor(ActionType event) const;
+    void startUpDownloader();
+    void shutdownDownloader();
 
     // Q_PRIVATE_SLOTS
     void __k__backendReady();
@@ -61,6 +62,7 @@ public:
     void __k__doStreamTransQuestion(int event, const QVariantMap &args);
     void __k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename);
     void __k__totalOffsetReceived(int offset);
+    void __k__operationFinished(bool result);
 };
 
 }

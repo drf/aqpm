@@ -39,6 +39,9 @@ public:
     * @return The current instance of the Backend
     */
     static Downloader *instance();
+    static bool hasInstance();
+    static void destroyInstance();
+
     virtual ~Downloader();
 
     bool hasError() const;

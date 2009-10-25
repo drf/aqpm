@@ -22,7 +22,6 @@
 
 #include "Configuration.h"
 #include "ActionEvent.h"
-#include "Downloader.h"
 // Private headers
 #include "ConfigurationThread.h"
 #include "Backend_p.h"
