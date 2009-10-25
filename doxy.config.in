@@ -223,7 +223,7 @@ EXTRACT_ALL            = YES
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation.
 
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file 
 # will be included in the documentation.
@@ -458,9 +458,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@
 # *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx 
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py
 
-FILE_PATTERNS          = *.cpp \
-                         *.cc \
-                         *.h \
+FILE_PATTERNS          = *.h \
                          *.hh \
                          *.hpp \
                          *.dox
@@ -475,7 +473,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = 
+EXCLUDE                =
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -491,7 +489,8 @@ EXCLUDE_SYMLINKS       = NO
 
 EXCLUDE_PATTERNS       = */.svn/* \
                          */cmake/* \
-                         */build/*
+                         */build/* \
+                         *_p.*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
