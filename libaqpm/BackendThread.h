@@ -152,7 +152,7 @@ class ContainerThread : public QThread
     Q_OBJECT
 
 public:
-    ContainerThread(const QString &type) : m_type(type), m_contained(0) {}
+    ContainerThread(QObject* parent = 0);
     virtual ~ContainerThread();
 
 protected:
@@ -160,10 +160,6 @@ protected:
 
 Q_SIGNALS:
     void threadCreated(BackendThread *thread);
-
-private:
-    QString m_type;
-    QObject *m_contained;
 };
 
 }

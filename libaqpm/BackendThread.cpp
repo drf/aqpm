@@ -49,26 +49,25 @@
 namespace Aqpm
 {
 
+ContainerThread::ContainerThread(QObject* parent)
+        : QThread(parent)
+{
+
+}
+
 void ContainerThread::run()
 {
-    if (m_type == "Downloader") {
-        Downloader::instance();
-    } else {
-        // Right before that, instantiate Configuration in the container thread
-        Configuration::instance();
+    // Right before that, instantiate Configuration in the container thread
+    Configuration::instance();
 
-        BackendThread *t = new BackendThread();
-        emit threadCreated(t);
-        exec();
-        t->deleteLater();
-    }
+    BackendThread *t = new BackendThread();
+    emit threadCreated(t);
+    exec();
+    t->deleteLater();
 }
 
 ContainerThread::~ContainerThread()
 {
-    if (m_contained) {
-        m_contained->deleteLater();
-    }
 }
 
 class BackendThread::Private

@@ -80,9 +80,6 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
 {
     thread = t;
 
-    // Create also the thread for Downloader
-    /*downloaderThread = new ContainerThread("Downloader");
-    downloaderThread->start();*/
     // Start up downloader
     Downloader::instance();
     connect(Downloader::instance(), SIGNAL(downloadProgress(qint64,qint64,QString)),
@@ -225,9 +222,7 @@ Backend::Backend()
     d->events[SystemUpgrade] = (QEvent::Type)QEvent::registerEventType();
     d->events[PerformAction] = (QEvent::Type)QEvent::registerEventType();
 
-    qDebug() << d->events;
-
-    d->containerThread = new ContainerThread("Backend");
+    d->containerThread = new ContainerThread(this);
     connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(__k__setUpSelf(BackendThread*)));
     d->containerThread->start();
 }
@@ -236,8 +231,6 @@ Backend::~Backend()
 {
     d->containerThread->quit();
     d->containerThread->deleteLater();
-/*    d->downloaderThread->quit();
-    d->downloaderThread->deleteLater();*/
     delete d;
 }
 
