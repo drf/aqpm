@@ -47,12 +47,13 @@ namespace Aqpm
 class Downloader::Private
 {
 public:
-    Private() {}
+    Private() : error(false) {}
 
     QNetworkRequest createNetworkRequest(const QUrl &url);
 
     AqpmNetworkAccessManager *manager;
     QList<QNetworkReply*> replies;
+    bool error;
 };
 
 QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
@@ -95,8 +96,7 @@ Downloader::Downloader(QObject *parent)
 
     if (!QDBusConnection::systemBus().registerObject("/Downloader", this)) {
         qDebug() << "unable to register service interface to dbus";
-        QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
-        return;
+        d->error = true;
     }
 
     d->manager = new AqpmNetworkAccessManager(this);
@@ -106,6 +106,11 @@ Downloader::Downloader(QObject *parent)
 Downloader::~Downloader()
 {
     d->manager->deleteLater();
+}
+
+bool Downloader::hasError() const
+{
+    return d->error;
 }
 
 int Downloader::checkHeader(const QString &url)

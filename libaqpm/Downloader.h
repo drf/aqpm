@@ -41,6 +41,8 @@ public:
     static Downloader *instance();
     virtual ~Downloader();
 
+    bool hasError() const;
+
 public Q_SLOTS:
     int checkHeader(const QString &url);
     QString download(const QString &url) const;
