@@ -163,10 +163,10 @@ void Downloader::downloadFinished(QNetworkReply *reply)
 
     // Set the filename as the property for the reply
     reply->setProperty("aqpm_Temporary_Download_Location", file.fileName());
+    // Remove the reply from the list
+    d->replies.removeOne(reply);
 
     emit finished(reply->url().toString());
-
-    d->replies.removeOne(reply);
 
     // The reply should be deleted by download Function
 }
@@ -183,12 +183,7 @@ void Downloader::abortDownload()
 
 void Downloader::progress(qint64 done, qint64 total)
 {
-#ifndef KDE4_INTEGRATION
     emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
-#else
-    qDebug() << done << total;
-    emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
-#endif
 }
 
 }
