@@ -123,6 +123,7 @@ Downloader::Downloader(QObject *parent)
 
 Downloader::~Downloader()
 {
+    QDBusConnection::systemBus().unregisterService("org.chakraproject.aqpmdownloader");
     d->manager->deleteLater();
 }
 
