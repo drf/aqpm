@@ -972,7 +972,15 @@ PERLMOD_PRETTY         = YES
 # This is useful so different doxyrules.make files included by the same 
 # Makefile don't overwrite each other's variables.
 
-PERLMOD_MAKEVAR_PREFIX = 
+PERLMOD_MAKEVAR_PREFIX =
+
+#---------------------------------------------------------------------------
+# configuration options related to the qhp output
+#---------------------------------------------------------------------------
+GENERATE_QHP           = YES
+QHP_NAMESPACE          = org.chakra-project.www
+QHP_VIRTUAL_FOLDER     = aqpm
+QHG_LOCATION           = qhelpgenerator
 
 #---------------------------------------------------------------------------
 # Configuration options related to the preprocessor   
