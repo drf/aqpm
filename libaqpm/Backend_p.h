@@ -29,6 +29,8 @@ namespace Aqpm {
 
 class Backend::Private
 {
+    Q_DECLARE_PUBLIC(Backend)
+
 public:
     Private()   : ready(false)
                 , list_total(0)
@@ -36,7 +38,6 @@ public:
                 , list_last(0)
                 , averageRateTime() {}
 
-    Backend *q;
     BackendThread *thread;
     ContainerThread *containerThread;
     QMap<Backend::ActionType, QEvent::Type> events;
@@ -52,6 +53,7 @@ public:
     void startUpDownloader();
     void shutdownDownloader();
 
+private:
     // Q_PRIVATE_SLOTS
     void __k__backendReady();
     void __k__setUpSelf(BackendThread *t);
@@ -63,6 +65,8 @@ public:
     void __k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename);
     void __k__totalOffsetReceived(int offset);
     void __k__operationFinished(bool result);
+
+    Backend *q_ptr;
 };
 
 }

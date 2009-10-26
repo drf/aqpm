@@ -39,6 +39,8 @@ namespace Aqpm
 {
 void Backend::Private::startUpDownloader()
 {
+    Q_Q(Backend);
+
     // Start up Downloader
     if (!Downloader::hasInstance()) {
         connect(Downloader::instance(), SIGNAL(downloadProgress(qint64,qint64,QString)),
@@ -55,12 +57,16 @@ void Backend::Private::shutdownDownloader()
 
 void Backend::Private::__k__backendReady()
 {
+    Q_Q(Backend);
+
     ready = true;
     emit q->backendReady();
 }
 
 void Backend::Private::__k__setUpSelf(BackendThread *t)
 {
+    Q_Q(Backend);
+
     thread = t;
 
     connect(thread, SIGNAL(dbQty(const QStringList&)),
@@ -93,17 +99,23 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
 
 void Backend::Private::__k__streamError(int code, const QVariantMap &args)
 {
+    Q_Q(Backend);
+
     emit q->errorOccurred((Globals::Errors) code, args);
 }
 
 void Backend::Private::__k__doStreamTransProgress(int event, const QString &pkgname, int percent,
                            int howmany, int remain)
 {
+    Q_Q(Backend);
+
     emit q->streamTransProgress((Aqpm::Globals::TransactionProgress)event, pkgname, percent, howmany, remain);
 }
 
 void Backend::Private::__k__doStreamTransEvent(int event, const QVariantMap &args)
 {
+    Q_Q(Backend);
+
     if ((Aqpm::Globals::TransactionEvent) event == Aqpm::Globals::RetrieveStart) {
         if (averageRateTime.isNull()) {
             averageRateTime = QDateTime::currentDateTime();
@@ -115,11 +127,15 @@ void Backend::Private::__k__doStreamTransEvent(int event, const QVariantMap &arg
 
 void Backend::Private::__k__doStreamTransQuestion(int event, const QVariantMap &args)
 {
+    Q_Q(Backend);
+
     emit q->streamTransQuestion((Aqpm::Globals::TransactionQuestion) event, args);
 }
 
 void Backend::Private::__k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename)
 {
+    Q_Q(Backend);
+
     if (downloaded == total) {
         list_xfered += downloaded;
         return;
@@ -154,6 +170,8 @@ void Backend::Private::__k__totalOffsetReceived(int offset)
 
 void Backend::Private::__k__operationFinished(bool result)
 {
+    Q_Q(Backend);
+
     shutdownDownloader();
     emit q->operationFinished(result);
 }
@@ -186,7 +204,7 @@ Backend::Backend()
     Q_ASSERT(!s_globalBackend()->q);
     s_globalBackend()->q = this;
 
-    d->q = this;
+    d->q_ptr = this;
 
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
