@@ -447,12 +447,11 @@ Database Backend::getDatabase(const QString &name) const
     return s.result()["retvalue"].value<Database>();
 }
 
-bool Backend::updateDatabase() const
+void Backend::updateDatabase()
 {
     d->startUpDownloader();
     QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(UpdateDatabase)));
     qDebug() << "Thread is running";
-    return true;
 }
 
 void Backend::fullSystemUpgrade(Globals::TransactionFlags flags, bool downgrade)
