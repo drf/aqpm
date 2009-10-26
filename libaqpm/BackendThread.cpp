@@ -150,11 +150,16 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
             }
 
             // Then set up alpm in the worker
+            QEventLoop e;
+            QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker",
+                                                 "org.chakraproject.aqpmworker", "workerReady",
+                                                 &e, SLOT(quit()));
             message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
             "/Worker",
             "org.chakraproject.aqpmworker",
             QLatin1String("setUpAlpm"));
-            QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+            QDBusConnection::systemBus().asyncCall(message);
+            e.exec();
 
             qDebug() << "Worker_p.has been set up, let's move";
         }
@@ -805,7 +810,7 @@ bool BackendThread::updateDatabase()
               "/Worker",
               "org.chakraproject.aqpmworker",
               QLatin1String("updateDatabase"));
-    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+    QDBusConnection::systemBus().asyncCall(message);
 
     return true;
 }
