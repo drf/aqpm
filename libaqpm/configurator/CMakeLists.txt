@@ -24,7 +24,7 @@ target_link_libraries(aqpmconfigurator
     ${POLKITQT_CORE_LIBRARY}
 )
 
-install(CODE "message(\"Installing Aqpm configurator...\")")
+install(CODE "message(STATUS \"Installing Aqpm configurator...\")")
 install(TARGETS aqpmconfigurator DESTINATION ${AQPM_HELPER_INSTALL_DIR})
 
 dbus_add_activation_system_service(org.chakraproject.aqpmconfigurator.service.in)

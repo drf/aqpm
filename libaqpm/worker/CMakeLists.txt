@@ -26,7 +26,7 @@ target_link_libraries(aqpmworker
     aqpm
 )
 
-install(CODE "message(\"Installing Aqpm worker...\")")
+install(CODE "message(STATUS \"Installing Aqpm worker...\")")
 install(TARGETS aqpmworker DESTINATION ${AQPM_HELPER_INSTALL_DIR})
 
 dbus_add_activation_system_service(org.chakraproject.aqpmworker.service.in)

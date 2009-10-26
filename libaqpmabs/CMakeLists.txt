@@ -27,6 +27,6 @@ target_link_libraries(aqpmabs
     ${QT_QTCORE_LIBRARY}
 )
 
-install(CODE "message(\"Installing aqpm_abs...\")")
+install(CODE "message(STATUS \"Installing aqpm_abs...\")")
 install(TARGETS aqpmabs ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_abs_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)

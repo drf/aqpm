@@ -27,7 +27,7 @@ ${QT_QTNETWORK_LIBRARY}
 ${QJSON_LIBRARIES}
 )
 
-install(CODE "message(\"Installing aqpmaur...\")")
+install(CODE "message(STATUS \"Installing aqpmaur...\")")
 install(TARGETS aqpmaur ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_aur_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 

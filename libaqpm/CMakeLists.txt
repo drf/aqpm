@@ -57,7 +57,7 @@ else (KDE4_INTEGRATION)
     target_link_libraries(aqpm ${QT_QTNETWORK_LIBRARY})
 endif (KDE4_INTEGRATION)
 
-install(CODE "message(\"Installing Aqpm...\")")
+install(CODE "message(STATUS \"Installing Aqpm...\")")
 install(TARGETS aqpm ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 
