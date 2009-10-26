@@ -244,7 +244,7 @@ void Backend::performAsyncAction(ActionType type, const QVariantMap &args)
     QCoreApplication::postEvent(d->thread, new ActionEvent(d->getEventTypeFor(Backend::PerformAction), type, args));
 }
 
-bool Backend::testLibrary()
+bool Backend::testLibrary() const
 {
     SynchronousLoop s(TestLibrary, QVariantMap());
     return s.result()["retvalue"].toBool();
@@ -270,13 +270,13 @@ QString Backend::aqpmRoot() const
     return s.result()["retvalue"].toString();
 }
 
-bool Backend::isOnTransaction()
+bool Backend::isOnTransaction() const
 {
     SynchronousLoop s(IsOnTransaction, QVariantMap());
     return s.result()["retvalue"].toBool();
 }
 
-bool Backend::reloadPacmanConfiguration()
+bool Backend::reloadPacmanConfiguration() const
 {
     SynchronousLoop s(ReloadPacmanConfiguration, QVariantMap());
     return s.result()["retvalue"].toBool();
@@ -299,25 +299,25 @@ Database Backend::getLocalDatabase() const
     return s.result()["retvalue"].value<Database>();
 }
 
-Package::List Backend::getInstalledPackages()
+Package::List Backend::getInstalledPackages() const
 {
     SynchronousLoop s(GetInstalledPackages, QVariantMap());
     return s.result()["retvalue"].value<Package::List>();
 }
 
-Package::List Backend::getUpgradeablePackages()
+Package::List Backend::getUpgradeablePackages() const
 {
     SynchronousLoop s(GetUpgradeablePackages, QVariantMap());
     return s.result()["retvalue"].value<Package::List>();
 }
 
-Group::List Backend::getAvailableGroups()
+Group::List Backend::getAvailableGroups() const
 {
     SynchronousLoop s(GetAvailableGroups, QVariantMap());
     return s.result()["retvalue"].value<Group::List>();
 }
 
-Package::List Backend::getPackageDependencies(const Package &package)
+Package::List Backend::getPackageDependencies(const Package &package) const
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(package);
@@ -325,7 +325,7 @@ Package::List Backend::getPackageDependencies(const Package &package)
     return s.result()["retvalue"].value<Package::List>();
 }
 
-Package::List Backend::getDependenciesOnPackage(const Package &package)
+Package::List Backend::getDependenciesOnPackage(const Package &package) const
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(package);
@@ -333,7 +333,7 @@ Package::List Backend::getDependenciesOnPackage(const Package &package)
     return s.result()["retvalue"].value<Package::List>();
 }
 
-bool Backend::isInstalled(const Package &package)
+bool Backend::isInstalled(const Package &package) const
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(package);
@@ -341,7 +341,7 @@ bool Backend::isInstalled(const Package &package)
     return s.result()["retvalue"].toBool();
 }
 
-QStringList Backend::getProviders(const Package &package)
+QStringList Backend::getProviders(const Package &package) const
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(package);
@@ -349,7 +349,7 @@ QStringList Backend::getProviders(const Package &package)
     return s.result()["retvalue"].toStringList();
 }
 
-bool Backend::isProviderInstalled(const QString &provider)
+bool Backend::isProviderInstalled(const QString &provider) const
 {
     QVariantMap args;
     args["provider"] = QVariant::fromValue(provider);
@@ -357,7 +357,7 @@ bool Backend::isProviderInstalled(const QString &provider)
     return s.result()["retvalue"].toBool();
 }
 
-QString Backend::getAlpmVersion()
+QString Backend::getAlpmVersion() const
 {
     SynchronousLoop s(GetAlpmVersion, QVariantMap());
     return s.result()["retvalue"].toString();
@@ -372,7 +372,7 @@ Database Backend::getPackageDatabase(const Package &package, bool checkver) cons
     return s.result()["retvalue"].value<Database>();
 }
 
-Package::List Backend::getPackagesFromGroup(const Group &group)
+Package::List Backend::getPackagesFromGroup(const Group &group) const
 {
     QVariantMap args;
     args["group"] = QVariant::fromValue(group);
@@ -380,7 +380,7 @@ Package::List Backend::getPackagesFromGroup(const Group &group)
     return s.result()["retvalue"].value<Package::List>();
 }
 
-Package::List Backend::getPackagesFromDatabase(const Database &db)
+Package::List Backend::getPackagesFromDatabase(const Database &db) const
 {
     QVariantMap args;
     args["db"] = QVariant::fromValue(db);
@@ -388,7 +388,7 @@ Package::List Backend::getPackagesFromDatabase(const Database &db)
     return s.result()["retvalue"].value<Package::List>();
 }
 
-int Backend::countPackages(Globals::PackageStatus status)
+int Backend::countPackages(Globals::PackageStatus status) const
 {
     QVariantMap args;
     args["status"] = QVariant::fromValue((int)status);
@@ -396,7 +396,7 @@ int Backend::countPackages(Globals::PackageStatus status)
     return s.result()["retvalue"].toInt();
 }
 
-Group::List Backend::getPackageGroups(const Package &package)
+Group::List Backend::getPackageGroups(const Package &package) const
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(package);
@@ -429,7 +429,7 @@ Database Backend::getDatabase(const QString &name) const
     return s.result()["retvalue"].value<Database>();
 }
 
-bool Backend::updateDatabase()
+bool Backend::updateDatabase() const
 {
     d->startUpDownloader();
     QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(UpdateDatabase)));

@@ -149,8 +149,8 @@ public:
      *
      * @return \c true if the library is ready, \c false if there was a problem while testing it
      */
-    bool testLibrary();
-    bool isOnTransaction();
+    bool testLibrary() const;
+    bool isOnTransaction() const;
 
     /**
      * Attempts to change the root directory of package management to \c root. This has the effect
@@ -187,37 +187,37 @@ public:
      */
     Database getLocalDatabase() const;
 
-    Group::List getAvailableGroups();
+    Group::List getAvailableGroups() const;
 
-    Package::List getPackagesFromDatabase(const Database &db);
+    Package::List getPackagesFromDatabase(const Database &db) const;
 
-    Package::List getPackagesFromGroup(const Group &group);
+    Package::List getPackagesFromGroup(const Group &group) const;
 
-    Package::List getUpgradeablePackages();
+    Package::List getUpgradeablePackages() const;
 
-    Package::List getInstalledPackages();
+    Package::List getInstalledPackages() const;
 
-    Package::List getPackageDependencies(const Package &package);
+    Package::List getPackageDependencies(const Package &package) const;
 
-    Group::List getPackageGroups(const Package &package);
+    Group::List getPackageGroups(const Package &package) const;
 
-    Package::List getDependenciesOnPackage(const Package &package);
+    Package::List getDependenciesOnPackage(const Package &package) const;
 
-    int countPackages(Globals::PackageStatus status);
+    int countPackages(Globals::PackageStatus status) const;
 
-    QStringList getProviders(const Package &package);
-    bool isProviderInstalled(const QString &provider);
+    QStringList getProviders(const Package &package) const;
+    bool isProviderInstalled(const QString &provider) const;
 
     Database getPackageDatabase(const Package &package, bool checkver = false) const;
 
-    bool isInstalled(const Package &package);
+    bool isInstalled(const Package &package) const;
 
-    bool updateDatabase();
+    bool updateDatabase() const;
     void fullSystemUpgrade(Globals::TransactionFlags flags, bool downgrade = false);
 
-    bool reloadPacmanConfiguration(); // In case the user modifies it.
+    bool reloadPacmanConfiguration() const; // In case the user modifies it.
 
-    QString getAlpmVersion();
+    QString getAlpmVersion() const;
 
     void clearQueue();
     void addItemToQueue(const QString &name, QueueItem::Action action);
