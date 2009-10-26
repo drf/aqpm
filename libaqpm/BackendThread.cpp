@@ -121,6 +121,13 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
 {
     Q_Q(BackendThread);
 
+    if (handleAuth) {
+        if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
+            qDebug() << "User unauthorized";
+            return false;
+        }
+    }
+
     if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
         qDebug() << "Requesting service start";
         QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmworker");
@@ -166,13 +173,6 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
     } else if (reply.type() == QDBusMessage::MethodCallMessage) {
         qWarning() << "Message did not receive a reply (timeout by message bus)";
         return false;
-    }
-
-    if (handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
-            qDebug() << "User unauthorized";
-            return false;
-        }
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
