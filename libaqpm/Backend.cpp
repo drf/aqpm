@@ -24,10 +24,10 @@
 #include <config-aqpm.h>
 
 #include "Configuration.h"
-#include "BackendThread.h"
+#include "BackendThread_p.h"
 #include "Loops.h"
-#include "ActionEvent.h"
-#include "Downloader.h"
+#include "ActionEvent_p.h"
+#include "Downloader_p.h"
 
 #include <QMetaType>
 #include <QDebug>

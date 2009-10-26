@@ -28,7 +28,7 @@
 #include "../Globals.h"
 #include "../QueueItem.h"
 // Private headers
-#include "../ConfigurationThread.h"
+#include "../ConfigurationThread_p.h"
 
 #include <QtDBus/QDBusConnection>
 #include <QTimer>

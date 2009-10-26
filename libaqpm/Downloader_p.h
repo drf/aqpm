@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef DOWNLOADER_H
-#define DOWNLOADER_H
+#ifndef DOWNLOADER_P_H
+#define DOWNLOADER_P_H
 
 #include <QEventLoop>
 #include <QtDBus/QDBusContext>
@@ -69,4 +69,4 @@ private:
 
 }
 
-#endif /* DOWNLOADER_H */
+#endif /* DOWNLOADER_P_H */

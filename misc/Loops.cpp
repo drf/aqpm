@@ -23,9 +23,9 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include "libaqpm/BackendThread.h"
-#include "libaqpm/ConfigurationThread.h"
-#include "libaqpm/ActionEvent.h"
+#include "libaqpm/BackendThread_p.h"
+#include "libaqpm/ConfigurationThread_p.h"
+#include "libaqpm/ActionEvent_p.h"
 #include "libaqpm/Backend_p.h"
 
 namespace Aqpm {

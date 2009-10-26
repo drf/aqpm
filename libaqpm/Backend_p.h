@@ -23,7 +23,7 @@
 
 #include "Backend.h"
 
-#include "BackendThread.h"
+#include "BackendThread_p.h"
 
 namespace Aqpm {
 

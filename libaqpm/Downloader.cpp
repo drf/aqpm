@@ -18,7 +18,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "Downloader.h"
+#include "Downloader_p.h"
 
 #include "aqpmdownloaderadaptor.h"
 #include "Loops.h"

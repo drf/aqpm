@@ -4,10 +4,9 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-qt4_add_dbus_adaptor(aqpmdownloader_adaptor_SRCS org.chakraproject.aqpmdownloader.xml Downloader.h Aqpm::Downloader)
+qt4_add_dbus_adaptor(aqpmdownloader_adaptor_SRCS org.chakraproject.aqpmdownloader.xml Downloader_p.h Aqpm::Downloader)
 
 add_subdirectory(worker)
-#add_subdirectory(downloader)
 add_subdirectory(configurator)
 
 set(aqpm_SRCS
@@ -27,13 +26,13 @@ set(aqpm_SRCS
 
 set(aqpm_HEADERS
     Backend.h
-    QueueItem.h
-    Globals.h
-    Package.h
-    Group.h
-    Database.h
     Configuration.h
+    Database.h
+    Globals.h
+    Group.h
     Maintenance.h
+    Package.h
+    QueueItem.h
 )
 
 automoc4_add_library(aqpm SHARED

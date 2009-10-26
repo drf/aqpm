@@ -18,12 +18,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "BackendThread.h"
+#include "BackendThread_p.h"
 
 #include "Configuration.h"
-#include "ActionEvent.h"
+#include "ActionEvent_p.h"
 // Private headers
-#include "ConfigurationThread.h"
+#include "ConfigurationThread_p.h"
 #include "Backend_p.h"
 
 #include <QDebug>

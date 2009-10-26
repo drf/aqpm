@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef ACTIONEVENT_H
-#define ACTIONEVENT_H
+#ifndef ACTIONEVENT_P_H
+#define ACTIONEVENT_P_H
 
 #include <QtCore/QEvent>
 
@@ -42,4 +42,4 @@ private:
 
 }
 
-#endif // ACTIONEVENT_H
+#endif // ACTIONEVENT_P_H

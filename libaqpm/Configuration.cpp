@@ -20,7 +20,7 @@
 
 #include "Configuration.h"
 
-#include "ConfigurationThread.h"
+#include "ConfigurationThread_p.h"
 #include "Loops.h"
 
 namespace Aqpm

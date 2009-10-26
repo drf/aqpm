@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef BACKENDTHREAD_H
-#define BACKENDTHREAD_H
+#ifndef BACKENDTHREAD_P_H
+#define BACKENDTHREAD_P_H
 
 #include <QThread>
 #include <QEvent>
@@ -166,4 +166,4 @@ Q_SIGNALS:
 
 Q_DECLARE_METATYPE(QList<pmtransflag_t>)
 
-#endif /* BACKENDTHREAD_H */
+#endif /* BACKENDTHREAD_P_H */

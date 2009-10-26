@@ -18,11 +18,11 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "ConfigurationThread.h"
+#include "ConfigurationThread_p.h"
 
 #include "Backend.h"
 
-#include "ActionEvent.h"
+#include "ActionEvent_p.h"
 
 #include <config-aqpm.h>
 
