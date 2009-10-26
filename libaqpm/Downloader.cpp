@@ -21,7 +21,7 @@
 #include "Downloader_p.h"
 
 #include "aqpmdownloaderadaptor.h"
-#include "Loops.h"
+#include "Loops_p.h"
 
 #include <config-aqpm.h>
 

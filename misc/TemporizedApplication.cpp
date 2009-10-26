@@ -18,7 +18,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "TemporizedApplication.h"
+#include "TemporizedApplication_p.h"
 
 #include <QCoreApplication>
 

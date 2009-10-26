@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef W_CALLBACKS_H
-#define W_CALLBACKS_H
+#ifndef W_CALLBACKS_P_H
+#define W_CALLBACKS_P_H
 
 #include <iostream>
 #include <alpm.h>
@@ -96,4 +96,4 @@ Q_DECLARE_METATYPE(off_t)
 Q_DECLARE_METATYPE(pmtransprog_t)
 Q_DECLARE_METATYPE(pmloglevel_t)
 
-#endif /*W_CALLBACKS_H*/
+#endif /*W_CALLBACKS_P_H*/

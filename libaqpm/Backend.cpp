@@ -25,7 +25,7 @@
 
 #include "Configuration.h"
 #include "BackendThread_p.h"
-#include "Loops.h"
+#include "Loops_p.h"
 #include "ActionEvent_p.h"
 #include "Downloader_p.h"
 

@@ -21,7 +21,7 @@
 #include "AurBackend.h"
 
 #include "PackageLoops_p.h"
-#include "Loops.h"
+#include "Loops_p.h"
 
 #include <config-aqpm.h>
 

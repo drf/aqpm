@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef TEMPORIZEDAPPLICATION_H
-#define TEMPORIZEDAPPLICATION_H
+#ifndef TEMPORIZEDAPPLICATION_P_H
+#define TEMPORIZEDAPPLICATION_P_H
 
 #include <QtCore/QTimer>
 
@@ -43,4 +43,4 @@ private:
     bool m_temporized;
 };
 
-#endif // TEMPORIZEDAPPLICATION_H
+#endif // TEMPORIZEDAPPLICATION_P_H

@@ -29,7 +29,8 @@ class PackageListConditionalEventLoop : public QEventLoop
     Q_OBJECT
 
     public:
-        explicit PackageListConditionalEventLoop(const QString &str, QObject *parent = 0) : QEventLoop(parent), m_cond(str) {}
+        explicit PackageListConditionalEventLoop(const QString &str, QObject *parent = 0)
+                 : QEventLoop(parent), m_cond(str) {}
         ~PackageListConditionalEventLoop() {}
 
     public Q_SLOTS:

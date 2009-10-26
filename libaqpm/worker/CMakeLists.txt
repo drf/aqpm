@@ -4,7 +4,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-qt4_add_dbus_adaptor(aqpmworker_adaptor_SRCS org.chakraproject.aqpmworker.xml Worker.h AqpmWorker::Worker)
+qt4_add_dbus_adaptor(aqpmworker_adaptor_SRCS org.chakraproject.aqpmworker.xml Worker_p.h AqpmWorker::Worker)
 
 set(aqpmworker_SRCS
     main.cpp

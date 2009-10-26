@@ -18,13 +18,13 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "Worker.h"
+#include "Worker_p.h"
 
 #include "aqpmworkeradaptor.h"
 
 #include "../Configuration.h"
 #include "../Maintenance.h"
-#include "w_callbacks.h"
+#include "w_callbacks_p.h"
 #include "../Globals.h"
 #include "../QueueItem.h"
 // Private headers

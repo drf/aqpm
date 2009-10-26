@@ -18,49 +18,42 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef LOOPS_H
-#define LOOPS_H
+#ifndef CONFIGURATOR_P_H
+#define CONFIGURATOR_P_H
 
-#include <QtCore/QEventLoop>
+#include <QtCore/QObject>
+#include <QtDBus/QDBusContext>
 
-#include "libaqpm/Backend.h"
-#include "libaqpm/Configuration.h"
+#include "TemporizedApplication_p.h"
 
-namespace Aqpm {
+namespace AqpmConfigurator
+{
 
-class SynchronousLoop : public QEventLoop
+class Configurator : public QObject, protected QDBusContext, private TemporizedApplication
 {
     Q_OBJECT
 
 public:
-    SynchronousLoop(Backend::ActionType type, const QVariantMap &args);
-    SynchronousLoop(Configuration::ActionType type, const QVariantMap &args);
-
-    QVariantMap result() const;
+    explicit Configurator(bool temporize, QObject *parent = 0);
+    virtual ~Configurator();
 
 public Q_SLOTS:
-    void actionPerformed(int type, const QVariantMap &result);
+    void saveConfiguration(const QString &conf, const QString &filename);
+    void addMirror(const QString &mirror, int type);
+    QString pacmanConfToAqpmConf(bool writeconf, const QString &filename);
+
+Q_SIGNALS:
+    void errorOccurred(int code, const QVariantMap &details);
+    void configuratorResult(bool);
+
+private Q_SLOTS:
+    void operationPerformed(bool result);
 
 private:
-    QVariantMap m_result;
-    int m_type;
-};
-
-class StringConditionalEventLoop : public QEventLoop
-{
-    Q_OBJECT
-
-    public:
-        explicit StringConditionalEventLoop(const QString &str, QObject *parent = 0);
-        virtual ~StringConditionalEventLoop();
-
-    public Q_SLOTS:
-        void requestQuit(const QString &str);
-
-    private:
-        QString m_cond;
+    class Private;
+    Private *d;
 };
 
 }
 
-#endif // SYNCHRONOUSLOOP_H
+#endif /* CONFIGURATOR_P_H */

@@ -156,7 +156,7 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
             QLatin1String("setUpAlpm"));
             QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
 
-            qDebug() << "Worker has been set up, let's move";
+            qDebug() << "Worker_p.has been set up, let's move";
         }
     } else if (reply.type() == QDBusMessage::MethodCallMessage) {
         qWarning() << "Message did not receive a reply (timeout by message bus)";

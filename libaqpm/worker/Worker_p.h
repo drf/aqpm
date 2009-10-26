@@ -18,8 +18,8 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef WORKER_H
-#define WORKER_H
+#ifndef WORKER_P_H
+#define WORKER_P_H
 
 #include <QObject>
 #include <QVariantList>
@@ -30,7 +30,7 @@
 
 #include <alpm.h>
 
-#include "TemporizedApplication.h"
+#include "TemporizedApplication_p.h"
 #include "../Globals.h"
 
 namespace AqpmWorker
@@ -102,4 +102,4 @@ private:
 
 }
 
-#endif /* WORKER_H */
+#endif /* WORKER_P_H */

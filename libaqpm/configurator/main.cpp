@@ -18,7 +18,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "Configurator.h"
+#include "Configurator_p.h"
 
 #include <QCoreApplication>
 #include <QStringList>

@@ -18,7 +18,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "Worker.h"
+#include "Worker_p.h"
 
 #include <QCoreApplication>
 #include <QStringList>

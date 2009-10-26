@@ -18,7 +18,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include "w_callbacks.h"
+#include "w_callbacks_p.h"
 
 #include "../Globals.h"
 
@@ -38,7 +38,7 @@
 #include <QtDBus/QDBusConnectionInterface>
 
 #include "alpm.h"
-#include "Worker.h"
+#include "Worker_p.h"
 
 namespace AqpmWorker
 {
