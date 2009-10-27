@@ -78,6 +78,7 @@ public:
     };
 
     enum ErrorCode {
+        UnknownError = 0,
         PrepareError = 1,
         CommitError = 2,
         InitTransactionError = 3,
@@ -124,6 +125,7 @@ public:
     Q_DECLARE_FLAGS(TransactionFlags, TransactionFlag);
 
     enum DatabaseState {
+        UnknownDatabaseState = 0,
         Checking = 1,
         Downloading = 2,
         Updating = 4,
