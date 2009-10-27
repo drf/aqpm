@@ -26,9 +26,7 @@
 namespace Aqpm
 {
 
-class Globals {
-public:
-
+namespace Globals {
     enum TransactionEvent {
         InvalidEvent = 0,
         CheckDepsStart = 1,
