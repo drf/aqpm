@@ -181,6 +181,8 @@ void Downloader::downloadFinished(QNetworkReply *reply)
 void Downloader::abortDownload()
 {
     foreach (QNetworkReply *r, d->replies) {
+        // Emit a finished signal with empty path
+        emit finished(r->url().toString(), QString());
         r->abort();
         r->deleteLater();
     }
