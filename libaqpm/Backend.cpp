@@ -43,8 +43,8 @@ void Backend::Private::startUpDownloader()
 
     // Start up Downloader
     if (!Downloader::hasInstance()) {
-        connect(Downloader::instance(), SIGNAL(downloadProgress(qint64,qint64,QString)),
-                q, SLOT(__k__computeDownloadProgress(qint64,qint64,QString)));
+        connect(Downloader::instance(), SIGNAL(downloadProgress(qlonglong,qlonglong,QString)),
+                q, SLOT(__k__computeDownloadProgress(qlonglong,qlonglong,QString)));
     }
 }
 
@@ -132,7 +132,7 @@ void Backend::Private::__k__doStreamTransQuestion(int event, const QVariantMap &
     emit q->streamTransQuestion((Aqpm::Globals::TransactionQuestion) event, args);
 }
 
-void Backend::Private::__k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename)
+void Backend::Private::__k__computeDownloadProgress(qlonglong downloaded, qlonglong total, const QString &filename)
 {
     Q_Q(Backend);
 

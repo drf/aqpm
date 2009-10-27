@@ -43,6 +43,20 @@
 namespace AqpmWorker
 {
 
+void ReturnStringConditionalEventLoop::requestQuit(const QString &str, const QString &result)
+{
+    qDebug() << "Quit request";
+    if (str == m_cond) {
+        m_result = result;
+        quit();
+    }
+}
+
+QString ReturnStringConditionalEventLoop::result() const
+{
+    return m_result;
+}
+
 class CallBacksPrivate
 {
 public:
@@ -354,24 +368,23 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
 
     // If we got here, it's time to download the file.
 
+    ReturnStringConditionalEventLoop e(url);
+
+    qDebug() << d->worker->dbusConnection().connect(d->worker->dbusService(),
+              "/Downloader",
+              "org.chakraproject.aqpmdownloader", "finished", &e, SLOT(requestQuit(QString, QString)));
+
     QDBusMessage qmessage = QDBusMessage::createMethodCall(d->worker->dbusService(),
               "/Downloader",
               "org.chakraproject.aqpmdownloader",
               QLatin1String("download"));
 
     qmessage << QString(url);
-    QDBusMessage reply = d->worker->dbusConnection().call(qmessage, QDBus::Block);
+    d->worker->dbusConnection().asyncCall(qmessage);
 
-    if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().count() < 1) {
-        // Damn this, there was an error
-        qDebug() << "Error in the DBus reply of the download check!";
-        qDebug() << mreply.errorMessage();
-        qDebug() << d->worker->dbusConnection().lastError();
-        qDebug() << reply.arguments();
-        return 1;
-    }
+    e.exec();
 
-    QString downloadedFile = reply.arguments().first().toString();
+    QString downloadedFile = e.result();
     qDebug() << "Moving downloaded file " << downloadedFile << " to " << localpath + d->currentFile;
     QFile::copy(downloadedFile, localpath + d->currentFile);
     // cleanup
@@ -502,3 +515,5 @@ int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list 
 }
 
 }
+
+#include "w_callbacks_p.moc"

@@ -28,6 +28,7 @@
 
 #include <QObject>
 #include <QVariantMap>
+#include <QEventLoop>
 
 namespace AqpmWorker
 {
@@ -86,6 +87,24 @@ void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
 void cb_log(pmloglevel_t level, char *fmt, va_list args);
 int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew);
 int pm_vasprintf(char **string, pmloglevel_t level, const char *format, va_list args);
+
+class ReturnStringConditionalEventLoop : public QEventLoop
+{
+    Q_OBJECT
+
+    public:
+        explicit ReturnStringConditionalEventLoop(const QString &str, QObject *parent = 0) : m_cond(str) {}
+        virtual ~ReturnStringConditionalEventLoop() {}
+
+        QString result() const;
+
+    public Q_SLOTS:
+        void requestQuit(const QString &str, const QString &result);
+
+    private:
+        QString m_cond;
+        QString m_result;
+};
 
 }
 

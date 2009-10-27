@@ -144,23 +144,13 @@ int Downloader::checkHeader(const QString &url)
     return reply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
 }
 
-QString Downloader::download(const QString& url) const
+void Downloader::download(const QString& url)
 {
     qDebug() << "About to get " << url;
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
     connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(progress(qint64,qint64)));
     qDebug() << "Getting started";
     d->replies.append(reply);
-
-    StringConditionalEventLoop e(reply->url().toString());
-    connect(this, SIGNAL(finished(QString)), &e, SLOT(requestQuit(QString)));
-    e.exec();
-
-    qDebug() << "Getting done";
-
-    QString retstring = reply->property("aqpm_Temporary_Download_Location").toString();
-    reply->deleteLater();
-    return retstring;
 }
 
 void Downloader::downloadFinished(QNetworkReply *reply)
@@ -180,14 +170,11 @@ void Downloader::downloadFinished(QNetworkReply *reply)
     file.flush();
     file.close();
 
-    // Set the filename as the property for the reply
-    reply->setProperty("aqpm_Temporary_Download_Location", file.fileName());
-    // Remove the reply from the list
+    emit finished(reply->url().toString(), file.fileName());
+
+    // Remove the reply from the list and delete it
     d->replies.removeOne(reply);
-
-    emit finished(reply->url().toString());
-
-    // The reply should be deleted by download Function
+    reply->deleteLater();
 }
 
 void Downloader::abortDownload()

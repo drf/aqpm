@@ -48,7 +48,7 @@ public:
 
 public Q_SLOTS:
     int checkHeader(const QString &url);
-    QString download(const QString &url) const;
+    void download(const QString &url);
     void abortDownload();
 
 private Q_SLOTS:
@@ -56,8 +56,8 @@ private Q_SLOTS:
     void progress(qint64 done, qint64 total);
 
 Q_SIGNALS:
-    void downloadProgress(qint64, qint64, QString);
-    void finished(const QString &url);
+    void downloadProgress(qlonglong, qlonglong, QString);
+    void finished(const QString &url, const QString &filename);
     void headCheckFinished(QNetworkReply *reply);
 
 private:

@@ -62,7 +62,7 @@ private:
                              int howmany, int remain);
     void __k__doStreamTransEvent(int event, const QVariantMap &args);
     void __k__doStreamTransQuestion(int event, const QVariantMap &args);
-    void __k__computeDownloadProgress(qint64 downloaded, qint64 total, const QString &filename);
+    void __k__computeDownloadProgress(qlonglong downloaded, qlonglong total, const QString& filename);
     void __k__totalOffsetReceived(int offset);
     void __k__operationFinished(bool result);
 
