@@ -161,7 +161,7 @@ void Downloader::downloadFinished(QNetworkReply *reply)
 
         return;
     }
-
+    qDebug() << "Download finished";
     QTemporaryFile file;
     file.setAutoRemove(false);
 

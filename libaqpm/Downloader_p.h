@@ -51,14 +51,14 @@ public Q_SLOTS:
     void download(const QString &url);
     void abortDownload();
 
-private Q_SLOTS:
-    void downloadFinished(QNetworkReply *reply);
-    void progress(qint64 done, qint64 total);
-
 Q_SIGNALS:
     void downloadProgress(qlonglong, qlonglong, QString);
     void finished(const QString &url, const QString &filename);
     void headCheckFinished(QNetworkReply *reply);
+
+private Q_SLOTS:
+    void downloadFinished(QNetworkReply *reply);
+    void progress(qint64 done, qint64 total);
 
 private:
     Downloader(QObject *parent = 0);
