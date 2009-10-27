@@ -54,6 +54,7 @@ public:
     AqpmNetworkAccessManager *manager;
     QList<QNetworkReply*> replies;
     bool error;
+    QTime busControlTime;
 };
 
 QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
@@ -189,7 +190,12 @@ void Downloader::abortDownload()
 
 void Downloader::progress(qint64 done, qint64 total)
 {
-    emit downloadProgress(done, total, qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
+    // Don't you fucking hog the bus! Update maximum each 0.250 seconds
+    if (d->busControlTime.msecsTo(QTime::currentTime()) > 250 || !d->busControlTime.isValid()) {
+        emit downloadProgress(done, total,
+                              qobject_cast<QNetworkReply*>(sender())->url().toString().split('/').last());
+        d->busControlTime = QTime::currentTime();
+    }
 }
 
 }
