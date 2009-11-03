@@ -39,6 +39,9 @@ class AQPM_EXPORT Backend : public QObject
 
         void update(const QStringList &targets, bool tarball = false);
         void updateAll(bool tarball = false);
+        /**
+         * Prepares
+         */
         bool prepareBuildEnvironment(const QString &package, const QString &path, bool privileged = false) const;
 
         bool shouldHandleAuthorization() const;

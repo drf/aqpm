@@ -156,26 +156,40 @@ Backend::Backend(QObject* parent)
     d->q = this;
 }
 
-bool Backend::prepareBuildEnvironment(const QString& package, const QString& p, bool privileged) const
+bool Backend::prepareBuildEnvironment(const QString& package, const QString& path, bool privileged) const
 {
-    QString path = path;
-
-    if (!path.endsWith(QChar('/'))) {
-        path.append(QChar('/'));
-    }
-
-    path.append(package);
-
-    QDir pathDir(path);
-
-    if (!pathDir.mkpath(path)) {
-        return false;
-    }
-
     QString abspath(d->absPath(package));
 
     if (abspath.isEmpty()) {
         qDebug() << "Couldn't find a matching ABS Dir!!";
+        return false;
+    }
+
+    if (privileged) {
+        if (!d->initWorker("org.chakraproject.aqpm.preparebuildenvironment")) {
+            return false;
+        }
+
+        QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmabsworker",
+                "/Worker",
+                "org.chakraproject.aqpmabsworker",
+                QLatin1String("prepareBuildEnvironment"));
+        message << abspath;
+        message << path;
+        QDBusMessage reply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
+
+        if (reply.type() != QDBusMessage::ReplyMessage || reply.arguments().count() < 1) {
+            return false;
+        } else {
+            return reply.arguments().first().toBool();
+        }
+
+        return false;
+    }
+
+    QDir pathDir(path);
+
+    if (!pathDir.mkpath(path)) {
         return false;
     }
 
