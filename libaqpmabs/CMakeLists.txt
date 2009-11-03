@@ -1,12 +1,13 @@
 
-set(aqpm_abs_SRCS
-    ABSHandler.cpp
-    BuildingHandler.cpp
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(aqpm_abs_MOC_HDRS
-    ABSHandler.h
-    BuildingHandler.h
+set(aqpm_abs_SRCS
+    AbsBackend.cpp
+    ABSHandler.cpp
+    BuildingHandler.cpp
 )
 
 set(aqpm_abs_HEADERS
@@ -16,7 +17,6 @@ set(aqpm_abs_HEADERS
 
 automoc4_add_library(aqpmabs SHARED
     ${aqpm_abs_SRCS}
-    ${aqpm_abs_MOC_SRCS}
 )
 
 set_target_properties(aqpmabs PROPERTIES VERSION ${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQPM_VERSION}
@@ -27,7 +27,7 @@ target_link_libraries(aqpmabs
     ${QT_QTCORE_LIBRARY}
 )
 
-install(CODE "message(STATUS \"Installing aqpm_abs...\")")
+install(CODE "message(STATUS \"Installing AqpmAbs...\")")
 install(TARGETS aqpmabs ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_abs_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 

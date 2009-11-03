@@ -19,7 +19,9 @@
  ***************************************************************************/
 
 #include "AbsBackend.h"
+
 #include <QDir>
+#include <QDebug>
 
 namespace Aqpm {
 
@@ -155,4 +157,4 @@ void Backend::updateAll(bool tarball)
 
 }
 
-#include "Backend.moc"
+#include "AbsBackend.moc"
