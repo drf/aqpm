@@ -25,6 +25,8 @@ set_target_properties(aqpmabs PROPERTIES VERSION ${MAJOR_AQPM_VERSION}.${MINOR_A
 
 target_link_libraries(aqpmabs
     ${QT_QTCORE_LIBRARY}
+    ${QT_QTDBUS_LIBRARY}
+    ${POLKITQT_CORE_LIBRARY}
 )
 
 install(CODE "message(STATUS \"Installing AqpmAbs...\")")
@@ -32,3 +34,5 @@ install(TARGETS aqpmabs ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_abs_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 
 add_subdirectory(worker)
+
+add_subdirectory(tests)
