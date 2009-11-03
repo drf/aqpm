@@ -41,11 +41,21 @@ class AQPM_EXPORT Backend : public QObject
         void updateAll(bool tarball = false);
         bool prepareBuildEnvironment(const QString &package, const QString &path, bool privileged = false) const;
 
+        bool shouldHandleAuthorization() const;
+        void setShouldHandleAuthorization(bool should);
+
+    Q_SIGNALS:
+        void operationFinished(bool success);
+        void operationProgress(const QString &progress);
+
     private:
         Backend(QObject* parent = 0);
 
         class Private;
         Private * const d;
+
+        Q_PRIVATE_SLOT(d, void __k__operationFinished(bool result))
+        Q_PRIVATE_SLOT(d, void __k__newOutput(const QString &output))
 };
 
 }

@@ -22,6 +22,10 @@
 
 #include <QDir>
 #include <QDebug>
+#include <QDBusConnection>
+#include <QDBusConnectionInterface>
+#include <QDBusMessage>
+#include <polkit-qt/auth.h>
 
 namespace Aqpm {
 
@@ -51,9 +55,17 @@ Backend *Backend::instance()
 class Backend::Private
 {
 public:
-    Private() {}
+    Private() : handleAuth(false) {}
 
     QString absPath(const QString &package) const;
+    bool initWorker(const QString &polkitAction);
+
+    // Q_PRIVATE_SLOTS
+    void __k__operationFinished(bool result);
+    void __k__newOutput(const QString &output);
+
+    bool handleAuth;
+    Backend *q;
 };
 
 QString Backend::Private::absPath(const QString& package) const
@@ -91,11 +103,57 @@ QString Backend::Private::absPath(const QString& package) const
     qDebug() << "ABS Dir is " << absSource;
 }
 
+bool Backend::Private::initWorker(const QString &polkitAction)
+{
+    if (handleAuth) {
+        if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
+            qDebug() << "User unauthorized";
+            return false;
+        }
+    }
+
+    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmabsworker")) {
+        qDebug() << "Requesting service start";
+        QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmabsworker");
+    }
+
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmabsworker", "/Worker", "org.chakraproject.aqpmabsworker",
+                                         "absUpdated", q, SLOT(__k__operationFinished(bool)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmabsworker", "/Worker", "org.chakraproject.aqpmabsworker",
+                                         "newOutput", q, SLOT(__k__newOutput(QString)));
+    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+            q, SLOT(serviceOwnerChanged(QString,QString,QString)));
+
+    return true;
+}
+
+void Backend::Private::__k__newOutput(const QString& output)
+{
+    emit q->operationProgress(output);
+}
+
+void Backend::Private::__k__operationFinished(bool result)
+{
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmabsworker", "/Worker", "org.chakraproject.aqpmabsworker",
+                                            "absUpdated", q, SLOT(__k__operationFinished(bool)));
+    QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmabsworker", "/Worker", "org.chakraproject.aqpmabsworker",
+                                            "newOutput", q, SLOT(__k__newOutput(QString)));
+    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+               q, SLOT(serviceOwnerChanged(QString,QString,QString)));
+
+    emit q->operationFinished(result);
+}
+
+//
+
 Backend::Backend(QObject* parent)
         : QObject(parent)
         , d(new Private)
 {
+    Q_ASSERT(!s_globalAbsBackend()->q);
+    s_globalAbsBackend()->q = this;
 
+    d->q = this;
 }
 
 bool Backend::prepareBuildEnvironment(const QString& package, const QString& p, bool privileged) const
@@ -145,12 +203,43 @@ bool Backend::prepareBuildEnvironment(const QString& package, const QString& p, 
 
 void Backend::update(const QStringList& targets, bool tarball)
 {
+    if (!d->initWorker("org.chakraproject.aqpm.updateabs")) {
+        emit operationFinished(false);
+        return;
+    }
 
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmabsworker",
+              "/Worker",
+              "org.chakraproject.aqpmabsworker",
+              QLatin1String("update"));
+    message << targets;
+    message << tarball;
+    QDBusConnection::systemBus().asyncCall(message);
 }
 
 void Backend::updateAll(bool tarball)
 {
+    if (!d->initWorker("org.chakraproject.aqpm.updateabs")) {
+        emit operationFinished(false);
+        return;
+    }
 
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmabsworker",
+              "/Worker",
+              "org.chakraproject.aqpmabsworker",
+              QLatin1String("updateAll"));
+    message << tarball;
+    QDBusConnection::systemBus().asyncCall(message);
+}
+
+void Backend::setShouldHandleAuthorization(bool should)
+{
+    d->handleAuth = should;
+}
+
+bool Backend::shouldHandleAuthorization() const
+{
+    return d->handleAuth;
 }
 
 }
