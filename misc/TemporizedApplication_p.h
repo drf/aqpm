@@ -35,8 +35,8 @@ public:
     void setTimeout(int timeout);
     int timeout() const;
 
-    void startTemporizing();
-    void stopTemporizing();
+    void startTemporizing() const;
+    void stopTemporizing() const;
 
 private:
     QTimer *m_timer;

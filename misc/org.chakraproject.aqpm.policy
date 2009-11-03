@@ -79,7 +79,7 @@
     </defaults>
   </action>
 
-  <action id="org.chakraproject.aqpm.performmaintenance">
+  <action id="org.chakraproject.aqpm.setaqpmroot">
     <description>Changes the root directory for package management</description>
     <message>Prevents the Package Manager from changing the root directory for package management</message>
     <defaults>
@@ -88,4 +88,21 @@
     </defaults>
   </action>
 
+  <action id="org.chakraproject.aqpm.updateabs">
+    <description>Updates the Abs tree</description>
+    <message>Prevents the Package Manager from updating the Abs tree</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_session</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.chakraproject.aqpm.preparebuildenvironment">
+    <description>Prepares a build environment in a privileged location</description>
+    <message>Prevents the Package Manager from preparing a build environment in a privileged location</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
 </policyconfig>

@@ -22,6 +22,7 @@
 
 #include "aqpmabsworkeradaptor.h"
 #include <QDBusConnection>
+#include <polkit-qt/Auth>
 
 namespace Aqpm {
 
@@ -55,6 +56,21 @@ Worker::~Worker()
 
 void Worker::update(const QStringList &targets, bool tarball)
 {
+    stopTemporizing();
+
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updateabs",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        emit absUpdated(false);
+        startTemporizing();
+        return;
+    }
+
     m_process = new QProcess(this);
     connect(m_process, SIGNAL(readyReadStandardOutput()),
             this, SLOT(slotOutputReady()));
@@ -70,6 +86,21 @@ void Worker::update(const QStringList &targets, bool tarball)
 
 void Worker::updateAll(bool tarball)
 {
+    stopTemporizing();
+
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updateabs",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        emit absUpdated(false);
+        startTemporizing();
+        return;
+    }
+
     m_process = new QProcess(this);
     connect(m_process, SIGNAL(readyReadStandardOutput()),
             this, SLOT(slotOutputReady()));
@@ -85,6 +116,42 @@ void Worker::updateAll(bool tarball)
 
 bool Worker::prepareBuildEnvironment(const QString &from, const QString &to) const
 {
+    stopTemporizing();
+
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.preparebuildenvironment",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        startTemporizing();
+        return false;
+    }
+
+    QDir absPDir(from);
+    absPDir.setFilter(QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+
+    QFileInfoList Plist = absPDir.entryInfoList();
+
+    for (int i = 0; i < Plist.size(); ++i) {
+        QString dest(to);
+        if (!dest.endsWith(QChar('/'))) {
+            dest.append(QChar('/'));
+        }
+        dest.append(Plist.at(i).fileName());
+
+        qDebug() << "Copying " << Plist.at(i).absoluteFilePath() << " to " << dest;
+
+        if (!QFile::copy(Plist.at(i).absoluteFilePath(), dest)) {
+            startTemporizing();
+            return false;
+        }
+    }
+
+    startTemporizing();
+    return true;
 }
 
 void Worker::slotAbsUpdated(int code, QProcess::ExitStatus)
@@ -96,6 +163,8 @@ void Worker::slotAbsUpdated(int code, QProcess::ExitStatus)
     }
 
     m_process->deleteLater();
+
+    startTemporizing();
 }
 
 void Worker::slotOutputReady()

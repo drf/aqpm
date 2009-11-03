@@ -54,14 +54,14 @@ int TemporizedApplication::timeout() const
     return m_timer->interval();
 }
 
-void TemporizedApplication::startTemporizing()
+void TemporizedApplication::startTemporizing() const
 {
     if (isTemporized()) {
         m_timer->start();
     }
 }
 
-void TemporizedApplication::stopTemporizing()
+void TemporizedApplication::stopTemporizing() const
 {
     if (isTemporized()) {
         m_timer->stop();
