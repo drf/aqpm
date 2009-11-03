@@ -3,13 +3,22 @@
     <interface name="org.chakraproject.aqpmabsworker">
         <method name="update">
             <arg type="as" direction="in" />
+            <arg type="b" direction="in" />
         </method>
         <method name="updateAll">
+            <arg type="b" direction="in" />
         </method>
         <method name="prepareBuildEnvironment">
             <arg type="s" direction="in" />
             <arg type="s" direction="in" />
             <arg type="b" direction="out" />
         </method>
+
+        <signal name="absUpdated">
+            <arg type="b" direction="out" />
+        </signal>
+        <signal name="newOutput">
+            <arg type="s" direction="out" />
+        </signal>
     </interface>
 </node>

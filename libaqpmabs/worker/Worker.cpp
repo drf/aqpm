@@ -53,16 +53,54 @@ Worker::~Worker()
 {
 }
 
-void Worker::update(const QStringList &targets)
+void Worker::update(const QStringList &targets, bool tarball)
 {
+    m_process = new QProcess(this);
+    connect(m_process, SIGNAL(readyReadStandardOutput()),
+            this, SLOT(slotOutputReady()));
+    connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)),
+            this, SLOT(slotAbsUpdated(int,QProcess::ExitStatus)));
+
+    if (tarball) {
+        m_process->start("abs", QStringList() << targets << "--tarball");
+    } else {
+        m_process->start("abs", targets);
+    }
 }
 
-void Worker::updateAll()
+void Worker::updateAll(bool tarball)
 {
+    m_process = new QProcess(this);
+    connect(m_process, SIGNAL(readyReadStandardOutput()),
+            this, SLOT(slotOutputReady()));
+    connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)),
+            this, SLOT(slotAbsUpdated(int,QProcess::ExitStatus)));
+
+    if (tarball) {
+        m_process->start("abs", QStringList() << "--tarball");
+    } else {
+        m_process->start("abs");
+    }
 }
 
 bool Worker::prepareBuildEnvironment(const QString &from, const QString &to) const
 {
+}
+
+void Worker::slotAbsUpdated(int code, QProcess::ExitStatus)
+{
+    if (code == 0) {
+        emit absUpdated(true);
+    } else {
+        emit absUpdated(false);
+    }
+
+    m_process->deleteLater();
+}
+
+void Worker::slotOutputReady()
+{
+    emit newOutput(QString::fromLocal8Bit(m_process->readLine(1024)));
 }
 
 }
