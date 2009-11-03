@@ -18,49 +18,55 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef ABSHANDLER_H
-#define ABSHANDLER_H
+#include "Worker_p.h"
 
-#include "Visibility.h"
+#include "aqpmabsworkeradaptor.h"
+#include <QDBusConnection>
 
-#include <QProcess>
-#include <QObject>
+namespace Aqpm {
 
-namespace Aqpm
+namespace AbsWorker {
+
+Worker::Worker(bool temporized, QObject *parent)
+        : QObject(parent)
 {
+    new AqpmabsworkerAdaptor(this);
 
-class AQPM_EXPORT ABSHandler : public QObject
+    if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmabsworker")) {
+        qDebug() << "another helper is already running";
+        QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
+        return;
+    }
+
+    if (!QDBusConnection::systemBus().registerObject("/Worker", this)) {
+        qDebug() << "unable to register service interface to dbus";
+        QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
+        return;
+    }
+
+    setIsTemporized(temporized);
+    setTimeout(3000);
+    startTemporizing();
+}
+
+Worker::~Worker()
 {
-    Q_OBJECT
+}
 
-public:
+void Worker::update(const QStringList &targets)
+{
+}
 
-    ABSHandler *instance();
+void Worker::updateAll()
+{
+}
 
-    ABSHandler();
-    virtual ~ABSHandler();
-
-    static QString absPath(const QString &package);
-    bool setUpBuildingEnvironment(const QString &package, const QString &p);
-    bool cleanBuildingEnvironment(const QString &package, const QString &p);
-
-    void updateTree();
-
-    static QStringList makeDepends(const QString &package);
-
-private Q_SLOTS:
-    void slotABSUpdated(int code, QProcess::ExitStatus e);
-    void slotOutputReady();
-
-Q_SIGNALS:
-    void absTreeUpdated(bool success);
-    void absUpdateOutput(const QString &output);
-
-private:
-    class Private;
-    Private *d;
-};
+bool Worker::prepareBuildEnvironment(const QString &from, const QString &to) const
+{
+}
 
 }
 
-#endif /* ABSHANDLER_H_ */
+}
+
+#include "Worker_p.moc"

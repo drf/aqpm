@@ -18,49 +18,29 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef ABSHANDLER_H
-#define ABSHANDLER_H
+#include "Worker_p.h"
 
-#include "Visibility.h"
+#include <QCoreApplication>
+#include <QStringList>
 
-#include <QProcess>
-#include <QObject>
-
-namespace Aqpm
+int main(int argc, char **argv)
 {
+    QCoreApplication app(argc, argv);
 
-class AQPM_EXPORT ABSHandler : public QObject
-{
-    Q_OBJECT
+    QCoreApplication::setOrganizationName("chakra");
+    QCoreApplication::setOrganizationDomain("chakra-project.org");
+    QCoreApplication::setApplicationName("aqpmabsworker");
+    QCoreApplication::setApplicationVersion("0.2");
 
-public:
+    QStringList arguments = app.arguments();
 
-    ABSHandler *instance();
+    bool tmprz = true;
 
-    ABSHandler();
-    virtual ~ABSHandler();
+    if (arguments.contains("--no-timeout")) {
+        tmprz = false;
+    }
 
-    static QString absPath(const QString &package);
-    bool setUpBuildingEnvironment(const QString &package, const QString &p);
-    bool cleanBuildingEnvironment(const QString &package, const QString &p);
+    Aqpm::AbsWorker::Worker w(tmprz);
 
-    void updateTree();
-
-    static QStringList makeDepends(const QString &package);
-
-private Q_SLOTS:
-    void slotABSUpdated(int code, QProcess::ExitStatus e);
-    void slotOutputReady();
-
-Q_SIGNALS:
-    void absTreeUpdated(bool success);
-    void absUpdateOutput(const QString &output);
-
-private:
-    class Private;
-    Private *d;
-};
-
+    app.exec();
 }
-
-#endif /* ABSHANDLER_H_ */

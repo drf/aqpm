@@ -18,49 +18,38 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef ABSHANDLER_H
-#define ABSHANDLER_H
+#ifndef ABSBACKEND_H
+#define ABSBACKEND_H
 
 #include "Visibility.h"
 
-#include <QProcess>
-#include <QObject>
+#include <QtCore/QObject>
+#include <QtCore/QStringList>
 
-namespace Aqpm
-{
+namespace Aqpm {
 
-class AQPM_EXPORT ABSHandler : public QObject
+namespace Abs {
+
+class AQPM_EXPORT Backend : public QObject
 {
     Q_OBJECT
 
-public:
+    public:
+        static Backend *instance();
 
-    ABSHandler *instance();
+        void update(const QStringList &targets, bool tarball = false);
+        void updateAll(bool tarball = false);
+        bool prepareBuildEnvironment(const QString &package, const QString &path, bool privileged = false) const;
 
-    ABSHandler();
-    virtual ~ABSHandler();
+    private:
+        Backend(QObject* parent = 0);
 
-    static QString absPath(const QString &package);
-    bool setUpBuildingEnvironment(const QString &package, const QString &p);
-    bool cleanBuildingEnvironment(const QString &package, const QString &p);
-
-    void updateTree();
-
-    static QStringList makeDepends(const QString &package);
-
-private Q_SLOTS:
-    void slotABSUpdated(int code, QProcess::ExitStatus e);
-    void slotOutputReady();
-
-Q_SIGNALS:
-    void absTreeUpdated(bool success);
-    void absUpdateOutput(const QString &output);
-
-private:
-    class Private;
-    Private *d;
+        class Private;
+        Private * const d;
 };
 
 }
 
-#endif /* ABSHANDLER_H_ */
+}
+
+#endif // ABSBACKEND_H

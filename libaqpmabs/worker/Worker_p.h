@@ -18,49 +18,33 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef ABSHANDLER_H
-#define ABSHANDLER_H
+#ifndef WORKER_P_H
+#define WORKER_P_H
 
-#include "Visibility.h"
+#include <QtCore/QObject>
+#include <QDBusContext>
+#include "misc/TemporizedApplication_p.h"
 
-#include <QProcess>
-#include <QObject>
+namespace Aqpm {
 
-namespace Aqpm
-{
+namespace AbsWorker {
 
-class AQPM_EXPORT ABSHandler : public QObject
+class Worker : public QObject, protected QDBusContext, private TemporizedApplication
 {
     Q_OBJECT
 
-public:
+    public:
+        explicit Worker(bool temporized, QObject* parent = 0);
+        virtual ~Worker();
 
-    ABSHandler *instance();
-
-    ABSHandler();
-    virtual ~ABSHandler();
-
-    static QString absPath(const QString &package);
-    bool setUpBuildingEnvironment(const QString &package, const QString &p);
-    bool cleanBuildingEnvironment(const QString &package, const QString &p);
-
-    void updateTree();
-
-    static QStringList makeDepends(const QString &package);
-
-private Q_SLOTS:
-    void slotABSUpdated(int code, QProcess::ExitStatus e);
-    void slotOutputReady();
-
-Q_SIGNALS:
-    void absTreeUpdated(bool success);
-    void absUpdateOutput(const QString &output);
-
-private:
-    class Private;
-    Private *d;
+    public Q_SLOTS:
+        void update(const QStringList &targets);
+        void updateAll();
+        bool prepareBuildEnvironment(const QString &from, const QString &to) const;
 };
 
 }
 
-#endif /* ABSHANDLER_H_ */
+}
+
+#endif // WORKER_P_H

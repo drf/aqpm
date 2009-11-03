@@ -30,3 +30,5 @@ target_link_libraries(aqpmabs
 install(CODE "message(STATUS \"Installing aqpm_abs...\")")
 install(TARGETS aqpmabs ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_abs_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
+
+add_subdirectory(worker)
