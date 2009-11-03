@@ -101,6 +101,8 @@ QString Backend::Private::absPath(const QString& package) const
     }
 
     qDebug() << "ABS Dir is " << absSource;
+
+    return absSource;
 }
 
 bool Backend::Private::initWorker(const QString &polkitAction)
