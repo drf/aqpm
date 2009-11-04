@@ -21,8 +21,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
                @ONLY )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpmaur.pc.cmake
-${CMAKE_CURRENT_BINARY_DIR}/aqpmaur.pc
-@ONLY )
+               ${CMAKE_CURRENT_BINARY_DIR}/aqpmaur.pc
+               @ONLY )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpmabs.pc.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/aqpmabs.pc
+               @ONLY )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpmbuilder.pc.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/aqpmbuilder.pc
+               @ONLY )
 
 # requires minimal Qt 4.4
 set(QT_MIN_VERSION "4.4.0")
@@ -88,23 +94,29 @@ option(BUILD_TESTS "Builds various tests and examples for the libraries" ON)
 
 if (BUILD_AQPM_ABS)
     add_subdirectory(libaqpmabs)
+    install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpmabs.pc
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
+            COMPONENT Devel )
 endif (BUILD_AQPM_ABS)
 
 if (BUILD_AQPM_BUILDER)
     add_subdirectory(libaqpmbuilder)
+    install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpmbuilder.pc
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
+            COMPONENT Devel )
 endif (BUILD_AQPM_BUILDER)
 
 if (BUILD_AQPM_AUR AND QJSON_FOUND)
     add_subdirectory(libaqpmaur)
     message(STATUS "aqpmaur will be built")
+    install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpmaur.pc
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
+            COMPONENT Devel )
 else (BUILD_AQPM_AUR AND QJSON_FOUND)
     message(STATUS "aqpmaur will NOT be built")
 endif (BUILD_AQPM_AUR AND QJSON_FOUND)
 
 install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpm.pc
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
-         COMPONENT Devel )
-install( FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpmaur.pc
          DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig
          COMPONENT Devel )
  
