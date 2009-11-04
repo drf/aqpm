@@ -132,6 +132,7 @@ QStringList Backend::Private::fieldToStringList(const QString& pkgbuild, const Q
     }
 
     fp.close();
+    return retlist;
 }
 
 QStringList Backend::Private::optionsToStringList(QueueItem::Options options) const
@@ -185,10 +186,12 @@ void Backend::Private::__k__processNextItem()
 
     connect(process, SIGNAL(readyReadStandardOutput()),
             q, SLOT(__k__processOutput()));
-    /*connect(process, SIGNAL(readyReadStandardError()),
-            q, SLOT(__k__processOutput()));*/
+    connect(process, SIGNAL(readyReadStandardError()),
+            q, SLOT(__k__processOutput()));
     connect(process, SIGNAL(finished(int, QProcess::ExitStatus)),
             q, SLOT(__k__itemFinished(int, QProcess::ExitStatus)));
+
+    process->setReadChannelMode(QProcess::MergedChannels);
 
     if (optionsToStringList((*queueIterator).options).isEmpty()) {
         process->start("makepkg");
@@ -263,13 +266,14 @@ QueueItem::List Backend::queue() const
 void Backend::processQueue()
 {
     d->queueIterator = d->queue.constBegin();
+    QTimer::singleShot(0, this, SLOT(__k__processNextItem()));
 }
 
 QStringList Backend::dependsForQueue() const
 {
     QStringList retlist;
     foreach (const QueueItem &item, d->queue) {
-        retlist << d->fieldToStringList(item.environmentPath + "/PKGBUILD", "depends");
+        retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "depends"));
     }
     retlist.removeDuplicates();
     return retlist;
@@ -279,7 +283,7 @@ QStringList Backend::makeDependsForQueue() const
 {
     QStringList retlist;
     foreach (const QueueItem &item, d->queue) {
-        retlist << d->fieldToStringList(item.environmentPath + "/PKGBUILD", "makedepends");
+        retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "makedepends"));
     }
     retlist.removeDuplicates();
     return retlist;
@@ -289,11 +293,25 @@ QStringList Backend::allDependsForQueue() const
 {
     QStringList retlist;
     foreach (const QueueItem &item, d->queue) {
-        retlist << d->fieldToStringList(item.environmentPath + "/PKGBUILD", "depends");
-        retlist << d->fieldToStringList(item.environmentPath + "/PKGBUILD", "makedepends");
+        retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "depends"));
+        retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "makedepends"));
     }
     retlist.removeDuplicates();
     return retlist;
+}
+
+//
+
+QueueItem::QueueItem()
+{
+
+}
+
+QueueItem::QueueItem(const QString& path, QueueItem::Options opt)
+        : environmentPath(path)
+        , options(opt)
+{
+
 }
 
 }

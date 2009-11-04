@@ -67,7 +67,7 @@ class Backend : public QObject
 
         virtual ~Backend();
 
-        bool addBuildEnvironmentToQueue(const QString &path, QueueItem::Options options) const;
+        bool addBuildEnvironmentToQueue(const QString &path, QueueItem::Options options = QueueItem::None) const;
         QueueItem::List queue() const;
 
         QStringList makeDependsForQueue() const;
@@ -80,7 +80,7 @@ class Backend : public QObject
     Q_SIGNALS:
         void operationFinished(bool result);
         void operationProgress(const QString &progress);
-        void buildEnvironmentStatusChanged(const QString &environment, Status status);
+        void buildEnvironmentStatusChanged(const QString &environment, Aqpm::Builder::Backend::Status status);
 
     private:
         Backend(QObject* parent = 0);
@@ -90,6 +90,7 @@ class Backend : public QObject
 
         Q_PRIVATE_SLOT(d, void __k__itemFinished(int, QProcess::ExitStatus))
         Q_PRIVATE_SLOT(d, void __k__processOutput())
+        Q_PRIVATE_SLOT(d, void __k__processNextItem())
 };
 
 }
