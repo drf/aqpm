@@ -6,13 +6,10 @@ include_directories(
 
 set(aqpm_abs_SRCS
     AbsBackend.cpp
-    ABSHandler.cpp
-    BuildingHandler.cpp
 )
 
 set(aqpm_abs_HEADERS
-    ABSHandler.h
-    BuildingHandler.h
+    AbsBackend.h
 )
 
 automoc4_add_library(aqpmabs SHARED
