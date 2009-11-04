@@ -28,4 +28,6 @@ install(CODE "message(STATUS \"Installing AqpmBuilder...\")")
 install(TARGETS aqpmbuilder ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_builder_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 
-add_subdirectory(tests)
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif (BUILD_TESTS)

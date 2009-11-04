@@ -79,11 +79,20 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config-aqpm.h.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/config-aqpm.h)
 
 add_subdirectory(libaqpm)
-add_subdirectory(libaqpmabs)
-add_subdirectory(libaqpmbuilder)
 add_subdirectory(misc)
 
 option(BUILD_AQPM_AUR "Builds libaqpmaur, a library which can be used to access AUR" OFF)
+option(BUILD_AQPM_ABS "Builds libaqpmabs, a wrapper around abs" ON)
+option(BUILD_AQPM_BUILDER "Builds libaqpmbuilder, a wrapper around makepkg" ON)
+option(BUILD_TESTS "Builds various tests and examples for the libraries" ON)
+
+if (BUILD_AQPM_ABS)
+    add_subdirectory(libaqpmabs)
+endif (BUILD_AQPM_ABS)
+
+if (BUILD_AQPM_BUILDER)
+    add_subdirectory(libaqpmbuilder)
+endif (BUILD_AQPM_BUILDER)
 
 if (BUILD_AQPM_AUR AND QJSON_FOUND)
     add_subdirectory(libaqpmaur)
