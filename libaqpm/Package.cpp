@@ -30,8 +30,9 @@
 
 using namespace Aqpm;
 
-class Package::Private {
-    public:
+class Package::Private
+{
+public:
 
     Private(pmpkg_t *pkg);
 

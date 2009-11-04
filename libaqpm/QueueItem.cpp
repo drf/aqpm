@@ -28,8 +28,8 @@ QueueItem::QueueItem()
 }
 
 QueueItem::QueueItem(QString n, Action a)
-            : name(n),
-            action_id(a)
+        : name(n),
+        action_id(a)
 {
 }
 

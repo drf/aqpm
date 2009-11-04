@@ -27,31 +27,33 @@
 
 #include <QProcess>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-namespace AbsWorker {
+namespace AbsWorker
+{
 
 class Worker : public QObject, protected QDBusContext, private TemporizedApplication
 {
     Q_OBJECT
 
-    public:
-        explicit Worker(bool temporized, QObject* parent = 0);
-        virtual ~Worker();
+public:
+    explicit Worker(bool temporized, QObject* parent = 0);
+    virtual ~Worker();
 
-    public Q_SLOTS:
-        void update(const QStringList &targets, bool tarball);
-        void updateAll(bool tarball);
-        bool prepareBuildEnvironment(const QString &from, const QString &to) const;
-        void slotOutputReady();
-        void slotAbsUpdated(int,QProcess::ExitStatus);
+public Q_SLOTS:
+    void update(const QStringList &targets, bool tarball);
+    void updateAll(bool tarball);
+    bool prepareBuildEnvironment(const QString &from, const QString &to) const;
+    void slotOutputReady();
+    void slotAbsUpdated(int, QProcess::ExitStatus);
 
-    Q_SIGNALS:
-        void absUpdated(bool);
-        void newOutput(QString);
+Q_SIGNALS:
+    void absUpdated(bool);
+    void newOutput(QString);
 
-    private:
-        QProcess *m_process;
+private:
+    QProcess *m_process;
 };
 
 }

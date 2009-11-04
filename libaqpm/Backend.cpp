@@ -43,8 +43,8 @@ void Backend::Private::startUpDownloader()
 
     // Start up Downloader
     if (!Downloader::hasInstance()) {
-        connect(Downloader::instance(), SIGNAL(downloadProgress(qlonglong,qlonglong,QString)),
-                q, SLOT(__k__computeDownloadProgress(qlonglong,qlonglong,QString)));
+        connect(Downloader::instance(), SIGNAL(downloadProgress(qlonglong, qlonglong, QString)),
+                q, SLOT(__k__computeDownloadProgress(qlonglong, qlonglong, QString)));
     }
 }
 
@@ -87,8 +87,8 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
             q, SLOT(__k__doStreamTransProgress(int, const QString&, int, int, int)));
     connect(thread, SIGNAL(streamTransEvent(int, QVariantMap)),
             q, SLOT(__k__doStreamTransEvent(int, QVariantMap)));
-    connect(thread, SIGNAL(errorOccurred(int,QVariantMap)),
-            q, SLOT(__k__streamError(int,QVariantMap)));
+    connect(thread, SIGNAL(errorOccurred(int, QVariantMap)),
+            q, SLOT(__k__streamError(int, QVariantMap)));
     connect(thread, SIGNAL(logMessageStreamed(QString)),
             q, SIGNAL(logMessageStreamed(QString)));
     connect(thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
@@ -105,7 +105,7 @@ void Backend::Private::__k__streamError(int code, const QVariantMap &args)
 }
 
 void Backend::Private::__k__doStreamTransProgress(int event, const QString &pkgname, int percent,
-                           int howmany, int remain)
+        int howmany, int remain)
 {
     Q_Q(Backend);
 

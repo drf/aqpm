@@ -26,7 +26,8 @@
 #include "libaqpm/Backend.h"
 #include "libaqpm/Configuration.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class SynchronousLoop : public QEventLoop
 {
@@ -50,15 +51,15 @@ class StringConditionalEventLoop : public QEventLoop
 {
     Q_OBJECT
 
-    public:
-        explicit StringConditionalEventLoop(const QString &str, QObject *parent = 0);
-        virtual ~StringConditionalEventLoop();
+public:
+    explicit StringConditionalEventLoop(const QString &str, QObject *parent = 0);
+    virtual ~StringConditionalEventLoop();
 
-    public Q_SLOTS:
-        void requestQuit(const QString &str);
+public Q_SLOTS:
+    void requestQuit(const QString &str);
 
-    private:
-        QString m_cond;
+private:
+    QString m_cond;
 };
 
 }

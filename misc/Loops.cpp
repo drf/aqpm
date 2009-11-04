@@ -28,15 +28,16 @@
 #include "libaqpm/ActionEvent_p.h"
 #include "libaqpm/Backend_p.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 SynchronousLoop::SynchronousLoop(Backend::ActionType type, const QVariantMap &args)
         : QEventLoop(0)
         , m_result(QVariantMap())
         , m_type((int)type)
 {
-    connect(Backend::instance()->getInnerThread(), SIGNAL(actionPerformed(int,QVariantMap)),
-            this, SLOT(actionPerformed(int,QVariantMap)));
+    connect(Backend::instance()->getInnerThread(), SIGNAL(actionPerformed(int, QVariantMap)),
+            this, SLOT(actionPerformed(int, QVariantMap)));
 
     QCoreApplication::postEvent(Backend::instance()->getInnerThread(),
                                 new ActionEvent(Backend::instance()->d->getEventTypeFor(Backend::PerformAction),
@@ -50,8 +51,8 @@ SynchronousLoop::SynchronousLoop(Configuration::ActionType type, const QVariantM
         , m_result(QVariantMap())
         , m_type((int)type)
 {
-    connect(Configuration::instance()->getInnerThread(), SIGNAL(actionPerformed(int,QVariantMap)),
-            this, SLOT(actionPerformed(int,QVariantMap)));
+    connect(Configuration::instance()->getInnerThread(), SIGNAL(actionPerformed(int, QVariantMap)),
+            this, SLOT(actionPerformed(int, QVariantMap)));
 
     QCoreApplication::postEvent(Configuration::instance()->getInnerThread(),
                                 new ActionEvent(Configuration::instance()->eventType(), type, args));

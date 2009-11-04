@@ -25,7 +25,8 @@
 
 #include "Backend.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class ActionEvent : public QEvent
 {

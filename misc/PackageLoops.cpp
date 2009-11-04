@@ -29,8 +29,8 @@ void PackageListConditionalEventLoop::requestQuit(const QString &str, const Aqpm
 }
 
 IntConditionalEventLoop::IntConditionalEventLoop(int id, QObject* parent)
-: QEventLoop(parent)
-, m_id(id)
+        : QEventLoop(parent)
+        , m_id(id)
 {
 
 }

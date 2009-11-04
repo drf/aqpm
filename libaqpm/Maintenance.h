@@ -25,7 +25,8 @@
 
 #include "Visibility.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class AQPM_EXPORT Maintenance : public QObject
 {

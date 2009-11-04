@@ -39,10 +39,10 @@
 #include <polkit-qt/Auth>
 
 #define PERFORM_RETURN(ty, val) \
-        QVariantMap retmap; \
-        retmap["retvalue"] = QVariant::fromValue(val); \
-        emit actionPerformed(ty, retmap); \
-        return val;
+    QVariantMap retmap; \
+    retmap["retvalue"] = QVariant::fromValue(val); \
+    emit actionPerformed(ty, retmap); \
+    return val;
 
 #define PERFORM_RETURN_VOID(ty) emit actionPerformed(ty, QVariantMap());
 
@@ -137,20 +137,20 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
 
     // Check if the worker needs setting up
     message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-                                             "/Worker",
-                                             "org.chakraproject.aqpmworker",
-                                             QLatin1String("isWorkerReady"));
+              "/Worker",
+              "org.chakraproject.aqpmworker",
+              QLatin1String("isWorkerReady"));
     QDBusMessage reply = QDBusConnection::systemBus().call(message);
     if (reply.type() == QDBusMessage::ReplyMessage
-        && reply.arguments().size() == 1) {
+            && reply.arguments().size() == 1) {
         if (!reply.arguments().first().toBool()) {
             // Set the chroot in the worker if needed
             qDebug() << chroot;
             if (!chroot.isEmpty()) {
                 message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-                                                         "/Worker",
-                                                         "org.chakraproject.aqpmworker",
-                                                         QLatin1String("setAqpmRoot"));
+                          "/Worker",
+                          "org.chakraproject.aqpmworker",
+                          QLatin1String("setAqpmRoot"));
                 message << chroot;
                 message << confChrooted;
                 QDBusConnection::systemBus().call(message);
@@ -162,9 +162,9 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
                                                  "org.chakraproject.aqpmworker", "workerReady",
                                                  &e, SLOT(quit()));
             message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-            "/Worker",
-            "org.chakraproject.aqpmworker",
-            QLatin1String("setUpAlpm"));
+                      "/Worker",
+                      "org.chakraproject.aqpmworker",
+                      QLatin1String("setUpAlpm"));
             QDBusConnection::systemBus().asyncCall(message);
             e.exec();
 
@@ -193,8 +193,8 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
                                          "logMessageStreamed", q, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "workerResult", q, SLOT(workerResult(bool)));
-    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-            q, SLOT(serviceOwnerChanged(QString,QString,QString)));
+    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            q, SLOT(serviceOwnerChanged(QString, QString, QString)));
 
     return true;
 }
@@ -242,109 +242,109 @@ void BackendThread::customEvent(QEvent *event)
         }
 
         switch ((Backend::ActionType)ae->actionType()) {
-            case Backend::SetUpAlpm:
-                setUpAlpm();
-            case Backend::GetAvailableDatabases:
-                getAvailableDatabases();
-                break;
-            case Backend::GetLocalDatabase:
-                getLocalDatabase();
-                break;
-            case Backend::GetAvailableGroups:
-                getAvailableGroups();
-                break;
-            case Backend::GetPackagesFromDatabase:
-                getPackagesFromDatabase(ae->args()["db"].value<Database>());
-                break;
-            case Backend::GetPackagesFromGroup:
-                getPackagesFromGroup(ae->args()["group"].value<Group>());
-                break;
-            case Backend::GetUpgradeablePackages:
-                getUpgradeablePackages();
-                break;
-            case Backend::GetInstalledPackages:
-                getInstalledPackages();
-                break;
-            case Backend::GetPackageDependencies:
-                getPackageDependencies(ae->args()["package"].value<Package>());
-                break;
-            case Backend::GetPackageGroups:
-                getPackageGroups(ae->args()["package"].value<Package>());
-                break;
-            case Backend::GetDependenciesOnPackage:
-                getDependenciesOnPackage(ae->args()["package"].value<Package>());
-                break;
-            case Backend::CountPackages:
-                countPackages(ae->args()["status"].toInt());
-                break;
-            case Backend::GetProviders:
-                getProviders(ae->args()["package"].value<Package>());
-                break;
-            case Backend::IsProviderInstalled:
-                isProviderInstalled(ae->args()["provider"].toString());
-                break;
-            case Backend::GetPackageDatabase:
-                getPackageDatabase(ae->args()["package"].value<Package>(), ae->args()["checkver"].toBool());
-                break;
-            case Backend::IsInstalled:
-                isInstalled(ae->args()["package"].value<Package>());
-                break;
-            case Backend::GetAlpmVersion:
-                getAlpmVersion();
-                break;
-            case Backend::ClearQueue:
-                clearQueue();
-                break;
-            case Backend::AddItemToQueue:
-                addItemToQueue(ae->args()["name"].toString(), ae->args()["action"].value<QueueItem::Action>());
-                break;
-            case Backend::GetQueue:
-                queue();
-                break;
-            case Backend::DownloadQueue:
-                downloadQueue();
-                break;
-            case Backend::SetShouldHandleAuthorization:
-                setShouldHandleAuthorization(ae->args()["should"].toBool());
-                break;
-            case Backend::ShouldHandleAuthorization:
-                shouldHandleAuthorization();
-                break;
-            case Backend::SetAnswer:
-                setAnswer(ae->args()["answer"].toInt());
-                break;
-            case Backend::GetPackage:
-                getPackage(ae->args()["name"].toString(), ae->args()["database"].toString());
-                break;
-            case Backend::GetGroup:
-                getGroup(ae->args()["name"].toString());
-                break;
-            case Backend::GetDatabase:
-                getDatabase(ae->args()["name"].toString());
-                break;
-            case Backend::TestLibrary:
-                testLibrary();
-                break;
-            case Backend::IsOnTransaction:
-                isOnTransaction();
-                break;
-            case Backend::SetFlags:
-                setFlags((Globals::TransactionFlags)(ae->args()["flags"].toInt()));
-                break;
-            case Backend::ReloadPacmanConfiguration:
-                reloadPacmanConfiguration();
-                break;
-            case Backend::InterruptTransaction:
-                interruptTransaction();
-                break;
-            case Backend::SetAqpmRoot:
-                setAqpmRoot(ae->args()["root"].toString(), ae->args()["applyToConfiguration"].toBool());
-                break;
-            case Backend::AqpmRoot:
-                aqpmRoot();
-            default:
-                qDebug() << "Implement me!!";
-                break;
+        case Backend::SetUpAlpm:
+            setUpAlpm();
+        case Backend::GetAvailableDatabases:
+            getAvailableDatabases();
+            break;
+        case Backend::GetLocalDatabase:
+            getLocalDatabase();
+            break;
+        case Backend::GetAvailableGroups:
+            getAvailableGroups();
+            break;
+        case Backend::GetPackagesFromDatabase:
+            getPackagesFromDatabase(ae->args()["db"].value<Database>());
+            break;
+        case Backend::GetPackagesFromGroup:
+            getPackagesFromGroup(ae->args()["group"].value<Group>());
+            break;
+        case Backend::GetUpgradeablePackages:
+            getUpgradeablePackages();
+            break;
+        case Backend::GetInstalledPackages:
+            getInstalledPackages();
+            break;
+        case Backend::GetPackageDependencies:
+            getPackageDependencies(ae->args()["package"].value<Package>());
+            break;
+        case Backend::GetPackageGroups:
+            getPackageGroups(ae->args()["package"].value<Package>());
+            break;
+        case Backend::GetDependenciesOnPackage:
+            getDependenciesOnPackage(ae->args()["package"].value<Package>());
+            break;
+        case Backend::CountPackages:
+            countPackages(ae->args()["status"].toInt());
+            break;
+        case Backend::GetProviders:
+            getProviders(ae->args()["package"].value<Package>());
+            break;
+        case Backend::IsProviderInstalled:
+            isProviderInstalled(ae->args()["provider"].toString());
+            break;
+        case Backend::GetPackageDatabase:
+            getPackageDatabase(ae->args()["package"].value<Package>(), ae->args()["checkver"].toBool());
+            break;
+        case Backend::IsInstalled:
+            isInstalled(ae->args()["package"].value<Package>());
+            break;
+        case Backend::GetAlpmVersion:
+            getAlpmVersion();
+            break;
+        case Backend::ClearQueue:
+            clearQueue();
+            break;
+        case Backend::AddItemToQueue:
+            addItemToQueue(ae->args()["name"].toString(), ae->args()["action"].value<QueueItem::Action>());
+            break;
+        case Backend::GetQueue:
+            queue();
+            break;
+        case Backend::DownloadQueue:
+            downloadQueue();
+            break;
+        case Backend::SetShouldHandleAuthorization:
+            setShouldHandleAuthorization(ae->args()["should"].toBool());
+            break;
+        case Backend::ShouldHandleAuthorization:
+            shouldHandleAuthorization();
+            break;
+        case Backend::SetAnswer:
+            setAnswer(ae->args()["answer"].toInt());
+            break;
+        case Backend::GetPackage:
+            getPackage(ae->args()["name"].toString(), ae->args()["database"].toString());
+            break;
+        case Backend::GetGroup:
+            getGroup(ae->args()["name"].toString());
+            break;
+        case Backend::GetDatabase:
+            getDatabase(ae->args()["name"].toString());
+            break;
+        case Backend::TestLibrary:
+            testLibrary();
+            break;
+        case Backend::IsOnTransaction:
+            isOnTransaction();
+            break;
+        case Backend::SetFlags:
+            setFlags((Globals::TransactionFlags)(ae->args()["flags"].toInt()));
+            break;
+        case Backend::ReloadPacmanConfiguration:
+            reloadPacmanConfiguration();
+            break;
+        case Backend::InterruptTransaction:
+            interruptTransaction();
+            break;
+        case Backend::SetAqpmRoot:
+            setAqpmRoot(ae->args()["root"].toString(), ae->args()["applyToConfiguration"].toBool());
+            break;
+        case Backend::AqpmRoot:
+            aqpmRoot();
+        default:
+            qDebug() << "Implement me!!";
+            break;
         }
     }
 }
@@ -402,7 +402,7 @@ void BackendThread::setUpAlpm()
 
     /* Register our sync databases, kindly taken from pacdata */
 
-    foreach (const QString &db, Configuration::instance()->databases()) {
+    foreach(const QString &db, Configuration::instance()->databases()) {
         QString srvr = Configuration::instance()->getServerForDatabase(db);
         if (srvr.isEmpty()) {
             qDebug() << "Could not find a matching repo for" << db;
@@ -613,7 +613,7 @@ bool BackendThread::isProviderInstalled(const QString &provider)
      * &provider
      */
 
-    foreach (const Package &package, getInstalledPackages()) {
+    foreach(const Package &package, getInstalledPackages()) {
         QStringList prv(getProviders(package));
 
         for (int i = 0; i < prv.size(); ++i) {
@@ -670,9 +670,9 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
     if (db.alpmDatabase() == d->db_local) {
         qDebug() << "Getting local packages";
 
-        foreach (const Package &pkg, getInstalledPackages()) {
+        foreach(const Package &pkg, getInstalledPackages()) {
             bool matched = false;
-            foreach (const Database &db, getAvailableDatabases()) {
+            foreach(const Database &db, getAvailableDatabases()) {
                 if (alpm_db_get_pkg(db.alpmDatabase(), pkg.name().toAscii().data())) {
                     matched = true;
                     break;
@@ -701,7 +701,7 @@ int BackendThread::countPackages(int st)
     if (status == Globals::AllPackages) {
         int retvalue = 0;
 
-        foreach (const Database &db, getAvailableDatabases()) {
+        foreach(const Database &db, getAvailableDatabases()) {
             alpm_list_t *currentpkgs = alpm_db_get_pkgcache(db.alpmDatabase());
             retvalue += alpm_list_count(currentpkgs);
         }
@@ -759,7 +759,7 @@ Package BackendThread::getPackage(const QString &name, const QString &repo)
 
 Group BackendThread::getGroup(const QString &name)
 {
-    foreach (const Group &g, getAvailableGroups()) {
+    foreach(const Group &g, getAvailableGroups()) {
         if (g.name() == name) {
             PERFORM_RETURN(Backend::GetGroup, g)
         }
@@ -769,7 +769,7 @@ Group BackendThread::getGroup(const QString &name)
 
 Database BackendThread::getDatabase(const QString &name)
 {
-    foreach (const Database &d, getAvailableDatabases()) {
+    foreach(const Database &d, getAvailableDatabases()) {
         if (d.name() == name) {
             PERFORM_RETURN(Backend::GetDatabase, d)
         }
@@ -784,7 +784,7 @@ Group::List BackendThread::getPackageGroups(const Package &package)
     Group::List groups = getAvailableGroups();
 
     while (list != NULL) {
-        foreach (const Group &g, groups) {
+        foreach(const Group &g, groups) {
             if (g.name() == (char*)alpm_list_getdata(list)) {
                 retlist.append(g);
             }
@@ -807,9 +807,9 @@ bool BackendThread::updateDatabase()
     qDebug() << "Starting update";
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("updateDatabase"));
+                           "/Worker",
+                           "org.chakraproject.aqpmworker",
+                           QLatin1String("updateDatabase"));
     QDBusConnection::systemBus().asyncCall(message);
 
     return true;
@@ -827,9 +827,9 @@ void BackendThread::fullSystemUpgrade(bool downgrade)
     qDebug() << "System upgrade started";
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("systemUpgrade"));
+                           "/Worker",
+                           "org.chakraproject.aqpmworker",
+                           QLatin1String("systemUpgrade"));
     message << (int)d->flags;
     message << downgrade;
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
@@ -877,9 +877,9 @@ void BackendThread::processQueue()
     qDebug() << "Process queue started";
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("processQueue"));
+                           "/Worker",
+                           "org.chakraproject.aqpmworker",
+                           QLatin1String("processQueue"));
     QList<QVariant> argumentList;
     argumentList << qVariantFromValue(packages);
     argumentList << (int)d->flags;
@@ -906,9 +906,9 @@ void BackendThread::downloadQueue()
     qDebug() << "Download queue started";
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("downloadQueue"));
+                           "/Worker",
+                           "org.chakraproject.aqpmworker",
+                           QLatin1String("downloadQueue"));
     QList<QVariant> argumentList;
     argumentList << qVariantFromValue(packages);
     message.setArguments(argumentList);
@@ -946,8 +946,8 @@ void BackendThread::workerResult(bool result)
                                             "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "workerResult", this, SLOT(workerResult(bool)));
-    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-               this, SLOT(serviceOwnerChanged(QString,QString,QString)));
+    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+               this, SLOT(serviceOwnerChanged(QString, QString, QString)));
 
     // After a worker operation ends, reload Alpm and clear the queue
     reloadPacmanConfiguration();
@@ -992,9 +992,9 @@ void BackendThread::interruptTransaction()
     }
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
-              "/Worker",
-              "org.chakraproject.aqpmworker",
-              QLatin1String("interruptTransaction"));
+                           "/Worker",
+                           "org.chakraproject.aqpmworker",
+                           QLatin1String("interruptTransaction"));
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }
 

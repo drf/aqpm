@@ -132,7 +132,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
     QVariantMap args;
     QString logmsg;
 
-    switch ( event ) {
+    switch (event) {
     case PM_TRANS_EVT_CHECKDEPS_START:
         emit streamTransEvent((int) Aqpm::Globals::CheckDepsStart, QVariantMap());
         break;
@@ -155,7 +155,7 @@ void CallBacks::cb_trans_evt(pmtransevt_t event, void *data1, void *data2)
         emit streamTransEvent((int) Aqpm::Globals::AddDone, args);
         logmsg = QString("%1 (%2) installed successfully").arg(args["PackageName"].toString())
                  .arg(args["PackageVersion"].toString()) + '\n';
-        alpm_logaction( logmsg.toUtf8().data());
+        alpm_logaction(logmsg.toUtf8().data());
         break;
     case PM_TRANS_EVT_REMOVE_START:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t*)data1);
@@ -280,18 +280,17 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
         args["OldPackage"] = QString((char *)data2);
         question = Aqpm::Globals::PackageConflict;
         break;
-    case PM_TRANS_CONV_REMOVE_PKGS:
-        {
-            alpm_list_t *unresolved = (alpm_list_t *) data1;
-            alpm_list_t *i;
-            QStringList pkgs;
-            for (i = unresolved; i; i = i->next) {
-                pkgs.append((char *)alpm_pkg_get_name((pmpkg_t*) (i->data)));
-            }
-            args["Packages"] = pkgs;
-            question = Aqpm::Globals::UnresolvedDependencies;
+    case PM_TRANS_CONV_REMOVE_PKGS: {
+        alpm_list_t *unresolved = (alpm_list_t *) data1;
+        alpm_list_t *i;
+        QStringList pkgs;
+        for (i = unresolved; i; i = i->next) {
+            pkgs.append((char *)alpm_pkg_get_name((pmpkg_t*)(i->data)));
         }
-        break;
+        args["Packages"] = pkgs;
+        question = Aqpm::Globals::UnresolvedDependencies;
+    }
+    break;
     case PM_TRANS_CONV_LOCAL_NEWER:
         args["PackageName"] = alpm_pkg_get_name((pmpkg_t *)data1);
         args["PackageVersion"] = alpm_pkg_get_version((pmpkg_t *)data1);
@@ -330,9 +329,9 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     qDebug() << "fetching: " << url << localpath;
 
     QDBusMessage message = QDBusMessage::createMethodCall(d->worker->dbusService(),
-              "/Downloader",
-              "org.chakraproject.aqpmdownloader",
-              QLatin1String("checkHeader"));
+                           "/Downloader",
+                           "org.chakraproject.aqpmdownloader",
+                           QLatin1String("checkHeader"));
 
     message << QString(url);
     QDBusMessage mreply = d->worker->dbusConnection().call(message, QDBus::Block);
@@ -371,13 +370,13 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     ReturnStringConditionalEventLoop e(url);
 
     qDebug() << d->worker->dbusConnection().connect(d->worker->dbusService(),
-              "/Downloader",
-              "org.chakraproject.aqpmdownloader", "finished", &e, SLOT(requestQuit(QString, QString)));
+            "/Downloader",
+            "org.chakraproject.aqpmdownloader", "finished", &e, SLOT(requestQuit(QString, QString)));
 
     QDBusMessage qmessage = QDBusMessage::createMethodCall(d->worker->dbusService(),
-              "/Downloader",
-              "org.chakraproject.aqpmdownloader",
-              QLatin1String("download"));
+                            "/Downloader",
+                            "org.chakraproject.aqpmdownloader",
+                            QLatin1String("download"));
 
     qmessage << QString(url);
     d->worker->dbusConnection().asyncCall(qmessage);

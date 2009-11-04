@@ -33,12 +33,12 @@ class AbsTest : public QObject
 {
     Q_OBJECT
 
-    public:
-        AbsTest() {}
+public:
+    AbsTest() {}
 
-    public Q_SLOTS:
-        void updateFinished(bool result);
-        void newOutput(const QString &output);
+public Q_SLOTS:
+    void updateFinished(bool result);
+    void newOutput(const QString &output);
 };
 
 #endif /*ABSTEST_H*/

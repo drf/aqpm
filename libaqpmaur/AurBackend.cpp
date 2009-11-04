@@ -41,24 +41,26 @@ typedef QNetworkAccessManager AqpmNetworkAccessManager;
 typedef KIO::AccessManager AqpmNetworkAccessManager;
 #endif
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-namespace Aur {
+namespace Aur
+{
 
 class Backend::Private
 {
-    public:
-        Private() : manager(new AqpmNetworkAccessManager) {}
+public:
+    Private() : manager(new AqpmNetworkAccessManager) {}
 
-        QNetworkRequest createNetworkRequest(const QString &type, const QString &arg) const;
-        QNetworkRequest createDownloadRequest(const Package &package) const;
-        Package packageFromMap(const QVariantMap &map) const;
+    QNetworkRequest createNetworkRequest(const QString &type, const QString &arg) const;
+    QNetworkRequest createDownloadRequest(const Package &package) const;
+    Package packageFromMap(const QVariantMap &map) const;
 
-        // Private slots
-        void __k__replyFinished(QNetworkReply *reply);
+    // Private slots
+    void __k__replyFinished(QNetworkReply *reply);
 
-        AqpmNetworkAccessManager *manager;
-        Backend *q;
+    AqpmNetworkAccessManager *manager;
+    Backend *q;
 };
 
 QNetworkRequest Backend::Private::createNetworkRequest(const QString& type, const QString& arg) const
@@ -113,7 +115,7 @@ void Backend::Private::__k__replyFinished(QNetworkReply* reply)
     if (reply->property("aqpm_AUR_Request_Type").toString() == "search") {
         Package::List retlist;
 
-        foreach (const QVariant &ent, result["results"].toList()) {
+        foreach(const QVariant &ent, result["results"].toList()) {
             QVariantMap valuesMap = ent.toMap();
             retlist.append(packageFromMap(valuesMap));
         }
@@ -155,12 +157,12 @@ Package Backend::Private::packageFromMap(const QVariantMap& map) const
 
 class AurBackendHelper
 {
-    public:
-        AurBackendHelper() : q(0) {}
-        ~AurBackendHelper() {
-            delete q;
-        }
-        Backend *q;
+public:
+    AurBackendHelper() : q(0) {}
+    ~AurBackendHelper() {
+        delete q;
+    }
+    Backend *q;
 };
 
 Q_GLOBAL_STATIC(AurBackendHelper, s_globalAurBackend)
@@ -210,7 +212,7 @@ void Backend::info(int id) const
 Package::List Backend::searchSync(const QString& subject) const
 {
     PackageListConditionalEventLoop e(subject);
-    connect(this, SIGNAL(searchCompleted(QString,Aqpm::Aur::Package::List)), &e, SLOT(requestQuit(QString,Aqpm::Aur::Package::List)));
+    connect(this, SIGNAL(searchCompleted(QString, Aqpm::Aur::Package::List)), &e, SLOT(requestQuit(QString, Aqpm::Aur::Package::List)));
     search(subject);
     e.exec();
     return e.packageList();
@@ -219,7 +221,7 @@ Package::List Backend::searchSync(const QString& subject) const
 Package Backend::infoSync(int id) const
 {
     PackageConditionalEventLoop e(id);
-    connect(this, SIGNAL(infoCompleted(int,Aqpm::Aur::Package)), &e, SLOT(requestQuit(int,Aqpm::Aur::Package)));
+    connect(this, SIGNAL(infoCompleted(int, Aqpm::Aur::Package)), &e, SLOT(requestQuit(int, Aqpm::Aur::Package)));
     info(id);
     e.exec();
     return e.package();
@@ -238,7 +240,7 @@ void Backend::prepareBuildEnvironment(int id, const QString& envpath) const
 void Backend::prepareBuildEnvironmentSync(int id, const QString& envpath) const
 {
     IntConditionalEventLoop e(id);
-    connect(this, SIGNAL(buildEnvironmentReady(int,QString)), &e, SLOT(requestQuit(int)));
+    connect(this, SIGNAL(buildEnvironmentReady(int, QString)), &e, SLOT(requestQuit(int)));
     prepareBuildEnvironment(id, envpath);
     e.exec();
 }

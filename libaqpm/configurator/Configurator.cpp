@@ -221,8 +221,8 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf, const QString& filena
     if (writeconf) {
         PolkitQt::Auth::Result result;
         result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.convertconfiguration",
-                                                    message().service(),
-                                                    true);
+                 message().service(),
+                 true);
         if (result == PolkitQt::Auth::Yes) {
             qDebug() << message().service() << QString(" authorized");
         } else {
@@ -271,7 +271,7 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf, const QString& filena
 
     writeSettings.beginGroup("mirrors");
 
-    foreach (const QString &db, databases) {
+    foreach(const QString &db, databases) {
         if (db == "core" || db == "extra" || db == "community" || db == "testing") {
             if (coreset) {
                 continue;
@@ -308,7 +308,7 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf, const QString& filena
     writeSettings.beginGroup("options");
     settings.beginGroup("options");
 
-    foreach (const QString &key, settings.childKeys()) {
+    foreach(const QString &key, settings.childKeys()) {
         writeSettings.setValue(key, settings.value(key));
     }
 

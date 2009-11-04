@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     Aqpm::Backend::instance()->updateDatabase();
 
     e.connect(Aqpm::Backend::instance(), SIGNAL(operationFinished(bool)), &e, SLOT(quit()));
-    e.connect(Aqpm::Backend::instance(), SIGNAL(errorOccurred(Aqpm::Globals::Errors,QVariantMap)),
+    e.connect(Aqpm::Backend::instance(), SIGNAL(errorOccurred(Aqpm::Globals::Errors, QVariantMap)),
               QCoreApplication::instance(), SLOT(quit()));
     e.exec();
 

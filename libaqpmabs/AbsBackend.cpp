@@ -27,9 +27,11 @@
 #include <QDBusMessage>
 #include <polkit-qt/auth.h>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-namespace Abs {
+namespace Abs
+{
 
 class AbsBackendHelper
 {
@@ -123,8 +125,8 @@ bool Backend::Private::initWorker(const QString &polkitAction)
                                          "absUpdated", q, SLOT(__k__operationFinished(bool)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmabsworker", "/Worker", "org.chakraproject.aqpmabsworker",
                                          "newOutput", q, SLOT(__k__newOutput(QString)));
-    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-            q, SLOT(serviceOwnerChanged(QString,QString,QString)));
+    connect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+            q, SLOT(serviceOwnerChanged(QString, QString, QString)));
 
     return true;
 }
@@ -140,8 +142,8 @@ void Backend::Private::__k__operationFinished(bool result)
                                             "absUpdated", q, SLOT(__k__operationFinished(bool)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmabsworker", "/Worker", "org.chakraproject.aqpmabsworker",
                                             "newOutput", q, SLOT(__k__newOutput(QString)));
-    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-               q, SLOT(serviceOwnerChanged(QString,QString,QString)));
+    disconnect(QDBusConnection::systemBus().interface(), SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+               q, SLOT(serviceOwnerChanged(QString, QString, QString)));
 
     emit q->operationFinished(result);
 }
@@ -173,9 +175,9 @@ bool Backend::prepareBuildEnvironment(const QString& package, const QString& pat
         }
 
         QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmabsworker",
-                "/Worker",
-                "org.chakraproject.aqpmabsworker",
-                QLatin1String("prepareBuildEnvironment"));
+                               "/Worker",
+                               "org.chakraproject.aqpmabsworker",
+                               QLatin1String("prepareBuildEnvironment"));
         message << abspath;
         message << path;
         QDBusMessage reply = QDBusConnection::systemBus().call(message, QDBus::BlockWithGui);
@@ -225,9 +227,9 @@ void Backend::update(const QStringList& targets, bool tarball)
     }
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmabsworker",
-              "/Worker",
-              "org.chakraproject.aqpmabsworker",
-              QLatin1String("update"));
+                           "/Worker",
+                           "org.chakraproject.aqpmabsworker",
+                           QLatin1String("update"));
     message << targets;
     message << tarball;
     QDBusConnection::systemBus().asyncCall(message);
@@ -241,9 +243,9 @@ void Backend::updateAll(bool tarball)
     }
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmabsworker",
-              "/Worker",
-              "org.chakraproject.aqpmabsworker",
-              QLatin1String("updateAll"));
+                           "/Worker",
+                           "org.chakraproject.aqpmabsworker",
+                           QLatin1String("updateAll"));
     message << tarball;
     QDBusConnection::systemBus().asyncCall(message);
 }

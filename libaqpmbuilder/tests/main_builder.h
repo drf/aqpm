@@ -33,13 +33,13 @@ class BuilderTest : public QObject
 {
     Q_OBJECT
 
-    public:
-        BuilderTest() {}
+public:
+    BuilderTest() {}
 
-    public Q_SLOTS:
-        void buildFinished(bool result);
-        void newOutput(const QString &output);
-        void buildEnvironmentStatusChanged(const QString &package, Aqpm::Builder::Backend::Status status);
+public Q_SLOTS:
+    void buildFinished(bool result);
+    void newOutput(const QString &output);
+    void buildEnvironmentStatusChanged(const QString &package, Aqpm::Builder::Backend::Status status);
 };
 
 #endif /*ABSTEST_H*/

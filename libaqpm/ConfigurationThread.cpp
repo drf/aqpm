@@ -42,10 +42,10 @@
 #include <polkit-qt/Auth>
 
 #define PERFORM_RETURN(ty, val) \
-        QVariantMap retmap; \
-        retmap["retvalue"] = QVariant::fromValue(val); \
-        emit actionPerformed((int)ty, retmap); \
-        return val;
+    QVariantMap retmap; \
+    retmap["retvalue"] = QVariant::fromValue(val); \
+    emit actionPerformed((int)ty, retmap); \
+    return val;
 
 #define PERFORM_RETURN_VOID(ty) emit actionPerformed((int)ty, QVariantMap()); return;
 
@@ -65,7 +65,7 @@ public:
 };
 
 ConfigurationThread::Private::Private()
-         : tempfile(0), chroot(QString())
+        : tempfile(0), chroot(QString())
 {
 }
 
@@ -182,9 +182,9 @@ void ConfigurationThread::reload()
         qDebug() << "Kewl";
 
         QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
-                                                              "/Configurator",
-                                                              "org.chakraproject.aqpmconfigurator",
-                                                              QLatin1String("pacmanConfToAqpmConf"));
+                               "/Configurator",
+                               "org.chakraproject.aqpmconfigurator",
+                               QLatin1String("pacmanConfToAqpmConf"));
 
         message << true;
         message << QString(d->chroot + AQPM_CONFIGURATION_FILE);
@@ -254,9 +254,9 @@ void ConfigurationThread::saveConfigurationAsync()
                                          "configuratorResult", this, SLOT(configuratorResult(bool)));
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
-                                                          "/Configurator",
-                                                          "org.chakraproject.aqpmconfigurator",
-                                                          QLatin1String("saveConfiguration"));
+                           "/Configurator",
+                           "org.chakraproject.aqpmconfigurator",
+                           QLatin1String("saveConfiguration"));
 
     d->tempfile->open();
     message << QString(d->tempfile->readAll());
@@ -332,7 +332,7 @@ QStringList ConfigurationThread::getServersForDatabase(const QString &db)
                db == "kdemod-legacy" || db == "kdemod-testing" || db == "kdemod-playground") {
         settings->beginGroup("kdemod");
     } else {
-        foreach (const QString &mirror, settings->childGroups()) {
+        foreach(const QString &mirror, settings->childGroups()) {
             if (settings->value(mirror + "/Databases").toStringList().contains(db)) {
                 settings->beginGroup(mirror);
             }
@@ -426,9 +426,9 @@ void ConfigurationThread::addMirrorToMirrorListAsync(const QString &mirror, Conf
                                          "configuratorResult", this, SLOT(configuratorResult(bool)));
 
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
-                                                          "/Configurator",
-                                                          "org.chakraproject.aqpmconfigurator",
-                                                          QLatin1String("addMirror"));
+                           "/Configurator",
+                           "org.chakraproject.aqpmconfigurator",
+                           QLatin1String("addMirror"));
 
     message << mirror;
     message << (int)type;
@@ -496,7 +496,7 @@ QStringList ConfigurationThread::serversForMirror(const QString &mirror)
     QStringList retlist;
     settings->beginGroup("mirrors");
     settings->beginGroup(mirror);
-    foreach (const QString &key, settings->childKeys()) {
+    foreach(const QString &key, settings->childKeys()) {
         if (key.startsWith(QLatin1String("Server"))) {
             retlist.append(settings->value(key).toString());
         }
@@ -514,14 +514,14 @@ void ConfigurationThread::setServersForMirror(const QStringList &servers, const 
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     settings->beginGroup("mirrors");
     settings->beginGroup(mirror);
-    foreach (const QString &key, settings->childKeys()) {
+    foreach(const QString &key, settings->childKeys()) {
         if (key.startsWith(QLatin1String("Server"))) {
             settings->remove(key);
         }
     }
 
     for (int i = 1; i <= servers.size(); ++i) {
-        settings->setValue(QString("Server%1").arg(i), servers.at(i-1));
+        settings->setValue(QString("Server%1").arg(i), servers.at(i - 1));
     }
 
     settings->endGroup();

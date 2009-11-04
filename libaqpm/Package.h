@@ -29,7 +29,8 @@
 
 typedef struct __pmpkg_t pmpkg_t;
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class AQPM_EXPORT Package
 {

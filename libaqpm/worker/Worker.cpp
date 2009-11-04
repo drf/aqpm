@@ -83,10 +83,10 @@ Worker::Worker(bool temporized, QObject *parent)
             this, SIGNAL(streamTotalOffset(int)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             this, SIGNAL(streamTransProgress(int, const QString&, int, int, int)));
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransQuestion(int,QVariantMap)),
-            this, SIGNAL(streamTransQuestion(int,QVariantMap)));
-    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int,QVariantMap)),
-            this, SIGNAL(streamTransEvent(int,QVariantMap)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransQuestion(int, QVariantMap)),
+            this, SIGNAL(streamTransQuestion(int, QVariantMap)));
+    connect(AqpmWorker::CallBacks::instance(), SIGNAL(streamTransEvent(int, QVariantMap)),
+            this, SIGNAL(streamTransEvent(int, QVariantMap)));
     connect(AqpmWorker::CallBacks::instance(), SIGNAL(logMessageStreamed(QString)),
             this, SIGNAL(logMessageStreamed(QString)));
     connect(this, SIGNAL(streamAnswer(int)),
@@ -143,7 +143,7 @@ void Worker::setUpAlpm()
 
     /* Register our sync databases, kindly taken from pacdata */
 
-    foreach (const QString &db, Aqpm::Configuration::instance()->databases()) {
+    foreach(const QString &db, Aqpm::Configuration::instance()->databases()) {
         QString srvr = Aqpm::Configuration::instance()->getServerForDatabase(db);
         if (srvr.isEmpty()) {
             qDebug() << "Could not find a matching repo for" << db;
@@ -491,7 +491,7 @@ void Worker::downloadQueue(const QVariantList &packages)
 
     qDebug() << "Starting Package Syncing";
 
-    foreach (const Aqpm::QueueItem &itm, queue) {
+    foreach(const Aqpm::QueueItem &itm, queue) {
         if (itm.action_id == Aqpm::QueueItem::FullUpgrade) {
             if (alpm_trans_sysupgrade(0) == -1) {
                 qDebug() << "Creating a sysupgrade transaction failed!!";
@@ -512,7 +512,7 @@ void Worker::downloadQueue(const QVariantList &packages)
         }
     }
 
-    foreach (const Aqpm::QueueItem &itm, queue) {
+    foreach(const Aqpm::QueueItem &itm, queue) {
         if (itm.action_id != Aqpm::QueueItem::Sync) {
             continue;
         }
@@ -619,7 +619,7 @@ bool Worker::performTransaction()
     QStringList files;
 
     if (alpm_trans_prepare(&data) == -1) {
-        switch(pm_errno) {
+        switch (pm_errno) {
         case PM_ERR_UNSATISFIED_DEPS:
             for (i = data; i; i = alpm_list_next(i)) {
                 pmdepmissing_t *miss = (pmdepmissing_t*) alpm_list_getdata(i);
@@ -632,10 +632,10 @@ bool Worker::performTransaction()
             emit errorOccurred(Aqpm::Globals::UnsatisfiedDependencies, args);
             break;
         case PM_ERR_CONFLICTING_DEPS:
-            for(i = data; i; i = alpm_list_next(i)) {
+            for (i = data; i; i = alpm_list_next(i)) {
                 pmconflict_t *conflict = (pmconflict_t*) alpm_list_getdata(i);
                 innerdata[QString(alpm_conflict_get_package1(conflict))] =
-                        QVariant::fromValue(QString(alpm_conflict_get_package2(conflict)));
+                    QVariant::fromValue(QString(alpm_conflict_get_package2(conflict)));
             }
             args["ConflictingDeps"] = QVariant::fromValue(innerdata);
             emit errorOccurred(Aqpm::Globals::ConflictingDependencies, args);
@@ -653,16 +653,16 @@ bool Worker::performTransaction()
 
     qDebug() << "Committing...";
     if (alpm_trans_commit(&data) == -1) {
-        switch(pm_errno) {
+        switch (pm_errno) {
         case PM_ERR_FILE_CONFLICTS:
-            for(i = data; i; i = alpm_list_next(i)) {
+            for (i = data; i; i = alpm_list_next(i)) {
                 pmfileconflict_t *conflict = (pmfileconflict_t*) alpm_list_getdata(i);
 
-                switch(alpm_fileconflict_get_type(conflict)) {
+                switch (alpm_fileconflict_get_type(conflict)) {
                 case PM_FILECONFLICT_TARGET:
                     innerdata[alpm_fileconflict_get_file(conflict)] =
-                            QStringList() << alpm_fileconflict_get_target(conflict)
-                            << alpm_fileconflict_get_ctarget(conflict);
+                        QStringList() << alpm_fileconflict_get_target(conflict)
+                        << alpm_fileconflict_get_ctarget(conflict);
                     qDebug() << innerdata;
                     args["ConflictingTargets"] = innerdata;
                     emit errorOccurred(Aqpm::Globals::FileConflictTarget, args);
@@ -681,7 +681,7 @@ bool Worker::performTransaction()
             break;
         case PM_ERR_PKG_INVALID:
         case PM_ERR_DLT_INVALID:
-            for(i = data; i; i = alpm_list_next(i)) {
+            for (i = data; i; i = alpm_list_next(i)) {
                 files << QString((char*) alpm_list_getdata(i));
             }
             args["Filenames"] = files;
@@ -775,7 +775,7 @@ void Worker::performMaintenance(int type)
         return;
     case Aqpm::Maintenance::OptimizeDatabases:
         d->proc = new QProcess(this);
-        connect(d->proc, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processFinished(int,QProcess::ExitStatus)));
+        connect(d->proc, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
         connect(d->proc, SIGNAL(readyReadStandardError()), this, SLOT(errorOutput()));
         connect(d->proc, SIGNAL(readyReadStandardOutput()), this, SLOT(standardOutput()));
         d->proc->start("pacman-optimize");
@@ -813,9 +813,9 @@ void Worker::standardOutput()
 void Worker::interruptTransaction()
 {
     QDBusMessage message = QDBusMessage::createMethodCall(d->lastService,
-                                                          "/Downloader",
-                                                          "org.chakraproject.aqpmdownloader",
-                                                          QLatin1String("abortDownload"));
+                           "/Downloader",
+                           "org.chakraproject.aqpmdownloader",
+                           QLatin1String("abortDownload"));
     d->lastConnection.call(message, QDBus::NoBlock);
 
     if (alpm_trans_interrupt() == 0) {

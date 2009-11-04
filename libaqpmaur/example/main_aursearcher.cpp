@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     if (QCoreApplication::arguments().at(1) == "search") {
         Aqpm::Aur::Package::List retlist = Aqpm::Aur::Backend::instance()->searchSync(QCoreApplication::arguments().at(2));
 
-        foreach (const Aqpm::Aur::Package &result, retlist) {
+        foreach(const Aqpm::Aur::Package &result, retlist) {
             printf("%s - %s (ID: %i)\n", result.name.toAscii().data(), result.version.toAscii().data(), result.id);
         }
     } else if (QCoreApplication::arguments().at(1) == "info") {

@@ -26,7 +26,7 @@ using namespace Aqpm;
 
 class Group::Private
 {
-    public:
+public:
     Private(pmgrp_t *grp) : underlying(grp) {}
 
     pmgrp_t *underlying;

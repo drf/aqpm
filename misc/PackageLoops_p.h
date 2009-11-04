@@ -28,57 +28,61 @@ class PackageListConditionalEventLoop : public QEventLoop
 {
     Q_OBJECT
 
-    public:
-        explicit PackageListConditionalEventLoop(const QString &str, QObject *parent = 0)
-                 : QEventLoop(parent), m_cond(str) {}
-        ~PackageListConditionalEventLoop() {}
+public:
+    explicit PackageListConditionalEventLoop(const QString &str, QObject *parent = 0)
+            : QEventLoop(parent), m_cond(str) {}
+    ~PackageListConditionalEventLoop() {}
 
-    public Q_SLOTS:
-        void requestQuit(const QString &str, const Aqpm::Aur::Package::List &p);
+public Q_SLOTS:
+    void requestQuit(const QString &str, const Aqpm::Aur::Package::List &p);
 
-        inline Aqpm::Aur::Package::List packageList() const { return m_list; }
+    inline Aqpm::Aur::Package::List packageList() const {
+        return m_list;
+    }
 
-    private:
-        QString m_cond;
-        Aqpm::Aur::Package::List m_list;
+private:
+    QString m_cond;
+    Aqpm::Aur::Package::List m_list;
 };
 
 class PackageConditionalEventLoop : public QEventLoop
 {
     Q_OBJECT
 
-    public:
-        explicit PackageConditionalEventLoop(int id, QObject *parent = 0) : QEventLoop(parent), m_id(id) {}
-        ~PackageConditionalEventLoop() {}
+public:
+    explicit PackageConditionalEventLoop(int id, QObject *parent = 0) : QEventLoop(parent), m_id(id) {}
+    ~PackageConditionalEventLoop() {}
 
-    public Q_SLOTS:
-        void requestQuit(int id, const Aqpm::Aur::Package &p) {
-            if (m_id == id) {
-                m_package = p;
-                quit();
-            }
+public Q_SLOTS:
+    void requestQuit(int id, const Aqpm::Aur::Package &p) {
+        if (m_id == id) {
+            m_package = p;
+            quit();
         }
+    }
 
-        inline Aqpm::Aur::Package package() const { return m_package; }
+    inline Aqpm::Aur::Package package() const {
+        return m_package;
+    }
 
-    private:
-        int m_id;
-        Aqpm::Aur::Package m_package;
+private:
+    int m_id;
+    Aqpm::Aur::Package m_package;
 };
 
 class IntConditionalEventLoop : public QEventLoop
 {
     Q_OBJECT
 
-    public:
-        explicit IntConditionalEventLoop(int id, QObject *parent = 0);
-        virtual ~IntConditionalEventLoop();
+public:
+    explicit IntConditionalEventLoop(int id, QObject *parent = 0);
+    virtual ~IntConditionalEventLoop();
 
-    public Q_SLOTS:
-        void requestQuit(int id);
+public Q_SLOTS:
+    void requestQuit(int id);
 
-    private:
-        int m_id;
+private:
+    int m_id;
 };
 
 #endif

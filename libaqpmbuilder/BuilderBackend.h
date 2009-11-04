@@ -24,73 +24,75 @@
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-namespace Builder {
+namespace Builder
+{
 
 class QueueItem
 {
-    public:
-        enum Option {
-            None = 0,
-            IgnoreArch = 1,
-            Clean = 2,
-            CleanCache = 4,
-            NoDeps = 8,
-            SkipIntegrityChecks = 16,
-            HoldVersion = 32
-        };
-        Q_DECLARE_FLAGS(Options, Option)
+public:
+    enum Option {
+        None = 0,
+        IgnoreArch = 1,
+        Clean = 2,
+        CleanCache = 4,
+        NoDeps = 8,
+        SkipIntegrityChecks = 16,
+        HoldVersion = 32
+    };
+    Q_DECLARE_FLAGS(Options, Option)
 
-        QueueItem();
-        QueueItem(const QString &path, Options options);
+    QueueItem();
+    QueueItem(const QString &path, Options options);
 
-        typedef QList<QueueItem> List;
+    typedef QList<QueueItem> List;
 
-        QString environmentPath;
-        Options options;
+    QString environmentPath;
+    Options options;
 };
 
 class Backend : public QObject
 {
     Q_OBJECT
 
-    public:
-        enum Status {
-            Queued = 0,
-            Processing = 1,
-            Succeeded = 2,
-            Failed = 3
-        };
+public:
+    enum Status {
+        Queued = 0,
+        Processing = 1,
+        Succeeded = 2,
+        Failed = 3
+    };
 
-        static Backend *instance();
+    static Backend *instance();
 
-        virtual ~Backend();
+    virtual ~Backend();
 
-        bool addBuildEnvironmentToQueue(const QString &path, QueueItem::Options options = QueueItem::None) const;
-        QueueItem::List queue() const;
+    bool addBuildEnvironmentToQueue(const QString &path, QueueItem::Options options = QueueItem::None) const;
+    QueueItem::List queue() const;
 
-        QStringList makeDependsForQueue() const;
-        QStringList dependsForQueue() const;
-        QStringList allDependsForQueue() const;
+    QStringList makeDependsForQueue() const;
+    QStringList dependsForQueue() const;
+    QStringList allDependsForQueue() const;
 
-        void processQueue();
-        void clearQueue();
+    void processQueue();
+    void clearQueue();
 
-    Q_SIGNALS:
-        void operationFinished(bool result);
-        void operationProgress(const QString &progress);
-        void buildEnvironmentStatusChanged(const QString &environment, Aqpm::Builder::Backend::Status status);
+Q_SIGNALS:
+    void operationFinished(bool result);
+    void operationProgress(const QString &progress);
+    void buildEnvironmentStatusChanged(const QString &environment, Aqpm::Builder::Backend::Status status);
 
-    private:
-        Backend(QObject* parent = 0);
+private:
+    Backend(QObject* parent = 0);
 
-        class Private;
-        Private * const d;
+    class Private;
+    Private * const d;
 
-        Q_PRIVATE_SLOT(d, void __k__itemFinished(int, QProcess::ExitStatus))
-        Q_PRIVATE_SLOT(d, void __k__processOutput())
-        Q_PRIVATE_SLOT(d, void __k__processNextItem())
+    Q_PRIVATE_SLOT(d, void __k__itemFinished(int, QProcess::ExitStatus))
+    Q_PRIVATE_SLOT(d, void __k__processOutput())
+    Q_PRIVATE_SLOT(d, void __k__processNextItem())
 };
 
 }

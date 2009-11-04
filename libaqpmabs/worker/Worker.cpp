@@ -24,9 +24,11 @@
 #include <QDBusConnection>
 #include <polkit-qt/Auth>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-namespace AbsWorker {
+namespace AbsWorker
+{
 
 Worker::Worker(bool temporized, QObject *parent)
         : QObject(parent)
@@ -75,7 +77,7 @@ void Worker::update(const QStringList &targets, bool tarball)
     connect(m_process, SIGNAL(readyReadStandardOutput()),
             this, SLOT(slotOutputReady()));
     connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)),
-            this, SLOT(slotAbsUpdated(int,QProcess::ExitStatus)));
+            this, SLOT(slotAbsUpdated(int, QProcess::ExitStatus)));
 
     if (tarball) {
         m_process->start("abs", QStringList() << targets << "--tarball");
@@ -105,7 +107,7 @@ void Worker::updateAll(bool tarball)
     connect(m_process, SIGNAL(readyReadStandardOutput()),
             this, SLOT(slotOutputReady()));
     connect(m_process, SIGNAL(finished(int, QProcess::ExitStatus)),
-            this, SLOT(slotAbsUpdated(int,QProcess::ExitStatus)));
+            this, SLOT(slotAbsUpdated(int, QProcess::ExitStatus)));
 
     if (tarball) {
         m_process->start("abs", QStringList() << "--tarball");

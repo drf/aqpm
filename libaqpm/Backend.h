@@ -337,7 +337,7 @@ private:
     Q_PRIVATE_SLOT(d, void __k__setUpSelf(BackendThread *t))
     Q_PRIVATE_SLOT(d, void __k__streamError(int code, const QVariantMap &args))
     Q_PRIVATE_SLOT(d, void __k__doStreamTransProgress(int event, const QString &pkgname, int percent,
-                             int howmany, int remain))
+                   int howmany, int remain))
     Q_PRIVATE_SLOT(d, void __k__doStreamTransEvent(int event, const QVariantMap &args))
     Q_PRIVATE_SLOT(d, void __k__doStreamTransQuestion(int event, const QVariantMap &args))
     Q_PRIVATE_SLOT(d, void __k__computeDownloadProgress(qlonglong downloaded, qlonglong total, const QString &filename))

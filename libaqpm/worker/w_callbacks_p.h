@@ -92,18 +92,18 @@ class ReturnStringConditionalEventLoop : public QEventLoop
 {
     Q_OBJECT
 
-    public:
-        explicit ReturnStringConditionalEventLoop(const QString &str, QObject *parent = 0) : m_cond(str) {}
-        virtual ~ReturnStringConditionalEventLoop() {}
+public:
+    explicit ReturnStringConditionalEventLoop(const QString &str, QObject *parent = 0) : m_cond(str) {}
+    virtual ~ReturnStringConditionalEventLoop() {}
 
-        QString result() const;
+    QString result() const;
 
-    public Q_SLOTS:
-        void requestQuit(const QString &str, const QString &result);
+public Q_SLOTS:
+    void requestQuit(const QString &str, const QString &result);
 
-    private:
-        QString m_cond;
-        QString m_result;
+private:
+    QString m_cond;
+    QString m_result;
 };
 
 }

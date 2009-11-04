@@ -26,7 +26,7 @@ using namespace Aqpm;
 
 class Database::Private
 {
-    public:
+public:
     Private(pmdb_t *db);
 
     pmdb_t *underlying;

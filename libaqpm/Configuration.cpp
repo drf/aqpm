@@ -65,7 +65,7 @@ Configuration::Configuration()
 
     d->type = (QEvent::Type)QEvent::registerEventType();
 
-    connect (d->thread, SIGNAL(configurationSaved(bool)), this, SIGNAL(configurationSaved(bool)));
+    connect(d->thread, SIGNAL(configurationSaved(bool)), this, SIGNAL(configurationSaved(bool)));
 }
 
 Configuration::~Configuration()

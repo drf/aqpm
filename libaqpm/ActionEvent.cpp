@@ -20,7 +20,8 @@
 
 #include "ActionEvent_p.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 ActionEvent::ActionEvent(Type type, int actiontype, const QVariantMap &args)
         : QEvent(type)

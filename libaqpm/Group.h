@@ -28,7 +28,8 @@
 
 typedef struct __pmgrp_t pmgrp_t;
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class AQPM_EXPORT Group
 {

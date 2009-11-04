@@ -25,7 +25,8 @@
 
 #include "BackendThread_p.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class Backend::Private
 {
@@ -33,10 +34,10 @@ class Backend::Private
 
 public:
     Private()   : ready(false)
-                , list_total(0)
-                , list_xfered(0)
-                , list_last(0)
-                , averageRateTime() {}
+            , list_total(0)
+            , list_xfered(0)
+            , list_last(0)
+            , averageRateTime() {}
 
     BackendThread *thread;
     ContainerThread *containerThread;
@@ -59,7 +60,7 @@ private:
     void __k__setUpSelf(BackendThread *t);
     void __k__streamError(int code, const QVariantMap &args);
     void __k__doStreamTransProgress(int event, const QString &pkgname, int percent,
-                             int howmany, int remain);
+                                    int howmany, int remain);
     void __k__doStreamTransEvent(int event, const QVariantMap &args);
     void __k__doStreamTransQuestion(int event, const QVariantMap &args);
     void __k__computeDownloadProgress(qlonglong downloaded, qlonglong total, const QString& filename);

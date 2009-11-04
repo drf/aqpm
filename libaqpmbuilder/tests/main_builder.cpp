@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
 
     test->connect(Aqpm::Builder::Backend::instance(), SIGNAL(operationFinished(bool)), test, SLOT(buildFinished(bool)));
     test->connect(Aqpm::Builder::Backend::instance(), SIGNAL(operationProgress(QString)), test, SLOT(newOutput(QString)));
-    test->connect(Aqpm::Builder::Backend::instance(), SIGNAL(buildEnvironmentStatusChanged(QString,Aqpm::Builder::Backend::Status)),
-                  test, SLOT(buildEnvironmentStatusChanged(QString,Aqpm::Builder::Backend::Status)));
+    test->connect(Aqpm::Builder::Backend::instance(), SIGNAL(buildEnvironmentStatusChanged(QString, Aqpm::Builder::Backend::Status)),
+                  test, SLOT(buildEnvironmentStatusChanged(QString, Aqpm::Builder::Backend::Status)));
     qDebug() << "Makedepends are " << Aqpm::Builder::Backend::instance()->makeDependsForQueue();
     qDebug() << "Depends are " << Aqpm::Builder::Backend::instance()->dependsForQueue();
     qDebug() << "Now building packages...";

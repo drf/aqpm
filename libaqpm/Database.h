@@ -28,7 +28,8 @@
 
 typedef struct __pmdb_t pmdb_t;
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class AQPM_EXPORT Database
 {

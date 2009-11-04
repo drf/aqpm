@@ -27,9 +27,11 @@
 #include <QTimer>
 #include <QDebug>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-namespace Builder {
+namespace Builder
+{
 
 class BuilderBackendHelper
 {
@@ -272,7 +274,7 @@ void Backend::processQueue()
 QStringList Backend::dependsForQueue() const
 {
     QStringList retlist;
-    foreach (const QueueItem &item, d->queue) {
+    foreach(const QueueItem &item, d->queue) {
         retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "depends"));
     }
     retlist.removeDuplicates();
@@ -282,7 +284,7 @@ QStringList Backend::dependsForQueue() const
 QStringList Backend::makeDependsForQueue() const
 {
     QStringList retlist;
-    foreach (const QueueItem &item, d->queue) {
+    foreach(const QueueItem &item, d->queue) {
         retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "makedepends"));
     }
     retlist.removeDuplicates();
@@ -292,7 +294,7 @@ QStringList Backend::makeDependsForQueue() const
 QStringList Backend::allDependsForQueue() const
 {
     QStringList retlist;
-    foreach (const QueueItem &item, d->queue) {
+    foreach(const QueueItem &item, d->queue) {
         retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "depends"));
         retlist.append(d->fieldToStringList(item.environmentPath + "/PKGBUILD", "makedepends"));
     }

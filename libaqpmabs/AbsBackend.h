@@ -26,39 +26,41 @@
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
 
-namespace Aqpm {
+namespace Aqpm
+{
 
-namespace Abs {
+namespace Abs
+{
 
 class AQPM_EXPORT Backend : public QObject
 {
     Q_OBJECT
 
-    public:
-        static Backend *instance();
+public:
+    static Backend *instance();
 
-        void update(const QStringList &targets, bool tarball = false);
-        void updateAll(bool tarball = false);
-        /**
-         * Prepares
-         */
-        bool prepareBuildEnvironment(const QString &package, const QString &path, bool privileged = false) const;
+    void update(const QStringList &targets, bool tarball = false);
+    void updateAll(bool tarball = false);
+    /**
+     * Prepares
+     */
+    bool prepareBuildEnvironment(const QString &package, const QString &path, bool privileged = false) const;
 
-        bool shouldHandleAuthorization() const;
-        void setShouldHandleAuthorization(bool should);
+    bool shouldHandleAuthorization() const;
+    void setShouldHandleAuthorization(bool should);
 
-    Q_SIGNALS:
-        void operationFinished(bool success);
-        void operationProgress(const QString &progress);
+Q_SIGNALS:
+    void operationFinished(bool success);
+    void operationProgress(const QString &progress);
 
-    private:
-        Backend(QObject* parent = 0);
+private:
+    Backend(QObject* parent = 0);
 
-        class Private;
-        Private * const d;
+    class Private;
+    Private * const d;
 
-        Q_PRIVATE_SLOT(d, void __k__operationFinished(bool result))
-        Q_PRIVATE_SLOT(d, void __k__newOutput(const QString &output))
+    Q_PRIVATE_SLOT(d, void __k__operationFinished(bool result))
+    Q_PRIVATE_SLOT(d, void __k__newOutput(const QString &output))
 };
 
 }

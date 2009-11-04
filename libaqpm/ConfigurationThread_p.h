@@ -28,7 +28,8 @@
 
 #include "Configuration.h"
 
-namespace Aqpm {
+namespace Aqpm
+{
 
 class AQPM_IMPORT ConfigurationThread : public QObject
 {

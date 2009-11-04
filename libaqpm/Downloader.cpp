@@ -67,12 +67,12 @@ QNetworkRequest Downloader::Private::createNetworkRequest(const QUrl &url)
 
 class DownloaderHelper
 {
-    public:
-        DownloaderHelper() : q(0) {}
-        ~DownloaderHelper() {
-            delete q;
-        }
-        Downloader *q;
+public:
+    DownloaderHelper() : q(0) {}
+    ~DownloaderHelper() {
+        delete q;
+    }
+    Downloader *q;
 };
 
 Q_GLOBAL_STATIC(DownloaderHelper, s_globalDownloader)
@@ -149,7 +149,7 @@ void Downloader::download(const QString& url)
 {
     qDebug() << "About to get " << url;
     QNetworkReply *reply = d->manager->get(d->createNetworkRequest(QUrl(url)));
-    connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(progress(qint64,qint64)));
+    connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(progress(qint64, qint64)));
     qDebug() << "Getting started";
     d->replies.append(reply);
 }
@@ -180,7 +180,7 @@ void Downloader::downloadFinished(QNetworkReply *reply)
 
 void Downloader::abortDownload()
 {
-    foreach (QNetworkReply *r, d->replies) {
+    foreach(QNetworkReply *r, d->replies) {
         // Emit a finished signal with empty path
         emit finished(r->url().toString(), QString());
         r->abort();

@@ -28,9 +28,9 @@
 #include <signal.h>
 #include <stdio.h>
 
-static void cleanup( int signum )
+static void cleanup(int signum)
 {
-    if ( signum == SIGSEGV ) {
+    if (signum == SIGSEGV) {
         // Try at least to recover
         alpm_trans_interrupt();
         alpm_trans_release();
