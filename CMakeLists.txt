@@ -80,6 +80,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config-aqpm.h.cmake
 
 add_subdirectory(libaqpm)
 add_subdirectory(libaqpmabs)
+add_subdirectory(libaqpmbuilder)
 add_subdirectory(misc)
 
 option(BUILD_AQPM_AUR "Builds libaqpmaur, a library which can be used to access AUR" OFF)
