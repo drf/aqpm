@@ -49,6 +49,8 @@ public:
     bool shouldHandleAuthorization() const;
     void setShouldHandleAuthorization(bool should);
 
+    QString path(const QString &package) const;
+
 Q_SIGNALS:
     void operationFinished(bool success);
     void operationProgress(const QString &progress);

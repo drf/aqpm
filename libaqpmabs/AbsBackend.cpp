@@ -250,6 +250,11 @@ void Backend::updateAll(bool tarball)
     QDBusConnection::systemBus().asyncCall(message);
 }
 
+QString Backend::path(const QString& package) const
+{
+    return d->absPath(package);
+}
+
 void Backend::setShouldHandleAuthorization(bool should)
 {
     d->handleAuth = should;
