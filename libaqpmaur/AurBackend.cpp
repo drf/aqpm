@@ -50,7 +50,7 @@ namespace Aur
 class Backend::Private
 {
 public:
-    Private() : manager(new AqpmNetworkAccessManager) {}
+    Private() {}
 
     QNetworkRequest createNetworkRequest(const QString &type, const QString &arg) const;
     QNetworkRequest createDownloadRequest(const Package &package) const;
@@ -184,6 +184,7 @@ Backend::Backend(QObject* parent)
     s_globalAurBackend()->q = this;
 
     d->q = this;
+    d->manager = new AqpmNetworkAccessManager(this);
     connect(d->manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(__k__replyFinished(QNetworkReply*)));
 }
 
