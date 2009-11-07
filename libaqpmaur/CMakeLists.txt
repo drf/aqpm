@@ -23,11 +23,16 @@ SOVERSION ${MAJOR_AQPM_VERSION}
 
 target_link_libraries(aqpmaur
 ${QT_QTCORE_LIBRARY}
-${QT_QTNETWORK_LIBRARY}
 ${QJSON_LIBRARIES}
 )
 
-install(CODE "message(STATUS \"Installing aqpmaur...\")")
+if (KDE4_INTEGRATION)
+    target_link_libraries(aqpmaur ${KDE4_KIO_LIBRARY})
+else (KDE4_INTEGRATION)
+    target_link_libraries(aqpmaur ${QT_QTNETWORK_LIBRARY})
+endif (KDE4_INTEGRATION)
+
+install(CODE "message(STATUS \"Installing AqpmAur...\")")
 install(TARGETS aqpmaur ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_aur_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 
