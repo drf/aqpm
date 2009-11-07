@@ -21,6 +21,8 @@
 #ifndef AURBACKEND_H
 #define AURBACKEND_H
 
+#include "Visibility.h"
+
 #include <QtCore/QObject>
 
 class QNetworkReply;
@@ -30,7 +32,7 @@ namespace Aqpm
 namespace Aur
 {
 
-class Package
+class AQPM_EXPORT Package
 {
 public:
     typedef QList<Package> List;
@@ -48,7 +50,7 @@ public:
     bool outOfDate;
 };
 
-class Backend : public QObject
+class AQPM_EXPORT Backend : public QObject
 {
     Q_OBJECT
 

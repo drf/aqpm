@@ -21,6 +21,8 @@
 #ifndef BUILDERBACKEND_H
 #define BUILDERBACKEND_H
 
+#include "Visibility.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
 
@@ -30,7 +32,7 @@ namespace Aqpm
 namespace Builder
 {
 
-class QueueItem
+class AQPM_EXPORT QueueItem
 {
 public:
     enum Option {
@@ -53,7 +55,7 @@ public:
     Options options;
 };
 
-class Backend : public QObject
+class AQPM_EXPORT Backend : public QObject
 {
     Q_OBJECT
 
