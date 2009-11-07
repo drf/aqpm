@@ -93,7 +93,7 @@ class ReturnStringConditionalEventLoop : public QEventLoop
     Q_OBJECT
 
 public:
-    explicit ReturnStringConditionalEventLoop(const QString &str, QObject *parent = 0) : m_cond(str) {}
+    explicit ReturnStringConditionalEventLoop(const QString &str, QObject *parent = 0) : QEventLoop(parent), m_cond(str) {}
     virtual ~ReturnStringConditionalEventLoop() {}
 
     QString result() const;
