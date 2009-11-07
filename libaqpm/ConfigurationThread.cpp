@@ -34,6 +34,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QTimer>
+#include <QPointer>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusConnection>
@@ -58,7 +59,7 @@ public:
     Private();
     QString convertPacmanConfToAqpmConf() const;
 
-    QTemporaryFile *tempfile;
+    QPointer<QTemporaryFile> tempfile;
     bool lastResult;
 
     QString chroot;
@@ -249,6 +250,11 @@ void ConfigurationThread::saveConfigurationAsync()
         }
     }
 
+    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmconfigurator")) {
+        qDebug() << "Requesting service start";
+        QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmconfigurator");
+    }
+
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmconfigurator", "/Configurator",
                                          "org.chakraproject.aqpmconfigurator",
                                          "configuratorResult", this, SLOT(configuratorResult(bool)));
@@ -262,7 +268,6 @@ void ConfigurationThread::saveConfigurationAsync()
     message << QString(d->tempfile->readAll());
     message << QString(d->chroot + AQPM_CONFIGURATION_FILE);
     QDBusConnection::systemBus().call(message);
-    qDebug() << QDBusConnection::systemBus().lastError();
     d->tempfile->close();
 
     PERFORM_RETURN_VOID(Configuration::SaveConfigurationAsync)
@@ -419,6 +424,11 @@ void ConfigurationThread::addMirrorToMirrorListAsync(const QString &mirror, Conf
             configuratorResult(false);
             PERFORM_RETURN_VOID(Configuration::AddMirrorToMirrorList);
         }
+    }
+
+    if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmconfigurator")) {
+        qDebug() << "Requesting service start";
+        QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmconfigurator");
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmconfigurator", "/Configurator",
