@@ -81,7 +81,7 @@ QString Package::filename() const
     return alpm_pkg_get_filename(d->underlying);
 }
 
-qint32 Package::isize()
+qint32 Package::isize() const
 {
     return alpm_pkg_get_isize(d->underlying);
 }
@@ -101,7 +101,7 @@ QString Package::packager() const
     return alpm_pkg_get_packager(d->underlying);
 }
 
-qint32 Package::size()
+qint32 Package::size() const
 {
     return alpm_pkg_get_size(d->underlying);
 }

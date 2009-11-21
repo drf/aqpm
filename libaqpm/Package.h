@@ -54,8 +54,8 @@ public:
     bool hasScriptlet() const;
     QDateTime buildDate() const;
     QDateTime installDate() const;
-    qint32 size();
-    qint32 isize();
+    qint32 size() const;
+    qint32 isize() const;
     QStringList files() const;
     pmpkg_t *alpmPackage() const;
 
