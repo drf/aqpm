@@ -677,7 +677,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages)
             return;
         }
 
-        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Remove);
+        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Sync);
 
         if(data) {
             FREELIST(data);
@@ -718,7 +718,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages)
             return;
         }
 
-        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Remove);
+        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Sync);
 
         if(data) {
             FREELIST(data);
