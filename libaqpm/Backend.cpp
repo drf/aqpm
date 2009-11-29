@@ -211,6 +211,7 @@ Backend::Backend()
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
     qRegisterMetaType<QueueItem::List>();
+    qDBusRegisterMetaType<QueueItem::List>();
     qRegisterMetaType<Package>();
     qRegisterMetaType<Group>();
     qRegisterMetaType<Database>();
@@ -501,7 +502,7 @@ void Backend::processQueue(Globals::TransactionFlags flags)
 
 void Backend::retrieveAdditionalTargetsForQueue()
 {
-    QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(UpdateDatabase)));
+    QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(RetrieveAdditionalTargetsForQueue)));
 }
 
 void Backend::downloadQueue()

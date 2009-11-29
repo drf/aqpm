@@ -62,6 +62,11 @@ Worker::Worker(bool temporized, QObject *parent)
 {
     new AqpmworkerAdaptor(this);
 
+    qRegisterMetaType<Aqpm::QueueItem>();
+    qDBusRegisterMetaType<Aqpm::QueueItem>();
+    qRegisterMetaType<Aqpm::QueueItem::List>();
+    qDBusRegisterMetaType<Aqpm::QueueItem::List>();
+
     if (!QDBusConnection::systemBus().registerService("org.chakraproject.aqpmworker")) {
         qDebug() << "another helper is already running";
         QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
