@@ -531,6 +531,205 @@ void Worker::downloadQueue(const QVariantList &packages)
     operationPerformed(true);
 }
 
+void Worker::retrieveTargetsForQueue(const QVariantList &packages)
+{
+    stopTemporizing();
+
+    d->lastConnection = connection();
+    d->lastService = message().service();
+
+    qDebug() << "Starting Targets retrieval";
+
+    PolkitQt::Auth::Result result;
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.retrievetargetsforqueue",
+             message().service(),
+             true);
+    if (result == PolkitQt::Auth::Yes) {
+        qDebug() << message().service() << QString(" authorized");
+    } else {
+        qDebug() << QString("Not authorized");
+        emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
+        emit targetsRetrieved(QVariantMap());
+        operationPerformed(false);
+        return;
+    }
+
+    pmtransflag_t alpmflags;
+
+    alpmflags = PM_TRANS_FLAG_ALLDEPS;
+    alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)PM_TRANS_FLAG_DOWNLOADONLY);
+
+    bool sync = false;
+    bool remove = false;
+    bool file = false;
+
+    Aqpm::QueueItem::List queue;
+    Aqpm::QueueItem::List retlist;
+
+    qDebug() << "Appending packages";
+
+    foreach(const QVariant &ent, packages) {
+        qDebug() << ent.typeName();
+        Aqpm::QueueItem item;
+        ent.value<QDBusArgument>() >> item;
+        queue.append(item);
+    }
+
+    qDebug() << "Packages appended, starting evaluation";
+
+    foreach(const Aqpm::QueueItem &itm, queue) {
+        switch (itm.action_id) {
+        case Aqpm::QueueItem::Sync:
+            qDebug() << "Sync action";
+            sync = true;
+            break;
+        case Aqpm::QueueItem::FromFile:
+            qDebug() << "From File action";
+            file = true;
+            break;
+        case Aqpm::QueueItem::Remove:
+            qDebug() << "Remove action";
+            remove = true;
+            break;
+        default:
+            qDebug() << "What is that?";
+            break;
+        }
+    }
+
+    if (remove) {
+        if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, alpmflags,
+                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                            AqpmWorker::cb_trans_progress) == -1) {
+            QVariantMap args;
+            args["ErrorString"] = QString(alpm_strerrorlast());
+            emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
+            emit targetsRetrieved(QVariantMap());
+            operationPerformed(false);
+            return;
+        }
+
+        qDebug() << "Simulating Package Removal";
+
+        foreach(const Aqpm::QueueItem &itm, queue) {
+            if (itm.action_id != Aqpm::QueueItem::Remove) {
+                continue;
+            }
+
+            if (!addTransTarget(itm.name)) {
+                emit targetsRetrieved(QVariantMap());
+                return;
+            }
+        }
+
+        alpm_list_t *data = NULL;
+
+        if (!prepareTransaction(data)) {
+            emit targetsRetrieved(QVariantMap());
+            return;
+        }
+
+        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Remove);
+
+        if(data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
+    }
+
+    if (sync) {
+        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                            AqpmWorker::cb_trans_progress) == -1) {
+            QVariantMap args;
+            args["ErrorString"] = QString(alpm_strerrorlast());
+            emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
+            emit targetsRetrieved(QVariantMap());
+            operationPerformed(false);
+            return;
+        }
+
+        qDebug() << "Starting Package Syncing";
+
+        foreach(const Aqpm::QueueItem &itm, queue) {
+            if (itm.action_id != Aqpm::QueueItem::Sync) {
+                continue;
+            }
+
+            qDebug() << "Adding " << itm.name;
+
+            if (!addTransTarget(itm.name)) {
+                emit targetsRetrieved(QVariantMap());
+                return;
+            }
+        }
+
+        alpm_list_t *data = NULL;
+
+        if (!prepareTransaction(data)) {
+            emit targetsRetrieved(QVariantMap());
+            return;
+        }
+
+        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Remove);
+
+        if(data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
+    }
+
+    if (file) {
+        if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
+                            AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
+                            AqpmWorker::cb_trans_progress) == -1) {
+            QVariantMap args;
+            args["ErrorString"] = QString(alpm_strerrorlast());
+            emit errorOccurred(Aqpm::Globals::InitTransactionError, args);
+            emit targetsRetrieved(QVariantMap());
+            operationPerformed(false);
+            return;
+        }
+
+        qDebug() << "Starting Package Syncing";
+
+        foreach(const Aqpm::QueueItem &itm, queue) {
+            if (itm.action_id != Aqpm::QueueItem::FromFile) {
+                continue;
+            }
+
+            if (!addTransTarget(itm.name)) {
+                emit targetsRetrieved(QVariantMap());
+                return;
+            }
+        }
+
+        alpm_list_t *data = NULL;
+
+        if (!prepareTransaction(data)) {
+            emit targetsRetrieved(QVariantMap());
+            return;
+        }
+
+        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Remove);
+
+        if(data) {
+            FREELIST(data);
+        }
+
+        alpm_trans_release();
+    }
+
+    // Now convert the list
+    QVariantMap map;
+    map["retlist"] = QVariant::fromValue(retlist);
+    emit targetsRetrieved(map);
+
+    operationPerformed(true);
+}
+
 void Worker::systemUpgrade(int flags, bool downgrade)
 {
     stopTemporizing();
@@ -594,6 +793,24 @@ void Worker::systemUpgrade(int flags, bool downgrade)
     operationPerformed(true);
 }
 
+Aqpm::QueueItem::List Worker::targets(alpm_list_t *packages, Aqpm::QueueItem::Action action)
+{
+    const alpm_list_t *i;
+    Aqpm::QueueItem::List retlist;
+
+    if(!packages) {
+        return Aqpm::QueueItem::List();
+    }
+
+    for(i = packages; i; i = alpm_list_next(i)) {
+        pmpkg_t *pkg = (pmpkg_t*)(alpm_list_getdata(i));
+
+        retlist.append(Aqpm::QueueItem(alpm_pkg_get_name(pkg), action));
+    }
+
+    return retlist;
+}
+
 void Worker::setAnswer(int answer)
 {
     emit streamAnswer(answer);
@@ -611,6 +828,27 @@ bool Worker::performTransaction()
 
     alpm_list_t *data = NULL;
 
+    if (!prepareTransaction(data)) {
+        return false;
+    }
+
+    if (!commitTransaction(data)) {
+        return false;
+    }
+
+    qDebug() << "Done";
+
+    if (data) {
+        FREELIST(data);
+    }
+
+    alpm_trans_release();
+
+    return true;
+}
+
+bool Worker::prepareTransaction(alpm_list_t *data)
+{
     qDebug() << "Preparing...";
 
     alpm_list_t *i;
@@ -650,6 +888,16 @@ bool Worker::performTransaction()
         operationPerformed(false);
         return false;
     }
+
+    return true;
+}
+
+bool Worker::commitTransaction(alpm_list_t *data)
+{
+    alpm_list_t *i;
+    QVariantMap args;
+    QVariantMap innerdata;
+    QStringList files;
 
     qDebug() << "Committing...";
     if (alpm_trans_commit(&data) == -1) {
@@ -697,13 +945,6 @@ bool Worker::performTransaction()
         operationPerformed(false);
         return false;
     }
-    qDebug() << "Done";
-
-    if (data) {
-        FREELIST(data);
-    }
-
-    alpm_trans_release();
 
     return true;
 }

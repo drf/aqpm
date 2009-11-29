@@ -32,6 +32,7 @@
 
 #include "TemporizedApplication_p.h"
 #include "../Globals.h"
+#include <QueueItem.h>
 
 namespace AqpmWorker
 {
@@ -49,6 +50,7 @@ public:
 public Q_SLOTS:
     void processQueue(const QVariantList &packages, int flags);
     void downloadQueue(const QVariantList &packages);
+    void retrieveTargetsForQueue(const QVariantList &packages);
     void updateDatabase();
     void systemUpgrade(int flags, bool downgrade);
     void setAnswer(int answer);
@@ -65,6 +67,9 @@ private:
     bool addTransTarget(const QString &target);
     bool performTransaction();
     pmtransflag_t processFlags(Aqpm::Globals::TransactionFlags flags);
+    bool prepareTransaction(alpm_list_t *data);
+    bool commitTransaction(alpm_list_t *data);
+    Aqpm::QueueItem::List targets(alpm_list_t *packages, Aqpm::QueueItem::Action action);
 
 private Q_SLOTS:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
@@ -92,6 +97,8 @@ Q_SIGNALS:
     void messageStreamed(const QString &msg);
 
     void logMessageStreamed(const QString &msg);
+
+    void targetsRetrieved(const QVariantMap &targets);
 
     void streamAnswer(int answer);
 

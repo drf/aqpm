@@ -188,6 +188,8 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "streamTransQuestion", q, SIGNAL(streamTransQuestion(int, QVariantMap)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
+                                         "targetsRetrieved", q, SLOT(targetsRetrieved(QVariantMap)));
+    QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "errorOccurred", q, SIGNAL(errorOccurred(int, QVariantMap)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "logMessageStreamed", q, SIGNAL(logMessageStreamed(QString)));
@@ -230,6 +232,10 @@ void BackendThread::customEvent(QEvent *event)
         processQueue();
     } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::Initialization)) {
         init();
+    } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::DownloadQueue)) {
+        downloadQueue();
+    } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::RetrieveAdditionalTargetsForQueue)) {
+        retrieveAdditionalTargetsForQueue();
     } else if (event->type() == Backend::instance()->d->getEventTypeFor(Backend::SystemUpgrade)) {
         ActionEvent *ae = dynamic_cast<ActionEvent*>(event);
         fullSystemUpgrade(ae->args()["downgrade"].toBool());
@@ -300,9 +306,6 @@ void BackendThread::customEvent(QEvent *event)
             break;
         case Backend::GetQueue:
             queue();
-            break;
-        case Backend::DownloadQueue:
-            downloadQueue();
             break;
         case Backend::SetShouldHandleAuthorization:
             setShouldHandleAuthorization(ae->args()["should"].toBool());
@@ -913,6 +916,63 @@ void BackendThread::downloadQueue()
     argumentList << qVariantFromValue(packages);
     message.setArguments(argumentList);
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+}
+
+void BackendThread::retrieveAdditionalTargetsForQueue()
+{
+    emit transactionStarted();
+
+    QVariantList packages;
+
+    foreach(const QueueItem &ent, d->queue) {
+        qDebug() << "Appending " << ent.name;
+        packages.append(QVariant::fromValue(ent));
+    }
+
+    if (!d->initWorker("org.chakraproject.aqpm.retrievetargetsforqueue")) {
+        emit errorOccurred((int) Aqpm::Globals::WorkerInitializationFailed, QVariantMap());
+        workerResult(false);
+    }
+
+    qDebug() << "Additional targets retrieval for queue started";
+
+    QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmworker",
+                           "/Worker",
+                           "org.chakraproject.aqpmworker",
+                           QLatin1String("retrieveTargetsForQueue"));
+    QList<QVariant> argumentList;
+    argumentList << qVariantFromValue(packages);
+    message.setArguments(argumentList);
+    QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+}
+
+void BackendThread::targetsRetrieved(const QVariantMap &targets)
+{
+    QueueItem::List list = targets["retlist"].value<Aqpm::QueueItem::List>();
+    QList< QPair<Aqpm::Package, Aqpm::QueueItem::Action> > retlist;
+
+    foreach (const QueueItem &item, list) {
+        bool alreadyInQueue = false;
+
+        foreach (const QueueItem &qitem, list) {
+            if (qitem.name == item.name) {
+                alreadyInQueue = true;
+                break;
+            }
+        }
+
+        if (alreadyInQueue) {
+            continue;
+        }
+
+        if ((QueueItem::Action)(item.action_id) == QueueItem::Remove) {
+            retlist.append(qMakePair(getPackage(item.name, "local"), QueueItem::Remove));
+        } else {
+            retlist.append(qMakePair(getPackage(item.name, QString()), (QueueItem::Action)(item.action_id)));
+        }
+    }
+
+    emit additionalTargetsRetrieved(retlist);
 }
 
 void BackendThread::setShouldHandleAuthorization(bool should)

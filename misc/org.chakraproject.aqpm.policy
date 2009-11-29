@@ -88,6 +88,15 @@
     </defaults>
   </action>
 
+  <action id="org.chakraproject.aqpm.retrievetargetsforqueue">
+    <description>Retrieves additional targets for a queue</description>
+    <message>Prevents the Package Manager from retrieving additional targets for the current queue</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.chakraproject.aqpm.updateabs">
     <description>Updates the Abs tree</description>
     <message>Prevents the Package Manager from updating the Abs tree</message>

@@ -93,6 +93,8 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
             q, SIGNAL(logMessageStreamed(QString)));
     connect(thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
             q, SLOT(__k__doStreamTransQuestion(int, QVariantMap)));
+    connect(thread, SIGNAL(additionalTargetsRetrieved(QList<QPair<Aqpm::Package,Aqpm::QueueItem::Action> >)),
+            q, SIGNAL(additionalTargetsRetrieved(QList<QPair<Aqpm::Package,Aqpm::QueueItem::Action> >)));
 
     QCoreApplication::postEvent(thread, new QEvent(getEventTypeFor(Initialization)));
 }
@@ -222,6 +224,8 @@ Backend::Backend()
     d->events[UpdateDatabase] = (QEvent::Type)QEvent::registerEventType();
     d->events[ProcessQueue] = (QEvent::Type)QEvent::registerEventType();
     d->events[SystemUpgrade] = (QEvent::Type)QEvent::registerEventType();
+    d->events[DownloadQueue] = (QEvent::Type)QEvent::registerEventType();
+    d->events[RetrieveAdditionalTargetsForQueue] = (QEvent::Type)QEvent::registerEventType();
     d->events[PerformAction] = (QEvent::Type)QEvent::registerEventType();
 
     d->containerThread = new ContainerThread(this);
@@ -493,6 +497,11 @@ void Backend::processQueue(Globals::TransactionFlags flags)
     SynchronousLoop s(SetFlags, args);
     QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(ProcessQueue)));
     qDebug() << "Thread is running";
+}
+
+void Backend::retrieveAdditionalTargetsForQueue()
+{
+    QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(UpdateDatabase)));
 }
 
 void Backend::downloadQueue()

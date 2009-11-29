@@ -88,6 +88,8 @@ private:
     bool updateDatabase();
     void fullSystemUpgrade(bool downgrade);
 
+    void retrieveAdditionalTargetsForQueue();
+
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 
     QStringList alpmListToStringList(alpm_list_t *list);
@@ -133,11 +135,14 @@ Q_SIGNALS:
 
     void actionPerformed(int type, QVariantMap result);
 
+    void additionalTargetsRetrieved(const QList< QPair<Aqpm::Package, Aqpm::QueueItem::Action> > &targets);
+
     void threadInitialized();
 
 private Q_SLOTS:
     void workerResult(bool success);
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
+    void targetsRetrieved(const QVariantMap &targets);
 
 protected:
     void customEvent(QEvent *event);

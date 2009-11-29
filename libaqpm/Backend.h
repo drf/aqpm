@@ -111,7 +111,8 @@ public:
         InterruptTransaction,
         Ready,
         SetAqpmRoot,
-        AqpmRoot
+        AqpmRoot,
+        RetrieveAdditionalTargetsForQueue
     };
 
     /**
@@ -281,6 +282,9 @@ public:
      * \see addItemToQueue
      */
     void downloadQueue();
+
+    void retrieveAdditionalTargetsForQueue();
+
     QueueItem::List queue() const;
 
     void interruptTransaction();
@@ -319,6 +323,8 @@ Q_SIGNALS:
     void errorOccurred(Aqpm::Globals::Errors code, const QVariantMap &args);
 
     void logMessageStreamed(const QString &msg);
+
+    void additionalTargetsRetrieved(const QList< QPair<Aqpm::Package, Aqpm::QueueItem::Action> > &targets);
 
     void operationFinished(bool success);
 

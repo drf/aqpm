@@ -14,6 +14,9 @@
 		<method name="downloadQueue">
 			<arg type="av" direction="in" />
 		</method>
+		<method name="retrieveTargetsForQueue">
+            <arg type="av" direction="in" />
+        </method>
 		<method name="performMaintenance">
 			<arg type="i" direction="in" />
 		</method>
@@ -67,6 +70,10 @@
         <signal name="errorOccurred">
             <arg type="i" direction="out" />
             <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+            <arg type="a{sv}" direction="out" />
+        </signal>
+        <signal name="targetsRetrieved">
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
             <arg type="a{sv}" direction="out" />
         </signal>
 		<signal name="messageStreamed">
