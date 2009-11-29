@@ -93,8 +93,8 @@ void Backend::Private::__k__setUpSelf(BackendThread *t)
             q, SIGNAL(logMessageStreamed(QString)));
     connect(thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
             q, SLOT(__k__doStreamTransQuestion(int, QVariantMap)));
-    connect(thread, SIGNAL(additionalTargetsRetrieved(QList<QPair<Aqpm::Package,Aqpm::QueueItem::Action> >)),
-            q, SIGNAL(additionalTargetsRetrieved(QList<QPair<Aqpm::Package,Aqpm::QueueItem::Action> >)));
+    connect(thread, SIGNAL(additionalTargetsRetrieved(Aqpm::Targets)),
+            q, SIGNAL(additionalTargetsRetrieved(Aqpm::Targets)));
 
     QCoreApplication::postEvent(thread, new QEvent(getEventTypeFor(Initialization)));
 }
@@ -218,6 +218,7 @@ Backend::Backend()
     qRegisterMetaType<Package::List>();
     qRegisterMetaType<Group::List>();
     qRegisterMetaType<Database::List>();
+    qRegisterMetaType<Targets>();
 
     qDebug() << "Constructing Backend singleton";
 

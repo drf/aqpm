@@ -948,14 +948,15 @@ void BackendThread::retrieveAdditionalTargetsForQueue()
 
 void BackendThread::targetsRetrieved(const QVariantMap &targets)
 {
-    QueueItem::List list = targets["retlist"].value<Aqpm::QueueItem::List>();
-    QList< QPair<Aqpm::Package, Aqpm::QueueItem::Action> > retlist;
+    QHash< QString, Aqpm::QueueItem::Action > rethash;
+    qDebug() << targets.count() << "targets retrieved";
 
-    foreach (const QueueItem &item, list) {
+    QVariantMap::const_iterator i;
+    for (i = targets.constBegin(); i != targets.constEnd(); ++i) {
         bool alreadyInQueue = false;
 
-        foreach (const QueueItem &qitem, list) {
-            if (qitem.name == item.name) {
+        foreach (const QueueItem &qitem, queue()) {
+            if (qitem.name == i.key()) {
                 alreadyInQueue = true;
                 break;
             }
@@ -965,14 +966,10 @@ void BackendThread::targetsRetrieved(const QVariantMap &targets)
             continue;
         }
 
-        if ((QueueItem::Action)(item.action_id) == QueueItem::Remove) {
-            retlist.append(qMakePair(getPackage(item.name, "local"), QueueItem::Remove));
-        } else {
-            retlist.append(qMakePair(getPackage(item.name, QString()), (QueueItem::Action)(item.action_id)));
-        }
+        rethash.insert(i.key(), (QueueItem::Action)(i.value().toUInt()));
     }
 
-    emit additionalTargetsRetrieved(retlist);
+    emit additionalTargetsRetrieved(rethash);
 }
 
 void BackendThread::setShouldHandleAuthorization(bool should)

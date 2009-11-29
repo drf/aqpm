@@ -135,7 +135,7 @@ Q_SIGNALS:
 
     void actionPerformed(int type, QVariantMap result);
 
-    void additionalTargetsRetrieved(const QList< QPair<Aqpm::Package, Aqpm::QueueItem::Action> > &targets);
+    void additionalTargetsRetrieved(const Aqpm::Targets &targets);
 
     void threadInitialized();
 

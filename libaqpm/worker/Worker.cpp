@@ -729,7 +729,11 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages)
 
     // Now convert the list
     QVariantMap map;
-    map["retlist"] = QVariant::fromValue(retlist);
+    foreach (const Aqpm::QueueItem &item, retlist) {
+        map[item.name] = item.action_id;
+    }
+
+    qDebug() << map.count() << "Targets retrieved";
     emit targetsRetrieved(map);
 
     operationPerformed(true);
@@ -809,7 +813,7 @@ Aqpm::QueueItem::List Worker::targets(alpm_list_t *packages, Aqpm::QueueItem::Ac
 
     for(i = packages; i; i = alpm_list_next(i)) {
         pmpkg_t *pkg = (pmpkg_t*)(alpm_list_getdata(i));
-
+        qDebug() << "New target " << alpm_pkg_get_name(pkg);
         retlist.append(Aqpm::QueueItem(alpm_pkg_get_name(pkg), action));
     }
 

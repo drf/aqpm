@@ -36,6 +36,8 @@
 namespace Aqpm
 {
 
+typedef QHash< QString, Aqpm::QueueItem::Action > Targets;
+
 class BackendThread;
 
 /**
@@ -324,7 +326,7 @@ Q_SIGNALS:
 
     void logMessageStreamed(const QString &msg);
 
-    void additionalTargetsRetrieved(const QList< QPair<Aqpm::Package, Aqpm::QueueItem::Action> > &targets);
+    void additionalTargetsRetrieved(const Aqpm::Targets &targets);
 
     void operationFinished(bool success);
 
@@ -352,5 +354,7 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Aqpm::Targets)
 
 #endif /* BACKEND_H */
