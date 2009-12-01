@@ -312,6 +312,8 @@ Q_SIGNALS:
     void transactionStarted();
     void transactionReleased();
 
+    void streamTotalDownloadSize(qint64 size);
+
     void streamDlProg(const QString &c, int bytedone, int bytetotal, int speed,
                       int listdone, int listtotal);
 

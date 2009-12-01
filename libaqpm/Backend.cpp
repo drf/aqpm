@@ -159,6 +159,8 @@ void Backend::Private::__k__computeDownloadProgress(qlonglong downloaded, qlongl
 
 void Backend::Private::__k__totalOffsetReceived(int offset)
 {
+    Q_Q(Backend);
+
     list_total = offset;
     qDebug() << "total called, offset" << offset;
     /* if we get a 0 value, it means this list has finished downloading,
@@ -167,6 +169,8 @@ void Backend::Private::__k__totalOffsetReceived(int offset)
         list_xfered = 0;
         list_last = 0;
         list_total = 0;
+    } else {
+        emit q->streamTotalDownloadSize(offset);
     }
 }
 
