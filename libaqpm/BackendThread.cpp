@@ -190,7 +190,7 @@ bool BackendThread::Private::initWorker(const QString &polkitAction)
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "targetsRetrieved", q, SLOT(targetsRetrieved(QVariantMap)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                         "errorOccurred", q, SIGNAL(errorOccurred(int, QVariantMap)));
+                                         "errorOccurred", q, SLOT(slotErrorOccurred(int, QVariantMap)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                          "logMessageStreamed", q, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
@@ -998,7 +998,7 @@ void BackendThread::workerResult(bool result)
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "streamTransQuestion", this, SIGNAL(streamTransQuestion(int, QVariantMap)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
-                                            "errorOccurred", this, SIGNAL(errorOccurred(int, QVariantMap)));
+                                            "errorOccurred", this, SLOT(slotErrorOccurred(int, QVariantMap)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
                                             "logMessageStreamed", this, SIGNAL(logMessageStreamed(QString)));
     QDBusConnection::systemBus().disconnect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",
@@ -1053,6 +1053,24 @@ void BackendThread::interruptTransaction()
                            "org.chakraproject.aqpmworker",
                            QLatin1String("interruptTransaction"));
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
+}
+
+void BackendThread::slotErrorOccurred(int code, const QVariantMap &args)
+{
+    // Check if we need to convert from QDBusArgument to QVariantMap
+    QVariantMap realArgs;
+    QVariantMap::const_iterator i;
+    for (i = args.constBegin(); i != args.constEnd(); ++i) {
+        if (QString(i.value().typeName()) == "QDBusArgument") {
+            // Convert it back and set it as the value
+            QVariantMap mmp;
+            i.value().value<QDBusArgument>() >> mmp;
+            realArgs.insert(i.key(), QVariant::fromValue(mmp));
+        } else {
+            realArgs.insert(i.key(), i.value());
+        }
+    }
+    emit errorOccurred(code, realArgs);
 }
 
 }

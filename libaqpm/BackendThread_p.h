@@ -143,6 +143,7 @@ private Q_SLOTS:
     void workerResult(bool success);
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
     void targetsRetrieved(const QVariantMap &targets);
+    void slotErrorOccurred(int code, const QVariantMap &args);
 
 protected:
     void customEvent(QEvent *event);
