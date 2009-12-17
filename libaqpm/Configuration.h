@@ -50,8 +50,8 @@ public:
         GetServerForDatabase,
         GetServersForDatabase,
         GetMirrorList,
-        AddMirrorToMirrorList,
-        AddMirrorToMirrorListAsync,
+        SetMirrorList,
+        SetMirrorListAsync,
         Mirrors,
         ServersForMirror,
         DatabasesForMirror,
@@ -82,8 +82,8 @@ public:
 
     QStringList getMirrorList(MirrorType type) const;
 
-    bool addMirrorToMirrorList(const QString &mirror, MirrorType type) const;
-    void addMirrorToMirrorListAsync(const QString &mirror, MirrorType type);
+    bool setMirrorList(const QStringList &mirrorlist, MirrorType type) const;
+    void setMirrorListAsync(const QStringList &mirrorlist, MirrorType type);
 
     QStringList mirrors(bool thirdpartyonly = false) const;
     QStringList serversForMirror(const QString &mirror) const;

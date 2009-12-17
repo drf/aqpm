@@ -141,21 +141,31 @@ QStringList Configuration::getMirrorList(MirrorType type) const
     return s.result()["retvalue"].toStringList();
 }
 
-bool Configuration::addMirrorToMirrorList(const QString &mirror, MirrorType type) const
+bool Configuration::setMirrorList(const QStringList &mirrorlist, MirrorType type) const
 {
     QVariantMap args;
+    QString list;
+    foreach (const QString &ent, mirrorlist) {
+        list.append(ent);
+        list.append('\n');
+    }
     args["type"] = QVariant::fromValue((int)type);
-    args["mirror"] = QVariant::fromValue(mirror);
-    SynchronousLoop s(AddMirrorToMirrorList, args);
+    args["mirror"] = QVariant::fromValue(list);
+    SynchronousLoop s(SetMirrorList, args);
     return s.result()["retvalue"].toBool();
 }
 
-void Configuration::addMirrorToMirrorListAsync(const QString &mirror, MirrorType type)
+void Configuration::setMirrorListAsync(const QStringList &mirrorlist, MirrorType type)
 {
     QVariantMap args;
+    QString list;
+    foreach (const QString &ent, mirrorlist) {
+        list.append(ent);
+        list.append('\n');
+    }
     args["type"] = QVariant::fromValue((int)type);
-    args["mirror"] = QVariant::fromValue(mirror);
-    SynchronousLoop s(AddMirrorToMirrorListAsync, args);
+    args["mirror"] = QVariant::fromValue(list);
+    SynchronousLoop s(SetMirrorListAsync, args);
 }
 
 void Configuration::remove(const QString &key)

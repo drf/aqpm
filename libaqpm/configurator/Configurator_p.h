@@ -39,7 +39,7 @@ public:
 
 public Q_SLOTS:
     void saveConfiguration(const QString &conf, const QString &filename);
-    void addMirror(const QString &mirror, int type);
+    void setMirrorList(const QString &mirror, int type);
     QString pacmanConfToAqpmConf(bool writeconf, const QString &filename);
 
 Q_SIGNALS:

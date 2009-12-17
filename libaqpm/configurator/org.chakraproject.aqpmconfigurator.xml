@@ -1,22 +1,23 @@
-<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
-	<interface name="org.chakraproject.aqpmconfigurator">
-		<method name="saveConfiguration">
-			<arg type="s" direction="in" />
+    <interface name="org.chakraproject.aqpmconfigurator">
+        <method name="saveConfiguration">
+            <arg type="s" direction="in" />
             <arg type="s" direction="in" />
         </method>
-		<method name="addMirror">
-			<arg type="s" direction="in" />
-			<arg type="i" direction="in" />
-        </method>
-		<method name="pacmanConfToAqpmConf">
-			<arg type="b" direction="in" />
+        <method name="setMirrorList">
             <arg type="s" direction="in" />
-			<arg type="s" direction="out" />
+            <arg type="i" direction="in" />
+        </method>
+        <method name="pacmanConfToAqpmConf">
+            <arg type="b" direction="in" />
+            <arg type="s" direction="in" />
+            <arg type="s" direction="out" />
         </method>
 
         <signal name="configuratorResult">
             <arg type="b" direction="out" />
         </signal>
-	</interface>
+    </interface>
 </node>

@@ -54,8 +54,8 @@ private:
 
     QStringList getMirrorList(Configuration::MirrorType type);
 
-    bool addMirrorToMirrorList(const QString &mirror, Configuration::MirrorType type);
-    void addMirrorToMirrorListAsync(const QString &mirror, Configuration::MirrorType type);
+    bool setMirrorList(const QString &mirror, Configuration::MirrorType type);
+    void setMirrorListAsync(const QString &mirror, Configuration::MirrorType type);
 
     QStringList mirrors(bool thirdpartyonly = false);
     QStringList serversForMirror(const QString &mirror);

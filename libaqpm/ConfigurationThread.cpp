@@ -122,13 +122,13 @@ void ConfigurationThread::customEvent(QEvent *event)
         case Configuration::GetMirrorList:
             getMirrorList((Configuration::MirrorType)(ae->args()["type"].toInt()));
             break;
-        case Configuration::AddMirrorToMirrorList:
-            addMirrorToMirrorList(ae->args()["mirror"].toString(),
-                                  (Configuration::MirrorType)(ae->args()["type"].toInt()));
+        case Configuration::SetMirrorList:
+            setMirrorList(ae->args()["mirror"].toString(),
+                          (Configuration::MirrorType)(ae->args()["type"].toInt()));
             break;
-        case Configuration::AddMirrorToMirrorListAsync:
-            addMirrorToMirrorListAsync(ae->args()["mirror"].toString(),
-                                       (Configuration::MirrorType)(ae->args()["type"].toInt()));
+        case Configuration::SetMirrorListAsync:
+            setMirrorListAsync(ae->args()["mirror"].toString(),
+                               (Configuration::MirrorType)(ae->args()["type"].toInt()));
             break;
         case Configuration::Mirrors:
             mirrors(ae->args()["thirdpartyonly"].toBool());
@@ -412,25 +412,25 @@ QStringList ConfigurationThread::getMirrorList(Configuration::MirrorType type)
 
 }
 
-bool ConfigurationThread::addMirrorToMirrorList(const QString &mirror, Configuration::MirrorType type)
+bool ConfigurationThread::setMirrorList(const QString &mirrorlist, Configuration::MirrorType type)
 {
     QEventLoop e;
 
     connect(this, SIGNAL(configurationSaved(bool)), &e, SLOT(quit()));
 
-    addMirrorToMirrorListAsync(mirror, type);
+    setMirrorListAsync(mirrorlist, type);
     e.exec();
 
-    PERFORM_RETURN(Configuration::AddMirrorToMirrorList, d->lastResult);
+    PERFORM_RETURN(Configuration::SetMirrorList, d->lastResult);
 }
 
-void ConfigurationThread::addMirrorToMirrorListAsync(const QString &mirror, Configuration::MirrorType type)
+void ConfigurationThread::setMirrorListAsync(const QString &mirrorlist, Configuration::MirrorType type)
 {
     if (Backend::instance()->shouldHandleAuthorization()) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.addmirror")) {
+        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.setmirrorlist")) {
             qDebug() << "User unauthorized";
             configuratorResult(false);
-            PERFORM_RETURN_VOID(Configuration::AddMirrorToMirrorList);
+            PERFORM_RETURN_VOID(Configuration::SetMirrorListAsync);
         }
     }
 
@@ -446,13 +446,13 @@ void ConfigurationThread::addMirrorToMirrorListAsync(const QString &mirror, Conf
     QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
                            "/Configurator",
                            "org.chakraproject.aqpmconfigurator",
-                           QLatin1String("addMirror"));
+                           QLatin1String("setMirrorList"));
 
-    message << mirror;
+    message << mirrorlist;
     message << (int)type;
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 
-    PERFORM_RETURN_VOID(Configuration::AddMirrorToMirrorList);
+    PERFORM_RETURN_VOID(Configuration::SetMirrorListAsync);
 }
 
 void ConfigurationThread::remove(const QString &key)

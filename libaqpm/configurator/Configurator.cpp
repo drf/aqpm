@@ -108,10 +108,10 @@ void Configurator::saveConfiguration(const QString& conf, const QString& filenam
     operationPerformed(true);
 }
 
-void Configurator::addMirror(const QString &mirror, int type)
+void Configurator::setMirrorList(const QString &mirror, int type)
 {
     PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.addmirror",
+    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.setmirrorlist",
              message().service(),
              true);
     if (result == PolkitQt::Auth::Yes) {
@@ -125,9 +125,6 @@ void Configurator::addMirror(const QString &mirror, int type)
 
     stopTemporizing();
 
-    QString toInsert("Server=");
-    toInsert.append(mirror);
-
     QFile file;
 
     switch ((Aqpm::Configuration::MirrorType)type) {
@@ -139,12 +136,12 @@ void Configurator::addMirror(const QString &mirror, int type)
         break;
     }
 
-    if (!file.open(QIODevice::Append | QIODevice::Text)) {
+    if (!file.open(QIODevice::Truncate | QIODevice::Text | QIODevice::WriteOnly)) {
         operationPerformed(false);
         return;
     }
 
-    file.write(toInsert.toUtf8().data(), toInsert.length());
+    file.write(mirror.toUtf8().data(), mirror.length());
     file.write("\n", 1);
 
     file.flush();

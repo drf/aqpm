@@ -61,9 +61,9 @@
     </defaults>
   </action>
 
-  <action id="org.chakraproject.aqpm.addmirror">
-    <description>Add a mirror to Pacman</description>
-    <message>Prevents the Package Manager from adding a new mirror</message>
+  <action id="org.chakraproject.aqpm.setmirrorlist">
+    <description>Sets Aqpm mirrors</description>
+    <message>Prevents the Package Manager from modifying the mirrors</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
