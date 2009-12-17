@@ -326,31 +326,39 @@ QStringList ConfigurationThread::getServersForDatabase(const QString &db)
 {
     QSettings *settings = new QSettings(d->tempfile->fileName(), QSettings::IniFormat, this);
     QStringList retlist;
+    QStringList rawlist;
 
     settings->beginGroup("mirrors");
 
     qDebug() << "Checking " << db;
 
     if (db == "core" || db == "extra" || db == "community" || db == "testing") {
-        settings->beginGroup("arch");
+        rawlist = getMirrorList(Aqpm::Configuration::ArchMirror);
     } else if (db == "kdemod-core" || db == "kdemod-extragear" || db == "kdemod-unstable" ||
                db == "kdemod-legacy" || db == "kdemod-testing" || db == "kdemod-playground") {
-        settings->beginGroup("kdemod");
+        rawlist = getMirrorList(Aqpm::Configuration::KdemodMirror);
     } else {
         foreach(const QString &mirror, settings->childGroups()) {
             if (settings->value(mirror + "/Databases").toStringList().contains(db)) {
                 settings->beginGroup(mirror);
             }
         }
+
+        qDebug() << "ok, keys are " << settings->childKeys();
+
+        for (int i = 1; i <= settings->childKeys().size(); ++i) {
+            QString retstr = settings->value(QString("Server%1").arg(i)).toString();
+            retstr.replace("$repo", db);
+            retstr.replace("$arch", value("options/Arch").toString());
+            retlist.append(retstr);
+        }
     }
 
-    qDebug() << "ok, keys are " << settings->childKeys();
-
-    for (int i = 1; i <= settings->childKeys().size(); ++i) {
-        QString retstr = settings->value(QString("Server%1").arg(i)).toString();
-        retstr.replace("$repo", db);
-        retstr.replace("$arch", value("options/Arch").toString());
-        retlist.append(retstr);
+    foreach (const QString &ent, rawlist) {
+        QString rent = ent;
+        rent.replace("$repo", db);
+        rent.replace("$arch", value("options/Arch").toString());
+        retlist.append(rent);
     }
 
     PERFORM_RETURN(Configuration::GetServersForDatabase, retlist);
