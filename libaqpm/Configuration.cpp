@@ -146,6 +146,7 @@ bool Configuration::setMirrorList(const QStringList &mirrorlist, MirrorType type
     QVariantMap args;
     QString list;
     foreach (const QString &ent, mirrorlist) {
+        list.append("Server = ");
         list.append(ent);
         list.append('\n');
     }
@@ -160,6 +161,7 @@ void Configuration::setMirrorListAsync(const QStringList &mirrorlist, MirrorType
     QVariantMap args;
     QString list;
     foreach (const QString &ent, mirrorlist) {
+        list.append("Server = ");
         list.append(ent);
         list.append('\n');
     }
