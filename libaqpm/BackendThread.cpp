@@ -757,6 +757,11 @@ Package BackendThread::getPackage(const QString &name, const QString &repo)
         dbsync = alpm_list_next(dbsync);
     }
 
+    // If the repo was empty try one last time before failing, it might be in the local db
+    if (repo.isEmpty()) {
+        PERFORM_RETURN(Backend::GetPackage, Package(alpm_db_get_pkg(d->db_local, name.toAscii().data())))
+    }
+
     PERFORM_RETURN(Backend::GetPackage, Package())
 }
 
