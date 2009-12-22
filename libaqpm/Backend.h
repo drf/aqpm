@@ -285,7 +285,7 @@ public:
      */
     void downloadQueue();
 
-    void retrieveAdditionalTargetsForQueue();
+    void retrieveAdditionalTargetsForQueue(Globals::TransactionFlags flags);
 
     QueueItem::List queue() const;
 

@@ -1,31 +1,32 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
-	<interface name="org.chakraproject.aqpmworker">
-		<method name="updateDatabase">
-		</method>
-		<method name="systemUpgrade">
-			<arg type="i" direction="in" />
-			<arg type="b" direction="in" />
+    <interface name="org.chakraproject.aqpmworker">
+        <method name="updateDatabase">
+        </method>
+        <method name="systemUpgrade">
+            <arg type="i" direction="in" />
+            <arg type="b" direction="in" />
                 </method>
-		<method name="processQueue">
-			<arg type="av" direction="in" />
-			<arg type="i" direction="in" />
-		</method>
-		<method name="downloadQueue">
-			<arg type="av" direction="in" />
-		</method>
-		<method name="retrieveTargetsForQueue">
+        <method name="processQueue">
+            <arg type="av" direction="in" />
+            <arg type="i" direction="in" />
+        </method>
+        <method name="downloadQueue">
             <arg type="av" direction="in" />
         </method>
-		<method name="performMaintenance">
-			<arg type="i" direction="in" />
-		</method>
-		<method name="isWorkerReady">
-			<arg type="b" direction="out" />
-		</method>
-		<method name="setAnswer">
-			<arg type="i" direction="in" />
-		</method>
+        <method name="retrieveTargetsForQueue">
+            <arg type="av" direction="in" />
+            <arg type="i" direction="in" />
+        </method>
+        <method name="performMaintenance">
+            <arg type="i" direction="in" />
+        </method>
+        <method name="isWorkerReady">
+            <arg type="b" direction="out" />
+        </method>
+        <method name="setAnswer">
+            <arg type="i" direction="in" />
+        </method>
         <method name="interruptTransaction">
         </method>
         <method name="setUpAlpm">
@@ -35,33 +36,33 @@
             <arg type="b" direction="in" />
         </method>
 
-		<signal name="workerReady">
-		</signal>
-		<signal name="workerResult">
-			<arg type="b" direction="out" />
-		</signal>
-		<signal name="dbStatusChanged">
-			<arg type="s" direction="out" />
-			<arg type="i" direction="out" />
-		</signal>
-		<signal name="dbQty">
-			<arg type="as" direction="out" />
-		</signal>
-		<signal name="streamTotalOffset">
-			<arg type="i" direction="out" />
-		</signal>
-		<signal name="streamTransProgress">
-			<arg type="i" direction="out" />
-			<arg type="s" direction="out" />
-			<arg type="i" direction="out" />
-			<arg type="i" direction="out" />
-			<arg type="i" direction="out" />
-		</signal>
-		<signal name="streamTransQuestion">
-			<arg type="i" direction="out" />
+        <signal name="workerReady">
+        </signal>
+        <signal name="workerResult">
+            <arg type="b" direction="out" />
+        </signal>
+        <signal name="dbStatusChanged">
+            <arg type="s" direction="out" />
+            <arg type="i" direction="out" />
+        </signal>
+        <signal name="dbQty">
+            <arg type="as" direction="out" />
+        </signal>
+        <signal name="streamTotalOffset">
+            <arg type="i" direction="out" />
+        </signal>
+        <signal name="streamTransProgress">
+            <arg type="i" direction="out" />
+            <arg type="s" direction="out" />
+            <arg type="i" direction="out" />
+            <arg type="i" direction="out" />
+            <arg type="i" direction="out" />
+        </signal>
+        <signal name="streamTransQuestion">
+            <arg type="i" direction="out" />
             <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
             <arg type="a{sv}" direction="out" />
-		</signal>
+        </signal>
         <signal name="streamTransEvent">
             <arg type="i" direction="out" />
             <annotation name="com.trolltech.QtDBus.QtTypeName.In1" value="QVariantMap"/>
@@ -76,11 +77,11 @@
             <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
             <arg type="a{sv}" direction="out" />
         </signal>
-		<signal name="messageStreamed">
+        <signal name="messageStreamed">
             <arg type="s" direction="out" />
         </signal>
-		<signal name="logMessageStreamed">
+        <signal name="logMessageStreamed">
             <arg type="s" direction="out" />
         </signal>
-	</interface>
+    </interface>
 </node>

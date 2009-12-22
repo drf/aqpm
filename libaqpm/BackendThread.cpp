@@ -947,6 +947,7 @@ void BackendThread::retrieveAdditionalTargetsForQueue()
                            QLatin1String("retrieveTargetsForQueue"));
     QList<QVariant> argumentList;
     argumentList << qVariantFromValue(packages);
+    argumentList << (int)d->flags;
     message.setArguments(argumentList);
     QDBusConnection::systemBus().call(message, QDBus::NoBlock);
 }

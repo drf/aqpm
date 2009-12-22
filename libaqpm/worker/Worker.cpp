@@ -305,15 +305,7 @@ void Worker::processQueue(const QVariantList &packages, int flags)
         return;
     }
 
-    Aqpm::Globals::TransactionFlags gflags;
-
-    if (flags == 0) {
-        gflags = Aqpm::Globals::AllDeps;
-    } else {
-        gflags = (Aqpm::Globals::TransactionFlags)flags;
-    }
-
-    pmtransflag_t alpmflags = processFlags(gflags);
+    pmtransflag_t alpmflags = processFlags((Aqpm::Globals::TransactionFlags)flags);
 
     qDebug() << alpmflags;
 
@@ -468,8 +460,7 @@ void Worker::downloadQueue(const QVariantList &packages)
 
     pmtransflag_t alpmflags;
 
-    alpmflags = PM_TRANS_FLAG_ALLDEPS;
-    alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)PM_TRANS_FLAG_DOWNLOADONLY);
+    alpmflags = PM_TRANS_FLAG_DOWNLOADONLY;
 
     Aqpm::QueueItem::List queue;
 
@@ -536,7 +527,7 @@ void Worker::downloadQueue(const QVariantList &packages)
     operationPerformed(true);
 }
 
-void Worker::retrieveTargetsForQueue(const QVariantList &packages)
+void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
 {
     stopTemporizing();
 
@@ -559,10 +550,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages)
         return;
     }
 
-    pmtransflag_t alpmflags;
-
-    alpmflags = PM_TRANS_FLAG_ALLDEPS;
-    alpmflags = (pmtransflag_t)((pmtransflag_t)alpmflags | (pmtransflag_t)PM_TRANS_FLAG_DOWNLOADONLY);
+    pmtransflag_t alpmflags = processFlags((Aqpm::Globals::TransactionFlags)flags);
 
     bool sync = false;
     bool remove = false;
@@ -761,15 +749,7 @@ void Worker::systemUpgrade(int flags, bool downgrade)
         return;
     }
 
-    Aqpm::Globals::TransactionFlags gflags;
-
-    if (flags == 0) {
-        gflags = Aqpm::Globals::AllDeps;
-    } else {
-        gflags = (Aqpm::Globals::TransactionFlags)flags;
-    }
-
-    pmtransflag_t alpmflags = processFlags(gflags);
+    pmtransflag_t alpmflags = processFlags((Aqpm::Globals::TransactionFlags)flags);
 
     qDebug() << alpmflags;
 

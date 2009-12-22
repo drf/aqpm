@@ -505,8 +505,11 @@ void Backend::processQueue(Globals::TransactionFlags flags)
     qDebug() << "Thread is running";
 }
 
-void Backend::retrieveAdditionalTargetsForQueue()
+void Backend::retrieveAdditionalTargetsForQueue(Globals::TransactionFlags flags)
 {
+    QVariantMap args;
+    args["flags"] = QVariant::fromValue((int)flags);
+    SynchronousLoop s(SetFlags, args);
     QCoreApplication::postEvent(d->thread, new QEvent(d->getEventTypeFor(RetrieveAdditionalTargetsForQueue)));
 }
 

@@ -50,7 +50,7 @@ public:
 public Q_SLOTS:
     void processQueue(const QVariantList &packages, int flags);
     void downloadQueue(const QVariantList &packages);
-    void retrieveTargetsForQueue(const QVariantList &packages);
+    void retrieveTargetsForQueue(const QVariantList &packages, int flags);
     void updateDatabase();
     void systemUpgrade(int flags, bool downgrade);
     void setAnswer(int answer);
