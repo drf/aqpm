@@ -11,10 +11,10 @@ include(InstallSettings)
 # Documentation
 include(TargetDoc)
 
-set(MAJOR_AQPM_VERSION "1")
-set(MINOR_AQPM_VERSION "3")
-set(PATCH_AQPM_VERSION "3")
-set(FIX_AQPM_VERSION "4")
+set(MAJOR_AQPM_VERSION 1 CACHE INT "Aqpm's major version number" FORCE)
+set(MINOR_AQPM_VERSION 3 CACHE INT "Aqpm's minor version number" FORCE)
+set(PATCH_AQPM_VERSION 3 CACHE INT "Aqpm's patch version number" FORCE)
+set(FIX_AQPM_VERSION 4 CACHE INT "Aqpm's fix version number" FORCE)
 set(AQPM_VERSION_STRING "${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQPM_VERSION}.${FIX_AQPM_VERSION}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
@@ -29,6 +29,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpmabs.pc.cmake
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpmbuilder.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/aqpmbuilder.pc
                @ONLY )
+
+configure_file(aqpmversion.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/aqpmversion.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpmversion.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/aqpm)
 
 # requires minimal Qt 4.4
 set(QT_MIN_VERSION "4.4.0")
