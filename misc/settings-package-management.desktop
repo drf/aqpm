@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=SystemSettingsCategory
+X-KDE-System-Settings-Category=package-management
+X-KDE-System-Settings-Parent-Category=computer-administration
+Icon=chakra-shiny
+
+Name=Package Management
+Name[pl]=Zarządzanie pakietami
