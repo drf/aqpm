@@ -25,35 +25,86 @@
 #include "../AurBackend.h"
 #include <QStringList>
 #include <QDir>
+#include "main_aursearcher.h"
+#include <QTimer>
+#include "config-aqpm.h"
+#ifdef KDE4_INTEGRATION
+#include <KCmdLineArgs>
+#include <KApplication>
+#include <KAboutData>
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifndef KDE4_INTEGRATION
     QCoreApplication app(argc, argv);
 
-    if (QCoreApplication::arguments().count() != 3) {
+    AurSearcher searcher;
+    searcher.arguments = QCoreApplication::arguments();
+#else
+KAboutData aboutData("shaman", 0, ki18n("Shaman"), "1.90.0",
+                         ki18n("A Modular Package Manager for KDE"),
+                         KAboutData::License_GPL,
+                         ki18n("(C) 2008 - 2009, Dario Freddi - Lukas Appelhans"));
+    aboutData.addAuthor(ki18n("Dario Freddi"), ki18n("Maintainer"), "drf@kde.org", "http://drfav.wordpress.com");
+    KCmdLineArgs::init(argc, argv, &aboutData);
+    KCmdLineOptions options;
+    options.add("+command", ki18n("A short binary option"));
+    options.add("+id", ki18n("A short binary option"));
+    KCmdLineArgs::addCmdLineOptions(options);
+
+    KApplication app;
+
+    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+
+    AurSearcher searcher;
+    searcher.arguments.append("bla");
+    searcher.arguments.append(args->arg(0));
+    searcher.arguments.append(args->arg(1));
+#endif
+
+    QTimer::singleShot(100, &searcher, SLOT(process()));
+
+    return app.exec();
+}
+
+AurSearcher::AurSearcher(QObject* parent)
+    : QObject(parent)
+{
+
+}
+
+AurSearcher::~AurSearcher()
+{
+
+}
+
+void AurSearcher::process()
+{
+    if (arguments.count() != 3) {
         printf("Usage: aursearcher (search|info|download) <package>\n<package> is a string for search, "
                "and a number (the package ID) for the other commands\n");
-        return 0;
+        QCoreApplication::instance()->quit();
     }
 
-    if (QCoreApplication::arguments().at(1) == "search") {
-        Aqpm::Aur::Package::List retlist = Aqpm::Aur::Backend::instance()->searchSync(QCoreApplication::arguments().at(2));
+    if (arguments.at(1) == "search") {
+        Aqpm::Aur::Package::List retlist = Aqpm::Aur::Backend::instance()->searchSync(arguments.at(2));
 
         foreach(const Aqpm::Aur::Package &result, retlist) {
             printf("%s - %s (ID: %i)\n", result.name.toAscii().data(), result.version.toAscii().data(), result.id);
         }
-    } else if (QCoreApplication::arguments().at(1) == "info") {
+    } else if (arguments.at(1) == "info") {
         Aqpm::Aur::Package package = Aqpm::Aur::Backend::instance()->infoSync(QCoreApplication::arguments().at(2).toInt());
 
         printf("Name: %s\nVersion: %s\nDescription: %s\nUrl: %s\nVotes: %i\n%s\n", package.name.toAscii().data(),
                package.version.toAscii().data(), package.description.toAscii().data(), package.url.toAscii().data(),
                package.votes, package.outOfDate ? "The package is out of date" : "");
-    } else if (QCoreApplication::arguments().at(1) == "download") {
-        Aqpm::Aur::Backend::instance()->prepareBuildEnvironmentSync(QCoreApplication::arguments().at(2).toInt(), QDir::currentPath());
+    } else if (arguments.at(1) == "download") {
+        Aqpm::Aur::Backend::instance()->prepareBuildEnvironmentSync(arguments.at(2).toInt(), QDir::currentPath());
     } else {
         printf("Usage: aursearcher (search|info|download) <package>\n<package> is a string for search, "
                "and a number (the package ID) for the other commands\n");
     }
 
-    return 0;
+    QCoreApplication::instance()->quit();
 }
