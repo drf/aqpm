@@ -14,7 +14,7 @@ include(TargetDoc)
 set(MAJOR_AQPM_VERSION 1 CACHE INT "Aqpm's major version number" FORCE)
 set(MINOR_AQPM_VERSION 3 CACHE INT "Aqpm's minor version number" FORCE)
 set(PATCH_AQPM_VERSION 3 CACHE INT "Aqpm's patch version number" FORCE)
-set(FIX_AQPM_VERSION 4 CACHE INT "Aqpm's fix version number" FORCE)
+set(FIX_AQPM_VERSION 5 CACHE INT "Aqpm's fix version number" FORCE)
 set(AQPM_VERSION_STRING "${MAJOR_AQPM_VERSION}.${MINOR_AQPM_VERSION}.${PATCH_AQPM_VERSION}.${FIX_AQPM_VERSION}")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpm.pc.cmake
