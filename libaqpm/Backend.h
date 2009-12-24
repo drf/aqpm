@@ -114,7 +114,8 @@ public:
         Ready,
         SetAqpmRoot,
         AqpmRoot,
-        RetrieveAdditionalTargetsForQueue
+        RetrieveAdditionalTargetsForQueue,
+        LoadPackageFromLocalFile
     };
 
     /**
@@ -299,6 +300,8 @@ public:
     Package getPackage(const QString &name, const QString &repo) const;
     Group getGroup(const QString &name) const;
     Database getDatabase(const QString &name) const;
+
+    Package loadPackageFromLocalFile(const QString &path) const;
 
     BackendThread *getInnerThread();
 

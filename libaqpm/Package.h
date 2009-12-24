@@ -58,6 +58,7 @@ public:
     qint32 isize() const;
     QStringList files() const;
     pmpkg_t *alpmPackage() const;
+    bool isValid() const;
 
     QString retrieveChangelog() const;
     QString retrieveLoggedActions() const;

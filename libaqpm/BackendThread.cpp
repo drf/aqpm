@@ -325,6 +325,9 @@ void BackendThread::customEvent(QEvent *event)
         case Backend::GetDatabase:
             getDatabase(ae->args()["name"].toString());
             break;
+        case Backend::LoadPackageFromLocalFile:
+            loadPackageFromLocalFile(ae->args()["path"].toString());
+            break;
         case Backend::TestLibrary:
             testLibrary();
             break;
@@ -783,6 +786,22 @@ Database BackendThread::getDatabase(const QString &name)
         }
     }
     PERFORM_RETURN(Backend::GetDatabase, Database())
+}
+
+Package BackendThread::loadPackageFromLocalFile(const QString &path)
+{
+    pmpkg_t *pkg;
+
+    // Sanity check
+    if (alpm_pkg_load(path.toUtf8().data(), 1, &pkg) == -1) {
+        // Failure...
+        PERFORM_RETURN(Backend::LoadPackageFromLocalFile, Package())
+    }
+
+    // Awesome, we got it
+    Package retpackage(pkg);
+
+    PERFORM_RETURN(Backend::LoadPackageFromLocalFile, retpackage)
 }
 
 Group::List BackendThread::getPackageGroups(const Package &package)

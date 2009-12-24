@@ -83,6 +83,8 @@ private:
     Group getGroup(const QString &name);
     Database getDatabase(const QString &name);
 
+    Package loadPackageFromLocalFile(const QString &path);
+
     bool isInstalled(const Package &package);
 
     bool updateDatabase();

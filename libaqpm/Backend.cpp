@@ -457,6 +457,14 @@ Database Backend::getDatabase(const QString &name) const
     return s.result()["retvalue"].value<Database>();
 }
 
+Package Backend::loadPackageFromLocalFile(const QString& path) const
+{
+    QVariantMap args;
+    args["path"] = QVariant::fromValue(path);
+    SynchronousLoop s(LoadPackageFromLocalFile, args);
+    return s.result()["retvalue"].value<Package>();
+}
+
 void Backend::updateDatabase()
 {
     d->startUpDownloader();

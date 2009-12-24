@@ -209,6 +209,11 @@ QStringList Package::files() const
     return retlist;
 }
 
+bool Package::isValid() const
+{
+    return d->underlying != NULL;
+}
+
 bool Package::operator==(const Package &pkg) const
 {
     return pkg.alpmPackage() == d->underlying;
