@@ -265,6 +265,28 @@ bool Backend::shouldHandleAuthorization() const
     return d->handleAuth;
 }
 
+QStringList Backend::allPackages() const
+{
+    QStringList retlist;
+    // Ok, let's retrieve all packages recursively
+    QDir absDir("/var/abs");
+    absDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+
+    QFileInfoList list = absDir.entryInfoList();
+
+    for (int i = 0; i < list.size(); ++i) {
+        QDir subAbsDir(list.at(i).absoluteFilePath());
+        subAbsDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+        QFileInfoList subList = subAbsDir.entryInfoList();
+
+        for (int j = 0; j < subList.size(); ++j) {
+            retlist << subList.at(j).baseName();
+        }
+    }
+
+    return retlist;
+}
+
 }
 
 }

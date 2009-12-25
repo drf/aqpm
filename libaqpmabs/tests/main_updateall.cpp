@@ -36,6 +36,10 @@ void AbsTest::updateFinished(bool result)
         qDebug() << "AqpmAbs: Update succeeded";
     }
 
+    qDebug() << "Now listing all packages...";
+
+    qDebug() << Aqpm::Abs::Backend::instance()->allPackages();
+
     qDebug() << "Preparing environment for 9base in current dir...";
 
     bool res = Aqpm::Abs::Backend::instance()->prepareBuildEnvironment("9base", QDir::currentPath() + "/9base");

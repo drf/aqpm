@@ -51,6 +51,8 @@ public:
 
     QString path(const QString &package) const;
 
+    QStringList allPackages() const;
+
 Q_SIGNALS:
     void operationFinished(bool success);
     void operationProgress(const QString &progress);
