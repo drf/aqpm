@@ -64,20 +64,20 @@ private:
 
     Package::List getInstalledPackages();
 
-    Package::List getPackageDependencies(const Package &package);
+    Package::List getPackageDependencies(Package *package);
 
-    Group::List getPackageGroups(const Package &package);
+    Group::List getPackageGroups(Package *package);
 
-    Package::List getDependenciesOnPackage(const Package &package);
+    Package::List getDependenciesOnPackage(Package *package);
 
-    QStringList getPackageFiles(const Package &package);
+    QStringList getPackageFiles(Package *package);
 
     int countPackages(int status);
 
-    QStringList getProviders(const Package &package);
+    QStringList getProviders(Package *package);
     bool isProviderInstalled(const QString &provider);
 
-    Database getPackageDatabase(const Package &package, bool checkver = false);
+    Database getPackageDatabase(Package *package, bool checkver = false);
 
     Package getPackage(const QString &name, const QString &repo);
     Group getGroup(const QString &name);
@@ -85,7 +85,7 @@ private:
 
     Package loadPackageFromLocalFile(const QString &path);
 
-    bool isInstalled(const Package &package);
+    bool isInstalled(Package *package);
 
     bool updateDatabase();
     void fullSystemUpgrade(bool downgrade);

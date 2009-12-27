@@ -5,8 +5,7 @@ Debug/
 moc_*
 ui_*
 *.moc
-*.orig
-*~
+
 .svn/
 *.user
 *kdev4*

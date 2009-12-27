@@ -21,6 +21,8 @@
 #include "Database.h"
 
 #include <alpm.h>
+#include <QVariant>
+#include <Loops_p.h>
 
 using namespace Aqpm;
 
@@ -61,6 +63,14 @@ QString Database::path() const
 pmdb_t *Database::alpmDatabase() const
 {
     return d->underlying;
+}
+
+Package::List Database::packages() const
+{
+    QVariantMap args;
+    args["db"] = QVariant::fromValue(this);
+    SynchronousLoop s(Backend::GetPackagesFromDatabase, args);
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 bool Database::isValid() const

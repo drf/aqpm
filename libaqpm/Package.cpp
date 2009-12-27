@@ -27,6 +27,8 @@
 #include <alpm.h>
 
 #define CLBUF_SIZE 4096
+#include <QVariant>
+#include <Loops_p.h>
 
 using namespace Aqpm;
 
@@ -54,7 +56,11 @@ Package::Package()
 {
 }
 
-
+Package::~Package()
+{
+    delete d->underlying;
+    delete d;
+}
 
 QString Package::arch() const
 {
@@ -214,7 +220,51 @@ bool Package::isValid() const
     return d->underlying != NULL;
 }
 
-bool Package::operator==(const Package &pkg) const
+Database* Package::database(bool checkver)
 {
-    return pkg.alpmPackage() == d->underlying;
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(this);
+    args["checkver"] = QVariant::fromValue(checkver);
+    SynchronousLoop s(Backend::GetPackageDatabase, args);
+    return s.result()["retvalue"].value<Database*>();
+}
+
+Package::List Package::dependsOn() const
+{
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(this);
+    SynchronousLoop s(Backend::GetPackageDependencies, args);
+    return s.result()["retvalue"].value<Package::List>();
+}
+
+Group::List Package::groups() const
+{
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(this);
+    SynchronousLoop s(Backend::GetPackageGroups, args);
+    return s.result()["retvalue"].value<Group::List>();
+}
+
+bool Package::isInstalled()
+{
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(this);
+    SynchronousLoop s(Backend::IsInstalled, args);
+    return s.result()["retvalue"].toBool();
+}
+
+QStringList Package::providers() const
+{
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(this);
+    SynchronousLoop s(Backend::GetProviders, args);
+    return s.result()["retvalue"].toStringList();
+}
+
+Package::List Package::requiredBy() const
+{
+    QVariantMap args;
+    args["package"] = QVariant::fromValue(this);
+    SynchronousLoop s(Backend::GetDependenciesOnPackage, args);
+    return s.result()["retvalue"].value<Package::List>();
 }

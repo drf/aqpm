@@ -25,6 +25,7 @@
 #include <QtCore/QMetaType>
 
 #include "Visibility.h"
+#include "Package.h"
 
 typedef struct __pmgrp_t pmgrp_t;
 
@@ -34,12 +35,13 @@ namespace Aqpm
 class AQPM_EXPORT Group
 {
 public:
-    typedef QList<Group> List;
+    typedef QList<Group*> List;
 
     Group(pmgrp_t *grp);
     Group();
 
     QString name() const;
+    Package::List packages() const;
     pmgrp_t *alpmGroup() const;
     bool isValid() const;
 
@@ -50,7 +52,7 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Aqpm::Group)
+Q_DECLARE_METATYPE(Aqpm::Group*)
 Q_DECLARE_METATYPE(Aqpm::Group::List)
 
 #endif // GROUP_H

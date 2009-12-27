@@ -28,12 +28,15 @@
 namespace Aqpm
 {
 
-class Backend::Private
+class BackendPrivate
 {
     Q_DECLARE_PUBLIC(Backend)
+    Backend * const q_ptr;
 
 public:
-    Private()   : ready(false)
+    Private(Backend *b)
+            : q_ptr(b)
+            , ready(false)
             , list_total(0)
             , list_xfered(0)
             , list_last(0)
@@ -50,9 +53,12 @@ public:
     QDateTime averageRateTime;
 
     // privates
-    QEvent::Type getEventTypeFor(ActionType event) const;
+    QEvent::Type getEventTypeFor(Backend::ActionType event) const;
     void startUpDownloader();
     void shutdownDownloader();
+
+    BackendThread *thread();
+    void setUpAlpm();
 
 private:
     // Q_PRIVATE_SLOTS
@@ -66,8 +72,6 @@ private:
     void __k__computeDownloadProgress(qlonglong downloaded, qlonglong total, const QString& filename);
     void __k__totalOffsetReceived(int offset);
     void __k__operationFinished(bool result);
-
-    Backend *q_ptr;
 };
 
 }

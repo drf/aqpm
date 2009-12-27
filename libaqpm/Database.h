@@ -34,26 +34,27 @@ namespace Aqpm
 class AQPM_EXPORT Database
 {
 public:
+    typedef QList<Database*> List;
 
-    typedef QList<Database> List;
-
-    Database();
-    Database(pmdb_t *db);
+    virtual ~Database();
 
     QString name() const;
     QString path() const;
     QStringList servers() const;
+    Package::List packages() const;
     pmdb_t *alpmDatabase() const;
     bool isValid() const;
 
 private:
+    explicit Database(pmdb_t *db);
+
     class Private;
     Private *d;
 };
 
 }
 
-Q_DECLARE_METATYPE(Aqpm::Database)
+Q_DECLARE_METATYPE(Aqpm::Database*)
 Q_DECLARE_METATYPE(Aqpm::Database::List)
 
 #endif // DATABASE_H

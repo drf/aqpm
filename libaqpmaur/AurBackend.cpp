@@ -53,7 +53,7 @@ public:
     Private() {}
 
     QNetworkRequest createNetworkRequest(const QString &type, const QString &arg) const;
-    QNetworkRequest createDownloadRequest(const Package &package) const;
+    QNetworkRequest createDownloadRequest(Package *package) const;
     Package packageFromMap(const QVariantMap &map) const;
 
     // Private slots

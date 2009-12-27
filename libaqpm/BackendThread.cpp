@@ -81,9 +81,6 @@ public:
     Q_DECLARE_PUBLIC(BackendThread)
     BackendThread *q_ptr;
 
-    pmdb_t *db_local;
-    pmdb_t *dbs_sync;
-
     QueueItem::List queue;
     Globals::TransactionFlags flags;
 
@@ -91,6 +88,12 @@ public:
     bool confChrooted;
 
     bool handleAuth;
+
+    QHash< QString, QHash< QString, Package*> > m_packages;
+    QHash< QString, QString > m_cachedPackages;
+    QHash< QString, Group* > m_cachedGroups;
+    QList< Database* > m_syncDatabases;
+    Database *m_localDatabase;
 };
 
 void BackendThread::Private::waitForWorkerReady()
@@ -556,7 +559,7 @@ Group::List BackendThread::getAvailableGroups()
     PERFORM_RETURN(Backend::GetAvailableGroups, retlist)
 }
 
-Package::List BackendThread::getPackageDependencies(const Package &package)
+Package::List BackendThread::getPackageDependencies(Package *package)
 {
     alpm_list_t *deps;
     Package::List retlist;
@@ -571,7 +574,7 @@ Package::List BackendThread::getPackageDependencies(const Package &package)
     PERFORM_RETURN(Backend::GetPackageDependencies, retlist)
 }
 
-Package::List BackendThread::getDependenciesOnPackage(const Package &package)
+Package::List BackendThread::getDependenciesOnPackage(Package *package)
 {
     alpm_list_t *deps;
     Package::List retlist;
@@ -586,7 +589,7 @@ Package::List BackendThread::getDependenciesOnPackage(const Package &package)
     PERFORM_RETURN(Backend::GetDependenciesOnPackage, retlist)
 }
 
-bool BackendThread::isInstalled(const Package &package)
+bool BackendThread::isInstalled(Package *package)
 {
     pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(package.alpmPackage()));
 
@@ -597,7 +600,7 @@ bool BackendThread::isInstalled(const Package &package)
     PERFORM_RETURN(Backend::IsInstalled, true)
 }
 
-QStringList BackendThread::getProviders(const Package &package)
+QStringList BackendThread::getProviders(Package *package)
 {
     alpm_list_t *provides;
     QStringList retlist;
@@ -619,7 +622,7 @@ bool BackendThread::isProviderInstalled(const QString &provider)
      * &provider
      */
 
-    foreach(const Package &package, getInstalledPackages()) {
+    foreach(Package *package, getInstalledPackages()) {
         QStringList prv(getProviders(package));
 
         for (int i = 0; i < prv.size(); ++i) {
@@ -639,7 +642,7 @@ QString BackendThread::getAlpmVersion()
     PERFORM_RETURN(Backend::GetAlpmVersion, QString(alpm_version()))
 }
 
-Database BackendThread::getPackageDatabase(const Package &package, bool checkver)
+Database BackendThread::getPackageDatabase(Package *package, bool checkver)
 {
     Database db(alpm_pkg_get_db(package.alpmPackage()));
 
@@ -676,7 +679,7 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
     if (db.alpmDatabase() == d->db_local) {
         qDebug() << "Getting local packages";
 
-        foreach(const Package &pkg, getInstalledPackages()) {
+        foreach(Package *pkg, getInstalledPackages()) {
             bool matched = false;
             foreach(const Database &db, getAvailableDatabases()) {
                 if (alpm_db_get_pkg(db.alpmDatabase(), pkg.name().toAscii().data())) {
@@ -804,7 +807,7 @@ Package BackendThread::loadPackageFromLocalFile(const QString &path)
     PERFORM_RETURN(Backend::LoadPackageFromLocalFile, retpackage)
 }
 
-Group::List BackendThread::getPackageGroups(const Package &package)
+Group::List BackendThread::getPackageGroups(Package *package)
 {
     alpm_list_t *list = alpm_pkg_get_groups(package.alpmPackage());
     Group::List retlist;

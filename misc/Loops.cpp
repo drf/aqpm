@@ -36,10 +36,10 @@ SynchronousLoop::SynchronousLoop(Backend::ActionType type, const QVariantMap &ar
         , m_result(QVariantMap())
         , m_type((int)type)
 {
-    connect(Backend::instance()->getInnerThread(), SIGNAL(actionPerformed(int, QVariantMap)),
+    connect(Backend::instance()->d->thread(), SIGNAL(actionPerformed(int, QVariantMap)),
             this, SLOT(actionPerformed(int, QVariantMap)));
 
-    QCoreApplication::postEvent(Backend::instance()->getInnerThread(),
+    QCoreApplication::postEvent(Backend::instance()->d->thread(),
                                 new ActionEvent(Backend::instance()->d->getEventTypeFor(Backend::PerformAction),
                                                 type, args));
 

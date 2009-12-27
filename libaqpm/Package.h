@@ -26,20 +26,21 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
+#include "Group.h"
+#include <QtCore/QStringList>
 
 typedef struct __pmpkg_t pmpkg_t;
 
 namespace Aqpm
 {
+class Database;
 
 class AQPM_EXPORT Package
 {
 public:
+    virtual ~Package();
 
-    typedef QList<Package> List;
-
-    Package(pmpkg_t *pkg);
-    Package();
+    typedef QList<Package*> List;
 
     QString name() const;
     QString filename() const;
@@ -57,22 +58,32 @@ public:
     qint32 size() const;
     qint32 isize() const;
     QStringList files() const;
+
+    Package::List dependsOn() const;
+    Package::List requiredBy() const;
+    Group::List groups() const;
+    QStringList providers() const;
+    Database *database(bool checkver = false);
+    bool isInstalled();
+
     pmpkg_t *alpmPackage() const;
     bool isValid() const;
 
     QString retrieveChangelog() const;
     QString retrieveLoggedActions() const;
 
-    bool operator ==(const Package &pkg) const;
-
 private:
+    explicit Package(pmpkg_t *pkg);
+
     class Private;
     Private *d;
+
+    friend class BackendThread;
 };
 
 }
 
-Q_DECLARE_METATYPE(Aqpm::Package)
+Q_DECLARE_METATYPE(Aqpm::Package*)
 Q_DECLARE_METATYPE(Aqpm::Package::List)
 
 #endif // PACKAGE_H

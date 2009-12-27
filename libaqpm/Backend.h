@@ -38,7 +38,7 @@ namespace Aqpm
 
 typedef QHash< QString, Aqpm::QueueItem::Action > Targets;
 
-class BackendThread;
+class BackendPrivate;
 
 /**
  * \brief The main and only entry point for performing operations with Aqpm
@@ -183,38 +183,23 @@ public:
      *
      * \return every sync database registered
      */
-    Database::List getAvailableDatabases() const;
+    Database::List availableDatabases() const;
     /**
      * Returns the local database, which carries all installed packages
      *
      * \return the local database
      */
-    Database getLocalDatabase() const;
+    Database *localDatabase() const;
 
-    Group::List getAvailableGroups() const;
+    Group::List availableGroups() const;
 
-    Package::List getPackagesFromDatabase(const Database &db) const;
+    Package::List upgradeablePackages() const;
 
-    Package::List getPackagesFromGroup(const Group &group) const;
-
-    Package::List getUpgradeablePackages() const;
-
-    Package::List getInstalledPackages() const;
-
-    Package::List getPackageDependencies(const Package &package) const;
-
-    Group::List getPackageGroups(const Package &package) const;
-
-    Package::List getDependenciesOnPackage(const Package &package) const;
+    Package::List installedPackages() const;
 
     int countPackages(Globals::PackageStatus status) const;
 
-    QStringList getProviders(const Package &package) const;
     bool isProviderInstalled(const QString &provider) const;
-
-    Database getPackageDatabase(const Package &package, bool checkver = false) const;
-
-    bool isInstalled(const Package &package) const;
 
     /**
      * \brief Starts an update operation.
@@ -237,7 +222,7 @@ public:
 
     bool reloadPacmanConfiguration() const; // In case the user modifies it.
 
-    QString getAlpmVersion() const;
+    QString alpmVersion() const;
 
     /**
      * Clears the current queue
@@ -252,7 +237,7 @@ public:
      *
      * \see processQueue
      */
-    void addItemToQueue(const QString &name, QueueItem::Action action);
+    void addItemToQueue(Package *package, QueueItem::Action action);
 
     /**
      * \brief Starts processing the current queue
@@ -297,16 +282,11 @@ public:
 
     void setAnswer(int answer);
 
-    Package getPackage(const QString &name, const QString &repo) const;
-    Group getGroup(const QString &name) const;
-    Database getDatabase(const QString &name) const;
+    Package *package(const QString &name, const QString &repo);
+    Group *group(const QString &name) const;
+    Database *database(const QString &name) const;
 
-    Package loadPackageFromLocalFile(const QString &path) const;
-
-    BackendThread *getInnerThread();
-
-public Q_SLOTS:
-    void setUpAlpm();
+    Package *loadPackageFromLocalFile(const QString &path);
 
 Q_SIGNALS:
     void dbStatusChanged(const QString &repo, int action);
@@ -340,8 +320,7 @@ Q_SIGNALS:
 private:
     Backend();
 
-    class Private;
-    Private * const d;
+    BackendPrivate * const d;
 
     friend class BackendThread;
     friend class SynchronousLoop;

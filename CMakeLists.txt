@@ -11,7 +11,7 @@ include(InstallSettings)
 # Documentation
 include(TargetDoc)
 
-set(MAJOR_AQPM_VERSION 1 CACHE INT "Aqpm's major version number" FORCE)
+set(MAJOR_AQPM_VERSION 2 CACHE INT "Aqpm's major version number" FORCE)
 set(MINOR_AQPM_VERSION 3 CACHE INT "Aqpm's minor version number" FORCE)
 set(PATCH_AQPM_VERSION 3 CACHE INT "Aqpm's patch version number" FORCE)
 set(FIX_AQPM_VERSION 5 CACHE INT "Aqpm's fix version number" FORCE)

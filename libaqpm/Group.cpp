@@ -21,6 +21,8 @@
 #include "Group.h"
 
 #include <alpm.h>
+#include <QVariant>
+#include <Loops_p.h>
 
 using namespace Aqpm;
 
@@ -50,6 +52,14 @@ QString Group::name() const
 pmgrp_t *Group::alpmGroup() const
 {
     return d->underlying;
+}
+
+Package::List Group::packages() const
+{
+    QVariantMap args;
+    args["group"] = QVariant::fromValue(group);
+    SynchronousLoop s(Backend::GetPackagesFromGroup, args);
+    return s.result()["retvalue"].value<Package::List>();
 }
 
 bool Group::isValid() const
