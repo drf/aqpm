@@ -34,7 +34,7 @@ class BackendPrivate
     Backend * const q_ptr;
 
 public:
-    Private(Backend *b)
+    BackendPrivate(Backend *b)
             : q_ptr(b)
             , ready(false)
             , list_total(0)
@@ -57,7 +57,6 @@ public:
     void startUpDownloader();
     void shutdownDownloader();
 
-    BackendThread *thread();
     void setUpAlpm();
 
 private:

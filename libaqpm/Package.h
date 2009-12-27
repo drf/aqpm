@@ -26,7 +26,6 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
-#include "Group.h"
 #include <QtCore/QStringList>
 
 typedef struct __pmpkg_t pmpkg_t;
@@ -34,6 +33,7 @@ typedef struct __pmpkg_t pmpkg_t;
 namespace Aqpm
 {
 class Database;
+class Group;
 
 class AQPM_EXPORT Package
 {
@@ -59,9 +59,9 @@ public:
     qint32 isize() const;
     QStringList files() const;
 
-    Package::List dependsOn() const;
-    Package::List requiredBy() const;
-    Group::List groups() const;
+    List dependsOn() const;
+    List requiredBy() const;
+    QList<Group*> groups() const;
     QStringList providers() const;
     Database *database(bool checkver = false);
     bool isInstalled();

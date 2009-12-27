@@ -43,8 +43,8 @@ void BackendPrivate::startUpDownloader()
 
     // Start up Downloader
     if (!Downloader::hasInstance()) {
-        connect(Downloader::instance(), SIGNAL(downloadProgress(qlonglong, qlonglong, QString)),
-                q, SLOT(__k__computeDownloadProgress(qlonglong, qlonglong, QString)));
+        q->connect(Downloader::instance(), SIGNAL(downloadProgress(qlonglong, qlonglong, QString)),
+                   q, SLOT(__k__computeDownloadProgress(qlonglong, qlonglong, QString)));
     }
 }
 
@@ -69,34 +69,34 @@ void BackendPrivate::__k__setUpSelf(BackendThread *t)
 
     thread = t;
 
-    connect(thread, SIGNAL(dbQty(const QStringList&)),
+    q->connect(thread, SIGNAL(dbQty(const QStringList&)),
             q, SIGNAL(dbQty(const QStringList&)));
-    connect(thread, SIGNAL(dbStatusChanged(const QString&, int)),
+    q->connect(thread, SIGNAL(dbStatusChanged(const QString&, int)),
             q, SIGNAL(dbStatusChanged(const QString&, int)));
-    connect(thread, SIGNAL(transactionStarted()),
+    q->connect(thread, SIGNAL(transactionStarted()),
             q, SIGNAL(transactionStarted()));
-    connect(thread, SIGNAL(transactionReleased()),
+    q->connect(thread, SIGNAL(transactionReleased()),
             q, SIGNAL(transactionReleased()));
-    connect(thread, SIGNAL(operationFinished(bool)),
+    q->connect(thread, SIGNAL(operationFinished(bool)),
             q, SLOT(__k__operationFinished(bool)));
-    connect(thread, SIGNAL(threadInitialized()),
+    q->connect(thread, SIGNAL(threadInitialized()),
             q, SLOT(__k__backendReady()));
-    connect(thread, SIGNAL(streamTotalOffset(int)),
+    q->connect(thread, SIGNAL(streamTotalOffset(int)),
             q, SLOT(__k__totalOffsetReceived(int)));
-    connect(thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
+    q->connect(thread, SIGNAL(streamTransProgress(int, const QString&, int, int, int)),
             q, SLOT(__k__doStreamTransProgress(int, const QString&, int, int, int)));
-    connect(thread, SIGNAL(streamTransEvent(int, QVariantMap)),
+    q->connect(thread, SIGNAL(streamTransEvent(int, QVariantMap)),
             q, SLOT(__k__doStreamTransEvent(int, QVariantMap)));
-    connect(thread, SIGNAL(errorOccurred(int, QVariantMap)),
+    q->connect(thread, SIGNAL(errorOccurred(int, QVariantMap)),
             q, SLOT(__k__streamError(int, QVariantMap)));
-    connect(thread, SIGNAL(logMessageStreamed(QString)),
+    q->connect(thread, SIGNAL(logMessageStreamed(QString)),
             q, SIGNAL(logMessageStreamed(QString)));
-    connect(thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
+    q->connect(thread, SIGNAL(streamTransQuestion(int, QVariantMap)),
             q, SLOT(__k__doStreamTransQuestion(int, QVariantMap)));
-    connect(thread, SIGNAL(additionalTargetsRetrieved(Aqpm::Targets)),
+    q->connect(thread, SIGNAL(additionalTargetsRetrieved(Aqpm::Targets)),
             q, SIGNAL(additionalTargetsRetrieved(Aqpm::Targets)));
 
-    QCoreApplication::postEvent(thread, new QEvent(getEventTypeFor(Initialization)));
+    QCoreApplication::postEvent(thread, new QEvent(getEventTypeFor(Backend::Initialization)));
 }
 
 void BackendPrivate::__k__streamError(int code, const QVariantMap &args)
@@ -205,12 +205,10 @@ Backend *Backend::instance()
 
 Backend::Backend()
         : QObject(),
-        d(new BackendPrivate())
+        d(new BackendPrivate(this))
 {
     Q_ASSERT(!s_globalBackend()->q);
     s_globalBackend()->q = this;
-
-    d->q_ptr = this;
 
     qRegisterMetaType<QueueItem>();
     qDBusRegisterMetaType<QueueItem>();
@@ -262,7 +260,7 @@ QString Backend::version()
     return AQPM_VERSION;
 }
 
-QEvent::Type BackendPrivate::getEventTypeFor(ActionType event) const
+QEvent::Type BackendPrivate::getEventTypeFor(Backend::ActionType event) const
 {
     return events[event];
 }
@@ -367,7 +365,7 @@ int Backend::countPackages(Globals::PackageStatus status) const
     return s.result()["retvalue"].toInt();
 }
 
-Package *Backend::package(const QString &name, const QString &db) const
+Package *Backend::package(const QString &name, const QString &db)
 {
     QVariantMap args;
     args["name"] = QVariant::fromValue(name);
@@ -376,7 +374,7 @@ Package *Backend::package(const QString &name, const QString &db) const
     return s.result()["retvalue"].value<Package*>();
 }
 
-Group *Backend::group(const QString &name) const
+Group *Backend::group(const QString &name)
 {
     QVariantMap args;
     args["name"] = QVariant::fromValue(name);
@@ -384,7 +382,7 @@ Group *Backend::group(const QString &name) const
     return s.result()["retvalue"].value<Group*>();
 }
 
-Database *Backend::database(const QString &name) const
+Database *Backend::database(const QString &name)
 {
     QVariantMap args;
     args["name"] = QVariant::fromValue(name);
@@ -392,12 +390,12 @@ Database *Backend::database(const QString &name) const
     return s.result()["retvalue"].value<Database*>();
 }
 
-Package Backend::loadPackageFromLocalFile(const QString& path) const
+Package *Backend::loadPackageFromLocalFile(const QString& path)
 {
     QVariantMap args;
     args["path"] = QVariant::fromValue(path);
     SynchronousLoop s(LoadPackageFromLocalFile, args);
-    return s.result()["retvalue"].value<Package>();
+    return s.result()["retvalue"].value<Package*>();
 }
 
 void Backend::updateDatabase()
@@ -424,10 +422,10 @@ void Backend::clearQueue()
     SynchronousLoop s(ClearQueue, QVariantMap());
 }
 
-void Backend::addItemToQueue(const QString &name, QueueItem::Action action)
+void Backend::addItemToQueue(Package *package, QueueItem::Action action)
 {
     QVariantMap args;
-    args["name"] = QVariant::fromValue(name);
+    args["package"] = QVariant::fromValue(package);
     args["action"] = QVariant::fromValue(action);
     SynchronousLoop s(AddItemToQueue, args);
 }
@@ -481,11 +479,6 @@ void Backend::setAnswer(int answer)
     QVariantMap args;
     args["answer"] = QVariant::fromValue(answer);
     SynchronousLoop s(SetAnswer, args);
-}
-
-BackendThread *BackendPrivate::thread()
-{
-    return thread;
 }
 
 void Backend::interruptTransaction()

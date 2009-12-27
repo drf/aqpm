@@ -189,7 +189,7 @@ public:
      *
      * \return the local database
      */
-    Database *localDatabase() const;
+    Database *localDatabase();
 
     Group::List availableGroups() const;
 
@@ -283,8 +283,8 @@ public:
     void setAnswer(int answer);
 
     Package *package(const QString &name, const QString &repo);
-    Group *group(const QString &name) const;
-    Database *database(const QString &name) const;
+    Group *group(const QString &name);
+    Database *database(const QString &name);
 
     Package *loadPackageFromLocalFile(const QString &path);
 
@@ -322,6 +322,7 @@ private:
 
     BackendPrivate * const d;
 
+    friend class BackendPrivate;
     friend class BackendThread;
     friend class SynchronousLoop;
 

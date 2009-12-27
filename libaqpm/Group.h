@@ -25,12 +25,12 @@
 #include <QtCore/QMetaType>
 
 #include "Visibility.h"
-#include "Package.h"
 
 typedef struct __pmgrp_t pmgrp_t;
 
 namespace Aqpm
 {
+class Package;
 
 class AQPM_EXPORT Group
 {
@@ -41,7 +41,7 @@ public:
     Group();
 
     QString name() const;
-    Package::List packages() const;
+    QList<Package*> packages() const;
     pmgrp_t *alpmGroup() const;
     bool isValid() const;
 
