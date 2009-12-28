@@ -37,17 +37,20 @@ class AQPM_EXPORT Group
 public:
     typedef QList<Group*> List;
 
-    Group(pmgrp_t *grp);
-    Group();
+    virtual ~Group();
 
     QString name() const;
-    QList<Package*> packages() const;
+    QList<Package*> packages();
     pmgrp_t *alpmGroup() const;
     bool isValid() const;
 
 private:
+    explicit Group(pmgrp_t *grp);
+
     class Private;
     Private *d;
+
+    friend class BackendThread;
 };
 
 }

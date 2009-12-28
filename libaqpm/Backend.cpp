@@ -232,15 +232,13 @@ Backend::Backend()
     d->events[RetrieveAdditionalTargetsForQueue] = (QEvent::Type)QEvent::registerEventType();
     d->events[PerformAction] = (QEvent::Type)QEvent::registerEventType();
 
-    d->containerThread = new ContainerThread(this);
+    d->containerThread = new ContainerThread();
     connect(d->containerThread, SIGNAL(threadCreated(BackendThread*)), SLOT(__k__setUpSelf(BackendThread*)));
     d->containerThread->start();
 }
 
 Backend::~Backend()
 {
-    d->containerThread->quit();
-    d->containerThread->deleteLater();
     delete d;
 }
 
@@ -424,8 +422,17 @@ void Backend::clearQueue()
 
 void Backend::addItemToQueue(Package *package, QueueItem::Action action)
 {
+    if (action == QueueItem::Sync) {
+        addItemToQueue(QString("%1/%2").arg(package->database()->name()).arg(package->name()), action);
+    } else {
+        addItemToQueue(package->name(), action);
+    }
+}
+
+void Backend::addItemToQueue(const QString &name, QueueItem::Action action)
+{
     QVariantMap args;
-    args["package"] = QVariant::fromValue(package);
+    args["name"] = QVariant::fromValue(name);
     args["action"] = QVariant::fromValue(action);
     SynchronousLoop s(AddItemToQueue, args);
 }

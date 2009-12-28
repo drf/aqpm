@@ -35,8 +35,11 @@ int main(int argc, char *argv[])
     Aqpm::Backend::instance()->safeInitialization();
     Aqpm::Backend::instance()->setShouldHandleAuthorization(true);
 
-    foreach(const Aqpm::Database &db, Aqpm::Backend::instance()->getAvailableDatabases()) {
-        qDebug() << db.name();
+    // Load twice
+    Aqpm::Backend::instance()->reloadPacmanConfiguration();
+
+    foreach(Aqpm::Database *db, Aqpm::Backend::instance()->availableDatabases()) {
+        qDebug() << db->name();
     }
 
     qDebug() << "Now updating databases...";

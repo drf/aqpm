@@ -237,6 +237,7 @@ public:
      *
      * \see processQueue
      */
+    void addItemToQueue(const QString &name, QueueItem::Action action);
     void addItemToQueue(Package *package, QueueItem::Action action);
 
     /**

@@ -51,14 +51,9 @@ Package::Package(pmpkg_t *pkg)
 {
 }
 
-Package::Package()
-        : d(new Private(NULL))
-{
-}
-
 Package::~Package()
 {
-    delete d->underlying;
+    //free(d->underlying);
     delete d;
 }
 
@@ -229,7 +224,7 @@ Database* Package::database(bool checkver)
     return s.result()["retvalue"].value<Database*>();
 }
 
-Package::List Package::dependsOn() const
+Package::List Package::dependsOn()
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(this);
@@ -237,7 +232,7 @@ Package::List Package::dependsOn() const
     return s.result()["retvalue"].value<Package::List>();
 }
 
-Group::List Package::groups() const
+Group::List Package::groups()
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(this);
@@ -253,7 +248,7 @@ bool Package::isInstalled()
     return s.result()["retvalue"].toBool();
 }
 
-QStringList Package::providers() const
+QStringList Package::providers()
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(this);
@@ -261,7 +256,7 @@ QStringList Package::providers() const
     return s.result()["retvalue"].toStringList();
 }
 
-Package::List Package::requiredBy() const
+Package::List Package::requiredBy()
 {
     QVariantMap args;
     args["package"] = QVariant::fromValue(this);

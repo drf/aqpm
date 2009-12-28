@@ -39,9 +39,10 @@ Group::Group(pmgrp_t *grp)
 {
 }
 
-Group::Group()
-        : d(new Private(NULL))
+Group::~Group()
 {
+    //free(d->underlying);
+    delete d;
 }
 
 QString Group::name() const
@@ -54,10 +55,10 @@ pmgrp_t *Group::alpmGroup() const
     return d->underlying;
 }
 
-Package::List Group::packages() const
+Package::List Group::packages()
 {
     QVariantMap args;
-    args["group"] = QVariant::fromValue(group);
+    args["group"] = QVariant::fromValue(this);
     SynchronousLoop s(Backend::GetPackagesFromGroup, args);
     return s.result()["retvalue"].value<Package::List>();
 }

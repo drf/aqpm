@@ -40,14 +40,15 @@ Database::Private::Private(pmdb_t *db)
 {
 }
 
-Database::Database()
-        : d(new Private(NULL))
-{
-}
-
 Database::Database(pmdb_t *db)
         : d(new Private(db))
 {
+}
+
+Database::~Database()
+{
+    //free(d->underlying);
+    delete d;
 }
 
 QString Database::name() const
@@ -65,7 +66,7 @@ pmdb_t *Database::alpmDatabase() const
     return d->underlying;
 }
 
-Package::List Database::packages() const
+Package::List Database::packages()
 {
     QVariantMap args;
     args["db"] = QVariant::fromValue(this);

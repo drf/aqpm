@@ -41,7 +41,7 @@ public:
     QString name() const;
     QString path() const;
     QStringList servers() const;
-    Package::List packages() const;
+    Package::List packages();
     pmdb_t *alpmDatabase() const;
     bool isValid() const;
 
@@ -50,6 +50,8 @@ private:
 
     class Private;
     Private *d;
+
+    friend class BackendThread;
 };
 
 }

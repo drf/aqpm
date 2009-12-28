@@ -59,10 +59,10 @@ public:
     qint32 isize() const;
     QStringList files() const;
 
-    List dependsOn() const;
-    List requiredBy() const;
-    QList<Group*> groups() const;
-    QStringList providers() const;
+    List dependsOn();
+    List requiredBy();
+    QList<Group*> groups();
+    QStringList providers();
     Database *database(bool checkver = false);
     bool isInstalled();
 

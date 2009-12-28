@@ -61,9 +61,10 @@ void ContainerThread::run()
     Configuration::instance();
 
     BackendThread *t = new BackendThread();
+    connect(t, SIGNAL(aboutToBeDeleted()), this, SLOT(quit()));
     emit threadCreated(t);
     exec();
-    t->deleteLater();
+    deleteLater();
 }
 
 ContainerThread::~ContainerThread()
@@ -89,11 +90,10 @@ public:
 
     bool handleAuth;
 
-    QHash< QString, QHash< QString, Package*> > m_packages;
-    QHash< QString, QString > m_cachedPackages;
-    QHash< QString, Group* > m_cachedGroups;
-    QList< Database* > m_syncDatabases;
-    Database *m_localDatabase;
+    QHash< QString, QHash< QString, Package*> > cachedPackages;
+    QHash< QString, Group* > cachedGroups;
+    QHash< QString, Database* > syncDatabases;
+    Database *localDatabase;
 };
 
 void BackendThread::Private::waitForWorkerReady()
@@ -215,6 +215,7 @@ BackendThread::BackendThread(QObject *parent)
 
 BackendThread::~BackendThread()
 {
+    emit aboutToBeDeleted();
     delete d;
 }
 
@@ -263,10 +264,10 @@ void BackendThread::customEvent(QEvent *event)
             getAvailableGroups();
             break;
         case Backend::GetPackagesFromDatabase:
-            getPackagesFromDatabase(ae->args()["db"].value<Database>());
+            getPackagesFromDatabase(ae->args()["db"].value<Database*>());
             break;
         case Backend::GetPackagesFromGroup:
-            getPackagesFromGroup(ae->args()["group"].value<Group>());
+            getPackagesFromGroup(ae->args()["group"].value<Group*>());
             break;
         case Backend::GetUpgradeablePackages:
             getUpgradeablePackages();
@@ -275,28 +276,28 @@ void BackendThread::customEvent(QEvent *event)
             getInstalledPackages();
             break;
         case Backend::GetPackageDependencies:
-            getPackageDependencies(ae->args()["package"].value<Package>());
+            getPackageDependencies(ae->args()["package"].value<Package*>());
             break;
         case Backend::GetPackageGroups:
-            getPackageGroups(ae->args()["package"].value<Package>());
+            getPackageGroups(ae->args()["package"].value<Package*>());
             break;
         case Backend::GetDependenciesOnPackage:
-            getDependenciesOnPackage(ae->args()["package"].value<Package>());
+            getDependenciesOnPackage(ae->args()["package"].value<Package*>());
             break;
         case Backend::CountPackages:
             countPackages(ae->args()["status"].toInt());
             break;
         case Backend::GetProviders:
-            getProviders(ae->args()["package"].value<Package>());
+            getProviders(ae->args()["package"].value<Package*>());
             break;
         case Backend::IsProviderInstalled:
             isProviderInstalled(ae->args()["provider"].toString());
             break;
         case Backend::GetPackageDatabase:
-            getPackageDatabase(ae->args()["package"].value<Package>(), ae->args()["checkver"].toBool());
+            getPackageDatabase(ae->args()["package"].value<Package*>(), ae->args()["checkver"].toBool());
             break;
         case Backend::IsInstalled:
-            isInstalled(ae->args()["package"].value<Package>());
+            isInstalled(ae->args()["package"].value<Package*>());
             break;
         case Backend::GetAlpmVersion:
             getAlpmVersion();
@@ -368,6 +369,24 @@ bool BackendThread::isOnTransaction()
     PERFORM_RETURN(Backend::IsOnTransaction, false);
 }
 
+Group* BackendThread::groupFromCache(pmgrp_t* group)
+{
+    QString name = alpm_grp_get_name(group);
+    if (!d->cachedGroups.contains(name)) {
+        d->cachedGroups[name] = new Group(group);
+    }
+    return d->cachedGroups[name];
+}
+
+Package* BackendThread::packageFromCache(const QString& repo, pmpkg_t* pkg)
+{
+    QString name = alpm_pkg_get_name(pkg);
+    if (!d->cachedPackages[repo].contains(name)) {
+        d->cachedPackages[repo][name] = new Package(pkg);
+    }
+    return d->cachedPackages[repo][name];
+}
+
 bool BackendThread::reloadPacmanConfiguration()
 {
     alpm_db_unregister_all();
@@ -390,6 +409,19 @@ bool BackendThread::reloadPacmanConfiguration()
 
     alpm_option_remove_cachedir(QString(d->chroot + "/var/cache/pacman/pkg").toAscii().data());
 
+    // Delete everything in cache first!
+    qDeleteAll(d->cachedGroups);
+    qDeleteAll(d->syncDatabases);
+    QHash< QString, QHash<QString, Aqpm::Package*> >::const_iterator i;
+    for (i = d->cachedPackages.constBegin(); i != d->cachedPackages.constEnd(); ++i) {
+        qDeleteAll(i.value().values());
+    }
+    delete d->localDatabase;
+
+    d->cachedGroups.clear();
+    d->syncDatabases.clear();
+    d->cachedPackages.clear();
+
     setUpAlpm();
 
     PERFORM_RETURN(Backend::ReloadPacmanConfiguration, true)
@@ -401,7 +433,7 @@ void BackendThread::setUpAlpm()
     alpm_option_set_dbpath(QString(d->chroot + "/var/lib/pacman").toAscii().data());
     alpm_option_add_cachedir(QString(d->chroot + "/var/cache/pacman/pkg").toAscii().data());
 
-    d->db_local = alpm_db_register_local();
+    d->localDatabase = new Database(alpm_db_register_local());
 
     if (Configuration::instance()->value("options/LogFile").toString().isEmpty()) {
         alpm_option_set_logfile(QString(d->chroot + "/var/log/pacman.log").toAscii().data());
@@ -418,10 +450,11 @@ void BackendThread::setUpAlpm()
             continue;
         }
 
-        d->dbs_sync = alpm_db_register_sync(db.toAscii().data());
+        pmdb_t *alpmDb = alpm_db_register_sync(db.toAscii().data());
 
-        if (alpm_db_setserver(d->dbs_sync, srvr.toAscii().data()) == 0) {
+        if (alpm_db_setserver(alpmDb, srvr.toAscii().data()) == 0) {
             qDebug() << db << "--->" << srvr;
+            d->syncDatabases[db] = new Database(alpmDb);
         } else {
             qDebug() << "Failed to add" << db << "!!";
         }
@@ -487,31 +520,21 @@ QString BackendThread::aqpmRoot()
 
 Database::List BackendThread::getAvailableDatabases()
 {
-    alpm_list_t *dbs = alpm_option_get_syncdbs();
-    Database::List retlist;
-
-    dbs = alpm_list_first(dbs);
-
-    while (dbs != NULL) {
-        retlist.append(Database((pmdb_t *) alpm_list_getdata(dbs)));
-        dbs = alpm_list_next(dbs);
-    }
-
-    PERFORM_RETURN(Backend::GetAvailableDatabases, retlist);
+    PERFORM_RETURN(Backend::GetAvailableDatabases, d->syncDatabases.values());
 }
 
-Database BackendThread::getLocalDatabase()
+Database *BackendThread::getLocalDatabase()
 {
-    PERFORM_RETURN(Backend::GetLocalDatabase, Database(d->db_local))
+    PERFORM_RETURN(Backend::GetLocalDatabase, d->localDatabase)
 }
 
 Package::List BackendThread::getInstalledPackages()
 {
     Package::List retlist;
-    alpm_list_t *pkgs = alpm_list_first(alpm_db_get_pkgcache(d->db_local));
+    alpm_list_t *pkgs = alpm_list_first(alpm_db_get_pkgcache(d->localDatabase->alpmDatabase()));
 
     while (pkgs) {
-        retlist.append(Package((pmpkg_t *)alpm_list_getdata(pkgs)));
+        retlist.append(packageFromCache("local", (pmpkg_t *)alpm_list_getdata(pkgs)));
         pkgs = alpm_list_next(pkgs);
     }
 
@@ -520,7 +543,7 @@ Package::List BackendThread::getInstalledPackages()
 
 Package::List BackendThread::getUpgradeablePackages()
 {
-    alpm_list_t *syncpkgs = alpm_db_get_pkgcache(d->db_local);
+    alpm_list_t *syncpkgs = alpm_db_get_pkgcache(d->localDatabase->alpmDatabase());
     alpm_list_t *syncdbs = alpm_option_get_syncdbs();
     Package::List retlist;
 
@@ -528,7 +551,7 @@ Package::List BackendThread::getUpgradeablePackages()
         pmpkg_t *pkg = alpm_sync_newversion((pmpkg_t*)alpm_list_getdata(syncpkgs), syncdbs);
 
         if (pkg != NULL) {
-            retlist.append(Package(pkg));
+            retlist.append(packageFromCache("upgradeable", pkg));
         }
 
         syncpkgs = alpm_list_next(syncpkgs);
@@ -549,7 +572,7 @@ Group::List BackendThread::getAvailableGroups()
         grps = alpm_list_first(grps);
 
         while (grps != NULL) {
-            retlist.append(Group((pmgrp_t *)alpm_list_getdata(grps)));
+            retlist.append(groupFromCache((pmgrp_t *)alpm_list_getdata(grps)));
             grps = alpm_list_next(grps);
         }
 
@@ -564,7 +587,7 @@ Package::List BackendThread::getPackageDependencies(Package *package)
     alpm_list_t *deps;
     Package::List retlist;
 
-    deps = alpm_pkg_get_depends(package.alpmPackage());
+    deps = alpm_pkg_get_depends(package->alpmPackage());
 
     while (deps != NULL) {
         retlist.append(getPackage(alpm_dep_get_name((pmdepend_t *)alpm_list_getdata(deps)), QString()));
@@ -579,7 +602,7 @@ Package::List BackendThread::getDependenciesOnPackage(Package *package)
     alpm_list_t *deps;
     Package::List retlist;
 
-    deps = alpm_pkg_compute_requiredby(package.alpmPackage());
+    deps = alpm_pkg_compute_requiredby(package->alpmPackage());
 
     while (deps != NULL) {
         retlist.append(getPackage((char *)alpm_list_getdata(deps), QString()));
@@ -591,7 +614,7 @@ Package::List BackendThread::getDependenciesOnPackage(Package *package)
 
 bool BackendThread::isInstalled(Package *package)
 {
-    pmpkg_t *localpackage = alpm_db_get_pkg(d->db_local, alpm_pkg_get_name(package.alpmPackage()));
+    pmpkg_t *localpackage = alpm_db_get_pkg(d->localDatabase->alpmDatabase(), alpm_pkg_get_name(package->alpmPackage()));
 
     if (localpackage == NULL) {
         PERFORM_RETURN(Backend::IsInstalled, false)
@@ -605,7 +628,7 @@ QStringList BackendThread::getProviders(Package *package)
     alpm_list_t *provides;
     QStringList retlist;
 
-    provides = alpm_pkg_get_provides(package.alpmPackage());
+    provides = alpm_pkg_get_provides(package->alpmPackage());
 
     while (provides != NULL) {
         retlist.append(QString((char *)alpm_list_getdata(provides)));
@@ -619,7 +642,7 @@ bool BackendThread::isProviderInstalled(const QString &provider)
 {
     /* Here's what we need to do: iterate the installed
      * packages, and find if something between them provides
-     * &provider
+     * provider
      */
 
     foreach(Package *package, getInstalledPackages()) {
@@ -628,7 +651,7 @@ bool BackendThread::isProviderInstalled(const QString &provider)
         for (int i = 0; i < prv.size(); ++i) {
             QStringList tmp(prv.at(i).split('='));
             if (!tmp.at(0).compare(provider)) {
-                qDebug() << "Provider is installed and it is" << package.name();
+                qDebug() << "Provider is installed and it is" << package->name();
                 PERFORM_RETURN(Backend::IsProviderInstalled, true)
             }
         }
@@ -642,33 +665,38 @@ QString BackendThread::getAlpmVersion()
     PERFORM_RETURN(Backend::GetAlpmVersion, QString(alpm_version()))
 }
 
-Database BackendThread::getPackageDatabase(Package *package, bool checkver)
+Database *BackendThread::getPackageDatabase(Package *package, bool checkver)
 {
-    Database db(alpm_pkg_get_db(package.alpmPackage()));
-
-    if (checkver && (package.version() ==
-                     getPackage(alpm_pkg_get_name(package.alpmPackage()), "local").version())) {
-        PERFORM_RETURN(Backend::GetPackageDatabase, Database())
+    QString dbname = alpm_db_get_name(alpm_pkg_get_db(package->alpmPackage()));
+    if (dbname.isEmpty() || !d->syncDatabases.contains(dbname)) {
+        PERFORM_RETURN(Backend::GetPackageDatabase, 0)
     }
 
-    PERFORM_RETURN(Backend::GetPackageDatabase, db)
+    if (checkver && (package->version() ==
+                     getPackage(alpm_pkg_get_name(package->alpmPackage()), "local")->version())) {
+        PERFORM_RETURN(Backend::GetPackageDatabase, 0)
+    }
+
+    PERFORM_RETURN(Backend::GetPackageDatabase, d->syncDatabases[dbname])
 }
 
-Package::List BackendThread::getPackagesFromGroup(const Group &group)
+Package::List BackendThread::getPackagesFromGroup(Group *group)
 {
     Package::List retlist;
-    alpm_list_t *pkgs = alpm_grp_get_pkgs(group.alpmGroup());
+    alpm_list_t *pkgs = alpm_grp_get_pkgs(group->alpmGroup());
 
     while (pkgs != NULL) {
-        retlist.append(Package((pmpkg_t *) alpm_list_getdata(pkgs)));
+        pmpkg_t *pkg = (pmpkg_t *) alpm_list_getdata(pkgs);
+        retlist.append(packageFromCache(alpm_db_get_name(alpm_pkg_get_db(pkg)), pkg));
         pkgs = alpm_list_next(pkgs);
     }
 
     PERFORM_RETURN(Backend::GetPackagesFromGroup, retlist)
 }
 
-Package::List BackendThread::getPackagesFromDatabase(const Database &db)
+Package::List BackendThread::getPackagesFromDatabase(Database *db)
 {
+    // TODO: Change that. It makes absolutely no sense
     /* Since here local would be right the same of calling
      * getInstalledPackages(), here by local we mean packages that
      * don't belong to any other repo.
@@ -676,13 +704,13 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
 
     Package::List retlist;
 
-    if (db.alpmDatabase() == d->db_local) {
+    if (db == d->localDatabase) {
         qDebug() << "Getting local packages";
 
         foreach(Package *pkg, getInstalledPackages()) {
             bool matched = false;
-            foreach(const Database &db, getAvailableDatabases()) {
-                if (alpm_db_get_pkg(db.alpmDatabase(), pkg.name().toAscii().data())) {
+            foreach(Database *db, getAvailableDatabases()) {
+                if (alpm_db_get_pkg(db->alpmDatabase(), pkg->name().toAscii().data())) {
                     matched = true;
                     break;
                 }
@@ -692,10 +720,10 @@ Package::List BackendThread::getPackagesFromDatabase(const Database &db)
             }
         }
     } else {
-        alpm_list_t *pkgs = alpm_db_get_pkgcache(db.alpmDatabase());
+        alpm_list_t *pkgs = alpm_db_get_pkgcache(db->alpmDatabase());
 
         while (pkgs != NULL) {
-            retlist.append((pmpkg_t *) alpm_list_getdata(pkgs));
+            retlist.append(packageFromCache(db->name(), (pmpkg_t *) alpm_list_getdata(pkgs)));
             pkgs = alpm_list_next(pkgs);
         }
     }
@@ -710,8 +738,9 @@ int BackendThread::countPackages(int st)
     if (status == Globals::AllPackages) {
         int retvalue = 0;
 
-        foreach(const Database &db, getAvailableDatabases()) {
-            alpm_list_t *currentpkgs = alpm_db_get_pkgcache(db.alpmDatabase());
+        // TODO: And local packages?
+        foreach(Database *db, getAvailableDatabases()) {
+            alpm_list_t *currentpkgs = alpm_db_get_pkgcache(db->alpmDatabase());
             retvalue += alpm_list_count(currentpkgs);
         }
 
@@ -719,9 +748,7 @@ int BackendThread::countPackages(int st)
     } else if (status == Globals::UpgradeablePackages) {
         PERFORM_RETURN(Backend::CountPackages, getUpgradeablePackages().count())
     } else if (status == Globals::InstalledPackages) {
-        alpm_list_t *currentpkgs = alpm_db_get_pkgcache(d->db_local);
-
-        PERFORM_RETURN(Backend::CountPackages, alpm_list_count(currentpkgs))
+        PERFORM_RETURN(Backend::CountPackages, getInstalledPackages().count())
     } else {
         PERFORM_RETURN(Backend::CountPackages, 0)
     }
@@ -741,83 +768,87 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
     return retlist;
 }
 
-Package BackendThread::getPackage(const QString &name, const QString &repo)
+Package *BackendThread::getPackage(const QString &name, const QString &repo)
 {
     if (repo == "local") {
-        PERFORM_RETURN(Backend::GetPackage, Package(alpm_db_get_pkg(d->db_local, name.toAscii().data())))
+        PERFORM_RETURN(Backend::GetPackage, packageFromCache("local", alpm_db_get_pkg(d->localDatabase->alpmDatabase(),
+                                                                                      name.toAscii().data())))
     }
 
-    alpm_list_t *dbsync = alpm_list_first(alpm_option_get_syncdbs());
-
-    while (dbsync != NULL) {
-        pmdb_t *dbcrnt = (pmdb_t *)alpm_list_getdata(dbsync);
-
-        if (!repo.compare(QString((char *)alpm_db_get_name(dbcrnt))) || repo.isEmpty()) {
-            dbsync = alpm_list_first(dbsync);
-            pmpkg_t *pack = alpm_db_get_pkg(dbcrnt, name.toAscii().data());
+    if (repo.isEmpty()) {
+        QHash< QString, Database* >::const_iterator i;
+        for (i = d->syncDatabases.constBegin(); i != d->syncDatabases.constEnd(); ++i) {
+            pmpkg_t *pack = alpm_db_get_pkg(i.value()->alpmDatabase(), name.toAscii().data());
             if (pack != 0 || !repo.isEmpty()) {
-                PERFORM_RETURN(Backend::GetPackage, Package(pack))
+                PERFORM_RETURN(Backend::GetPackage, packageFromCache(i.key(), pack))
             }
         }
-
-        dbsync = alpm_list_next(dbsync);
+        // Try one last time before failing, it might be in the local db
+        pmpkg_t *pkg = alpm_db_get_pkg(d->localDatabase->alpmDatabase(), name.toAscii().data());
+        if (pkg) {
+            PERFORM_RETURN(Backend::GetPackage, packageFromCache("local", pkg))
+        }
+    } else {
+        if (d->syncDatabases.contains(repo)) {
+            pmpkg_t *pack = alpm_db_get_pkg(d->syncDatabases[repo]->alpmDatabase(), name.toAscii().data());
+            if (pack != 0) {
+                PERFORM_RETURN(Backend::GetPackage, packageFromCache(repo, pack))
+            }
+        }
     }
 
-    // If the repo was empty try one last time before failing, it might be in the local db
-    if (repo.isEmpty()) {
-        PERFORM_RETURN(Backend::GetPackage, Package(alpm_db_get_pkg(d->db_local, name.toAscii().data())))
-    }
-
-    PERFORM_RETURN(Backend::GetPackage, Package())
+    PERFORM_RETURN(Backend::GetPackage, 0)
 }
 
-Group BackendThread::getGroup(const QString &name)
+Group *BackendThread::getGroup(const QString &name)
 {
-    foreach(const Group &g, getAvailableGroups()) {
-        if (g.name() == name) {
+    // Try the more efficient way first
+    if (d->cachedGroups.contains(name)) {
+        PERFORM_RETURN(Backend::GetGroup, d->cachedGroups[name])
+    }
+
+    foreach(Group *g, getAvailableGroups()) {
+        if (g->name() == name) {
             PERFORM_RETURN(Backend::GetGroup, g)
         }
     }
-    PERFORM_RETURN(Backend::GetGroup, Group())
+    PERFORM_RETURN(Backend::GetGroup, 0)
 }
 
-Database BackendThread::getDatabase(const QString &name)
+Database *BackendThread::getDatabase(const QString &name)
 {
-    foreach(const Database &d, getAvailableDatabases()) {
-        if (d.name() == name) {
-            PERFORM_RETURN(Backend::GetDatabase, d)
-        }
+    if (d->syncDatabases.contains(name)) {
+        PERFORM_RETURN(Backend::GetDatabase, d->syncDatabases[name])
     }
-    PERFORM_RETURN(Backend::GetDatabase, Database())
+    PERFORM_RETURN(Backend::GetDatabase, 0)
 }
 
-Package BackendThread::loadPackageFromLocalFile(const QString &path)
+Package *BackendThread::loadPackageFromLocalFile(const QString &path)
 {
     pmpkg_t *pkg;
 
     // Sanity check
     if (alpm_pkg_load(path.toUtf8().data(), 1, &pkg) == -1) {
         // Failure...
-        PERFORM_RETURN(Backend::LoadPackageFromLocalFile, Package())
+        PERFORM_RETURN(Backend::LoadPackageFromLocalFile, 0)
     }
 
     // Awesome, we got it
-    Package retpackage(pkg);
+    Package *retpackage = packageFromCache("fromFiles", pkg);
 
     PERFORM_RETURN(Backend::LoadPackageFromLocalFile, retpackage)
 }
 
 Group::List BackendThread::getPackageGroups(Package *package)
 {
-    alpm_list_t *list = alpm_pkg_get_groups(package.alpmPackage());
+    alpm_list_t *list = alpm_pkg_get_groups(package->alpmPackage());
     Group::List retlist;
-    Group::List groups = getAvailableGroups();
+    (void)getAvailableGroups(); // So we're sure they got cached
 
     while (list != NULL) {
-        foreach(const Group &g, groups) {
-            if (g.name() == (char*)alpm_list_getdata(list)) {
-                retlist.append(g);
-            }
+        QString name = (char*)alpm_list_getdata(list);
+        if (d->cachedGroups.contains(name)) {
+            retlist.append(d->cachedGroups[name]);
         }
         list = alpm_list_next(list);
     }

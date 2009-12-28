@@ -52,13 +52,13 @@ private:
     QString aqpmRoot();
 
     Database::List getAvailableDatabases();
-    Database getLocalDatabase();
+    Database *getLocalDatabase();
 
     Group::List getAvailableGroups();
 
-    Package::List getPackagesFromDatabase(const Database &db);
+    Package::List getPackagesFromDatabase(Database *db);
 
-    Package::List getPackagesFromGroup(const Group &group);
+    Package::List getPackagesFromGroup(Group *group);
 
     Package::List getUpgradeablePackages();
 
@@ -77,13 +77,13 @@ private:
     QStringList getProviders(Package *package);
     bool isProviderInstalled(const QString &provider);
 
-    Database getPackageDatabase(Package *package, bool checkver = false);
+    Database *getPackageDatabase(Package *package, bool checkver = false);
 
-    Package getPackage(const QString &name, const QString &repo);
-    Group getGroup(const QString &name);
-    Database getDatabase(const QString &name);
+    Package *getPackage(const QString &name, const QString &repo);
+    Group *getGroup(const QString &name);
+    Database *getDatabase(const QString &name);
 
-    Package loadPackageFromLocalFile(const QString &path);
+    Package *loadPackageFromLocalFile(const QString &path);
 
     bool isInstalled(Package *package);
 
@@ -141,6 +141,8 @@ Q_SIGNALS:
 
     void threadInitialized();
 
+    void aboutToBeDeleted();
+
 private Q_SLOTS:
     void workerResult(bool success);
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
@@ -151,6 +153,9 @@ protected:
     void customEvent(QEvent *event);
 
 private:
+    Package *packageFromCache(const QString &repo, pmpkg_t *pkg);
+    Group *groupFromCache(pmgrp_t *group);
+
     class Private;
     Private *d;
 };
