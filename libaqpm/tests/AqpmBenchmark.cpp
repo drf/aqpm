@@ -63,9 +63,9 @@ void AqpmBenchmark::benchmark_RetrieveAllPackagesWhenCached()
 void AqpmBenchmark::benchmark_GetPackage()
 {
     QBENCHMARK {
-//         Aqpm::Package *pkg = Aqpm::Backend::instance()->package("pacman", QString());
-//         QVERIFY(pkg);
-//         qDebug() << pkg->name() << pkg->desc() << pkg->database()->name();
+        Aqpm::Package *pkg = Aqpm::Backend::instance()->package("pacman", QString());
+        QVERIFY(pkg);
+        qDebug() << pkg->name() << pkg->desc() << pkg->database()->name();
     }
 }
 
