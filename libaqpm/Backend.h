@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by Dario Freddi                                    *
+ *   Copyright (C) 2009-2010 by Dario Freddi                               *
  *   drf@chakra-project.org                                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -28,11 +28,11 @@
 #include "Database.h"
 #include "Group.h"
 
-#include <QtCore/QThread>
 #include <QtCore/QStringList>
 #include <QtCore/QEvent>
 #include <QtCore/QMetaType>
 
+class QUrl;
 namespace Aqpm
 {
 
@@ -115,7 +115,9 @@ public:
         SetAqpmRoot,
         AqpmRoot,
         RetrieveAdditionalTargetsForQueue,
-        LoadPackageFromLocalFile
+        LoadPackageFromLocalFile,
+        SearchPackages,
+        SearchFiles
     };
 
     /**
@@ -282,6 +284,9 @@ public:
     bool shouldHandleAuthorization() const;
 
     void setAnswer(int answer);
+
+    Package::List searchPackages(const QStringList &targets, const Database::List &dbs = Database::List()) const;
+    Package::List searchFiles(const QString &filename) const;
 
     Package *package(const QString &name, const QString &repo);
     Group *group(const QString &name);

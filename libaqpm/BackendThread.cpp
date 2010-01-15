@@ -352,6 +352,13 @@ void BackendThread::customEvent(QEvent *event)
             break;
         case Backend::AqpmRoot:
             aqpmRoot();
+            break;
+        case Backend::SearchFiles:
+            searchFiles(ae->args()["filename"].toString());
+            break;
+        case Backend::SearchPackages:
+            searchPackages(ae->args()["targets"].toStringList(), ae->args()["dbs"].value<Database::List>());
+            break;
         default:
             qDebug() << "Implement me!!";
             break;
@@ -768,6 +775,17 @@ QStringList BackendThread::alpmListToStringList(alpm_list_t *list)
     return retlist;
 }
 
+alpm_list_t *BackendThread::stringListToAlpmList(const QStringList &list)
+{
+    alpm_list_t *retlist = NULL;
+
+    foreach (const QString &string, list) {
+        retlist = alpm_list_add(retlist, qstrdup(string.toUtf8().data()));
+    }
+
+    return retlist;
+}
+
 Package *BackendThread::getPackage(const QString &name, const QString &repo)
 {
     if (repo == "local") {
@@ -1130,6 +1148,45 @@ void BackendThread::slotErrorOccurred(int code, const QVariantMap &args)
         }
     }
     emit errorOccurred(code, realArgs);
+}
+
+Package::List BackendThread::searchFiles(const QString& filename)
+{
+    Package::List retlist;
+    foreach (Package *p, d->localDatabase->packages()) {
+        foreach (const QString &file, p->files()) {
+            if (file.contains(filename)) {
+                retlist.append(p);
+            }
+        }
+    }
+
+    PERFORM_RETURN(Backend::SearchFiles, retlist)
+}
+
+Package::List BackendThread::searchPackages(const QStringList& targets, const Aqpm::Database::List& dbs)
+{
+    alpm_list_t *rtargets = stringListToAlpmList(targets);
+    Database::List rdbs = dbs;
+    if (rdbs.isEmpty()) {
+        rdbs << d->syncDatabases.values() << d->localDatabase;
+    }
+
+    Package::List retlist;
+
+    foreach (Database *db, rdbs) {
+        alpm_list_t *result = alpm_db_search(db->alpmDatabase(), rtargets);
+
+        while (result != NULL) {
+            retlist.append(packageFromCache(db->name(), (pmpkg_t*)alpm_list_getdata(result)));
+            result = alpm_list_next(result);
+        }
+
+        alpm_list_free(result);
+    }
+
+    alpm_list_free(rtargets);
+    PERFORM_RETURN(Backend::SearchPackages, retlist)
 }
 
 }

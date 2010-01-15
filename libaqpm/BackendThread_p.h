@@ -95,6 +95,7 @@ private:
     bool reloadPacmanConfiguration(); // In case the user modifies it.
 
     QStringList alpmListToStringList(alpm_list_t *list);
+    alpm_list_t *stringListToAlpmList(const QStringList &list);
 
     QString getAlpmVersion();
 
@@ -105,6 +106,9 @@ private:
     void processQueue();
     void downloadQueue();
     QueueItem::List queue();
+
+    Package::List searchPackages(const QStringList &targets, const Database::List &dbs = Database::List());
+    Package::List searchFiles(const QString &filename);
 
     void interruptTransaction();
 

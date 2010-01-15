@@ -468,6 +468,23 @@ void Backend::downloadQueue()
     qDebug() << "Thread is running";
 }
 
+Package::List Backend::searchFiles(const QString& filename) const
+{
+    QVariantMap args;
+    args["filename"] = QVariant::fromValue(filename);
+    SynchronousLoop s(SearchFiles, args);
+    return s.result()["retvalue"].value<Package::List>();
+}
+
+Package::List Backend::searchPackages(const QStringList& targets, const Aqpm::Database::List& dbs) const
+{
+    QVariantMap args;
+    args["targets"] = QVariant::fromValue(targets);
+    args["dbs"] = QVariant::fromValue(dbs);
+    SynchronousLoop s(SearchPackages, args);
+    return s.result()["retvalue"].value<Package::List>();
+}
+
 void Backend::setShouldHandleAuthorization(bool should)
 {
     QVariantMap args;
