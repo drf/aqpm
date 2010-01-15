@@ -1185,7 +1185,7 @@ Package::List BackendThread::searchPackages(const QStringList& targets, const Aq
         alpm_list_free(result);
     }
 
-    alpm_list_free(rtargets);
+    FREELIST(rtargets);
     PERFORM_RETURN(Backend::SearchPackages, retlist)
 }
 
