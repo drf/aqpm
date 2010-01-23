@@ -90,15 +90,15 @@ void AurSearcher::process()
     if (arguments.at(1) == "search") {
         Aqpm::Aur::Package::List retlist = Aqpm::Aur::Backend::instance()->searchSync(arguments.at(2));
 
-        foreach(const Aqpm::Aur::Package &result, retlist) {
-            printf("%s - %s (ID: %i)\n", result.name.toAscii().data(), result.version.toAscii().data(), result.id);
+        foreach(Aqpm::Aur::Package *result, retlist) {
+            printf("%s - %s (ID: %i)\n", result->name.toAscii().data(), result->version.toAscii().data(), result->id);
         }
     } else if (arguments.at(1) == "info") {
-        Aqpm::Aur::Package package = Aqpm::Aur::Backend::instance()->infoSync(QCoreApplication::arguments().at(2).toInt());
+        Aqpm::Aur::Package *package = Aqpm::Aur::Backend::instance()->infoSync(QCoreApplication::arguments().at(2).toInt());
 
-        printf("Name: %s\nVersion: %s\nDescription: %s\nUrl: %s\nVotes: %i\n%s\n", package.name.toAscii().data(),
-               package.version.toAscii().data(), package.description.toAscii().data(), package.url.toAscii().data(),
-               package.votes, package.outOfDate ? "The package is out of date" : "");
+        printf("Name: %s\nVersion: %s\nDescription: %s\nUrl: %s\nVotes: %i\n%s\n", package->name.toAscii().data(),
+               package->version.toAscii().data(), package->description.toAscii().data(), package->url.toAscii().data(),
+               package->votes, package->outOfDate ? "The package is out of date" : "");
     } else if (arguments.at(1) == "download") {
         Aqpm::Aur::Backend::instance()->prepareBuildEnvironmentSync(arguments.at(2).toInt(), QDir::currentPath());
     } else {

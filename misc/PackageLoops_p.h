@@ -54,20 +54,20 @@ public:
     ~PackageConditionalEventLoop() {}
 
 public Q_SLOTS:
-    void requestQuit(int id, const Aqpm::Aur::Package &p) {
+    void requestQuit(int id, Aqpm::Aur::Package *p) {
         if (m_id == id) {
             m_package = p;
             quit();
         }
     }
 
-    inline Aqpm::Aur::Package package() const {
+    inline Aqpm::Aur::Package *package() const {
         return m_package;
     }
 
 private:
     int m_id;
-    Aqpm::Aur::Package m_package;
+    Aqpm::Aur::Package *m_package;
 };
 
 class IntConditionalEventLoop : public QEventLoop

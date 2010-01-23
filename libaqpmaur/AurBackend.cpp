@@ -54,7 +54,7 @@ public:
 
     QNetworkRequest createNetworkRequest(const QString &type, const QString &arg) const;
     QNetworkRequest createDownloadRequest(Package *package) const;
-    Package packageFromMap(const QVariantMap &map) const;
+    Package *packageFromMap(const QVariantMap &map) const;
 
     // Private slots
     void __k__replyFinished(QNetworkReply *reply);
@@ -72,10 +72,10 @@ QNetworkRequest Backend::Private::createNetworkRequest(const QString& type, cons
     return request;
 }
 
-QNetworkRequest Backend::Private::createDownloadRequest(const Aqpm::Aur::Package& package) const
+QNetworkRequest Backend::Private::createDownloadRequest(Aqpm::Aur::Package *package) const
 {
     QNetworkRequest request;
-    QUrl url(AQPM_AUR_BASE_URL + package.path);
+    QUrl url(AQPM_AUR_BASE_URL + package->path);
     request.setUrl(url);
     request.setRawHeader("User-Agent", ("Aqpm/" + QString(AQPM_VERSION)).toUtf8());
     return request;
@@ -124,12 +124,12 @@ void Backend::Private::__k__replyFinished(QNetworkReply* reply)
     } else if (reply->property("aqpm_AUR_Request_Type").toString() == "info") {
         if (reply->property("aqpm_AUR_is_Download").toBool()) {
             // We are not really looking for info, we actually need to download the package we got.
-            Package p = packageFromMap(result["results"].toMap());
+            Package *p = packageFromMap(result["results"].toMap());
             QNetworkReply *nreply = manager->get(createDownloadRequest(p));
             nreply->setProperty("aqpm_AUR_is_archive_Download", true);
             nreply->setProperty("aqpm_AUR_extract_path", reply->property("aqpm_AUR_extract_path").toString());
             nreply->setProperty("aqpm_AUR_ID", reply->property("aqpm_AUR_ID").toInt());
-            nreply->setProperty("aqpm_AUR_pkg_name", p.name);
+            nreply->setProperty("aqpm_AUR_pkg_name", p->name);
         } else {
             // A simple info request, just notify and pass by
             emit q->infoCompleted(reply->property("aqpm_AUR_ID").toInt(), packageFromMap(result["results"].toMap()));
@@ -137,20 +137,20 @@ void Backend::Private::__k__replyFinished(QNetworkReply* reply)
     }
 }
 
-Package Backend::Private::packageFromMap(const QVariantMap& map) const
+Package *Backend::Private::packageFromMap(const QVariantMap& map) const
 {
-    Package p;
-    p.category = map["CategoryID"].toInt();
-    p.description = map["Description"].toString();
-    p.id = map["ID"].toInt();
-    p.license = map["License"].toString();
-    p.location = map["LocationID"].toInt();
-    p.name = map["Name"].toString();
-    p.outOfDate = map["OutOfDate"].toInt() == 0 ? false : true;
-    p.path = map["URLPath"].toString();
-    p.url = map["URL"].toString();
-    p.version = map["Version"].toString();
-    p.votes = map["NumVotes"].toInt();
+    Package *p;
+    p->category = map["CategoryID"].toInt();
+    p->description = map["Description"].toString();
+    p->id = map["ID"].toInt();
+    p->license = map["License"].toString();
+    p->location = map["LocationID"].toInt();
+    p->name = map["Name"].toString();
+    p->outOfDate = map["OutOfDate"].toInt() == 0 ? false : true;
+    p->path = map["URLPath"].toString();
+    p->url = map["URL"].toString();
+    p->version = map["Version"].toString();
+    p->votes = map["NumVotes"].toInt();
 
     return p;
 }
@@ -219,10 +219,10 @@ Package::List Backend::searchSync(const QString& subject) const
     return e.packageList();
 }
 
-Package Backend::infoSync(int id) const
+Package *Backend::infoSync(int id) const
 {
     PackageConditionalEventLoop e(id);
-    connect(this, SIGNAL(infoCompleted(int, Aqpm::Aur::Package)), &e, SLOT(requestQuit(int, Aqpm::Aur::Package)));
+    connect(this, SIGNAL(infoCompleted(int, Aqpm::Aur::Package*)), &e, SLOT(requestQuit(int, Aqpm::Aur::Package*)));
     info(id);
     e.exec();
     return e.package();

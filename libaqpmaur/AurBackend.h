@@ -35,7 +35,7 @@ namespace Aur
 class AQPM_EXPORT Package
 {
 public:
-    typedef QList<Package> List;
+    typedef QList<Package*> List;
 
     int id;
     QString name;
@@ -63,14 +63,14 @@ public:
     Package::List searchSync(const QString &subject) const;
 
     void info(int id) const;
-    Package infoSync(int id) const;
+    Package *infoSync(int id) const;
 
     void prepareBuildEnvironment(int id, const QString &envpath) const;
     void prepareBuildEnvironmentSync(int id, const QString &envpath) const;
 
 Q_SIGNALS:
     void searchCompleted(const QString &searchSubject, const Aqpm::Aur::Package::List &results);
-    void infoCompleted(int id, const Aqpm::Aur::Package &result);
+    void infoCompleted(int id, Aqpm::Aur::Package *result);
     void buildEnvironmentReady(int id, const QString &envpath);
 
 private:
