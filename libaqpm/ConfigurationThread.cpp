@@ -335,7 +335,8 @@ QStringList ConfigurationThread::getServersForDatabase(const QString &db)
     if (db == "core" || db == "extra" || db == "community" || db == "testing") {
         rawlist = getMirrorList(Aqpm::Configuration::ArchMirror);
     } else if (db == "kdemod-core" || db == "kdemod-extragear" || db == "kdemod-unstable" ||
-               db == "kdemod-legacy" || db == "kdemod-testing" || db == "kdemod-playground") {
+               db == "kdemod-legacy" || db == "kdemod-testing" || db == "kdemod-playground" ||
+               db == "kdemod-tools" || db == "chakra") {
         rawlist = getMirrorList(Aqpm::Configuration::KdemodMirror);
     } else {
         foreach(const QString &mirror, settings->childGroups()) {
