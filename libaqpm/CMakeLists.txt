@@ -62,3 +62,4 @@ install(TARGETS aqpm ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ${aqpm_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/aqpm)
 
 add_subdirectory(tests)
+add_subdirectory(examples)
