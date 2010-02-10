@@ -93,8 +93,6 @@ public:
         ClearQueue,
         AddItemToQueue,
         GetQueue,
-        SetShouldHandleAuthorization,
-        ShouldHandleAuthorization,
         SetAnswer,
         GetPackage,
         GetGroup,
@@ -279,9 +277,6 @@ public:
     QueueItem::List queue() const;
 
     void interruptTransaction();
-
-    void setShouldHandleAuthorization(bool should);
-    bool shouldHandleAuthorization() const;
 
     void setAnswer(int answer);
 

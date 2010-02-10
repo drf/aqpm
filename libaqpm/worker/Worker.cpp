@@ -29,12 +29,14 @@
 #include "../QueueItem.h"
 // Private headers
 #include "../ConfigurationThread_p.h"
+#include "misc/AqpmAuthorization_p.h"
 
 #include <QtDBus/QDBusConnection>
 #include <QTimer>
 #include <QDebug>
 
-#include <polkit-qt/Auth>
+#include <polkit-qt-1/polkitqt1-authority.h>
+#include <polkit-qt-1/polkitqt1-subject.h>
 
 namespace AqpmWorker
 {
@@ -206,14 +208,7 @@ void Worker::updateDatabase()
 
     qDebug() << "Starting DB Update";
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updatedatabase",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.updatedatabase", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
         operationPerformed(false);
         return;
@@ -292,14 +287,7 @@ void Worker::processQueue(const QVariantList &packages, int flags)
 
     qDebug() << "Starting Queue Processing";
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.processqueue",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.processqueue", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
         operationPerformed(false);
         return;
@@ -445,14 +433,7 @@ void Worker::downloadQueue(const QVariantList &packages)
 
     qDebug() << "Starting Queue Download";
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.downloadqueue",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.downloadqueue", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
         operationPerformed(false);
         return;
@@ -536,16 +517,8 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
 
     qDebug() << "Starting Targets retrieval";
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.retrievetargetsforqueue",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.retrievetargetsforqueue", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
-        emit targetsRetrieved(QVariantMap());
         operationPerformed(false);
         return;
     }
@@ -736,14 +709,7 @@ void Worker::systemUpgrade(int flags, bool downgrade)
 
     qDebug() << "Starting System Upgrade";
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.systemupgrade",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.systemupgrade", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
         operationPerformed(false);
         return;
@@ -970,14 +936,7 @@ bool Worker::addTransTarget(const QString &target)
 
 void Worker::performMaintenance(int type)
 {
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.performmaintenance",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.performmaintenance", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
         operationPerformed(false);
         return;

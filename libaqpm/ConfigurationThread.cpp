@@ -40,8 +40,6 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
 
-#include <polkit-qt/Auth>
-
 #define PERFORM_RETURN(ty, val) \
     QVariantMap retmap; \
     retmap["retvalue"] = QVariant::fromValue(val); \
@@ -174,14 +172,6 @@ void ConfigurationThread::reload()
     if (!QFile::exists(d->chroot + AQPM_CONFIGURATION_FILE)) {
         qDebug() << "Loading...";
 
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.convertconfiguration")) {
-            qDebug() << "User unauthorized";
-            configuratorResult(false);
-            PERFORM_RETURN_VOID(Configuration::Reload)
-        }
-
-        qDebug() << "Kewl";
-
         QDBusMessage message = QDBusMessage::createMethodCall("org.chakraproject.aqpmconfigurator",
                                "/Configurator",
                                "org.chakraproject.aqpmconfigurator",
@@ -242,14 +232,6 @@ bool ConfigurationThread::saveConfiguration()
 
 void ConfigurationThread::saveConfigurationAsync()
 {
-    if (Backend::instance()->shouldHandleAuthorization()) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.saveconfiguration")) {
-            qDebug() << "User unauthorized";
-            configuratorResult(false);
-            PERFORM_RETURN_VOID(Configuration::SaveConfigurationAsync)
-        }
-    }
-
     if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmconfigurator")) {
         qDebug() << "Requesting service start";
         QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmconfigurator");
@@ -427,14 +409,6 @@ bool ConfigurationThread::setMirrorList(const QString &mirrorlist, Configuration
 
 void ConfigurationThread::setMirrorListAsync(const QString &mirrorlist, Configuration::MirrorType type)
 {
-    if (Backend::instance()->shouldHandleAuthorization()) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.setmirrorlist")) {
-            qDebug() << "User unauthorized";
-            configuratorResult(false);
-            PERFORM_RETURN_VOID(Configuration::SetMirrorListAsync);
-        }
-    }
-
     if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmconfigurator")) {
         qDebug() << "Requesting service start";
         QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmconfigurator");

@@ -23,7 +23,6 @@ set_target_properties(aqpmabs PROPERTIES VERSION ${MAJOR_AQPM_VERSION}.${MINOR_A
 target_link_libraries(aqpmabs
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
-    ${POLKITQT_CORE_LIBRARY}
 )
 
 install(CODE "message(STATUS \"Installing AqpmAbs...\")")

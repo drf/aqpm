@@ -33,6 +33,19 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aqpmbuilder.pc.cmake
 configure_file(aqpmversion.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/aqpmversion.h)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/aqpmversion.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/aqpm)
 
+# Define useful macros
+macro(dbus_add_activation_system_service _sources)
+    #PKGCONFIG_GETVAR(dbus-1 session_bus_services_dir _install_dir)
+    foreach (_i ${_sources})
+        get_filename_component(_service_file ${_i} ABSOLUTE)
+        string(REGEX REPLACE "\\.service.*$" ".service" _output_file ${_i})
+        set(_target ${CMAKE_CURRENT_BINARY_DIR}/${_output_file})
+        configure_file(${_service_file} ${_target})
+        install(FILES ${_target} DESTINATION ${SHARE_INSTALL_PREFIX}/dbus-1/system-services )
+        #install(FILES ${_target} DESTINATION ${_install_dir})
+    endforeach (_i ${ARGN})
+endmacro(dbus_add_activation_system_service _sources)
+
 # requires minimal Qt 4.4
 set(QT_MIN_VERSION "4.4.0")
 
@@ -51,7 +64,7 @@ endif (KDE4_INTEGRATION)
 
 find_package(Alpm REQUIRED)
 set(POLKITQT_MIN_VERSION 0.9.2)
-find_package(PolkitQt REQUIRED)
+find_package(PolkitQt-1 REQUIRED)
 find_package(QJSON)
 
 include(${QT_USE_FILE})
@@ -66,7 +79,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/misc
     ${CMAKE_SOURCE_DIR}/misc
-    ${POLKITQT_INCLUDE_DIR}
+    ${POLKITQT-1_INCLUDE_DIR}
 )
 
 set (AQPM_CONFIGURATION_FILE "/etc/aqpm.conf" CACHE STRING "The configuration file aqpm will use. Change only if 

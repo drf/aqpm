@@ -31,12 +31,11 @@
 #include <QPointer>
 #include <QProcess>
 #include <QFile>
+#include <QEventLoop>
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
-
-#include <polkit-qt/Auth>
 
 #define PERFORM_RETURN(ty, val) \
     QVariantMap retmap; \
@@ -74,7 +73,7 @@ ContainerThread::~ContainerThread()
 class BackendThread::Private
 {
 public:
-    Private() : chroot(QString()), confChrooted(false), handleAuth(true) {}
+    Private() : chroot(QString()), confChrooted(false) {}
 
     void waitForWorkerReady();
     bool initWorker(const QString &polkitAction);
@@ -87,8 +86,6 @@ public:
 
     QString chroot;
     bool confChrooted;
-
-    bool handleAuth;
 
     QHash< QString, QHash< QString, Package*> > cachedPackages;
     QHash< QString, Group* > cachedGroups;
@@ -123,13 +120,6 @@ void BackendThread::Private::waitForWorkerReady()
 bool BackendThread::Private::initWorker(const QString &polkitAction)
 {
     Q_Q(BackendThread);
-
-    if (handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
-            qDebug() << "User unauthorized";
-            return false;
-        }
-    }
 
     if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmworker")) {
         qDebug() << "Requesting service start";
@@ -311,12 +301,6 @@ void BackendThread::customEvent(QEvent *event)
         case Backend::GetQueue:
             queue();
             break;
-        case Backend::SetShouldHandleAuthorization:
-            setShouldHandleAuthorization(ae->args()["should"].toBool());
-            break;
-        case Backend::ShouldHandleAuthorization:
-            shouldHandleAuthorization();
-            break;
         case Backend::SetAnswer:
             setAnswer(ae->args()["answer"].toInt());
             break;
@@ -495,18 +479,6 @@ void BackendThread::setUpAlpm()
 
 bool BackendThread::setAqpmRoot(const QString& root, bool applyToConfiguration)
 {
-    if (d->handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.setaqpmroot")) {
-            qDebug() << "User unauthorized, root was not changed";
-            PERFORM_RETURN(Backend::SetAqpmRoot, false)
-        }
-    } else {
-        if (!PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.setaqpmroot", QCoreApplication::applicationPid(), true)) {
-            qDebug() << "User unauthorized, root was not changed";
-            PERFORM_RETURN(Backend::SetAqpmRoot, false)
-        }
-    }
-
     d->chroot = root;
     d->confChrooted = applyToConfiguration;
     if (d->confChrooted) {
@@ -1047,17 +1019,6 @@ void BackendThread::targetsRetrieved(const QVariantMap &targets)
     }
 
     emit additionalTargetsRetrieved(rethash);
-}
-
-void BackendThread::setShouldHandleAuthorization(bool should)
-{
-    d->handleAuth = should;
-    PERFORM_RETURN_VOID(Backend::SetShouldHandleAuthorization)
-}
-
-bool BackendThread::shouldHandleAuthorization()
-{
-    PERFORM_RETURN(Backend::ShouldHandleAuthorization, d->handleAuth)
 }
 
 void BackendThread::workerResult(bool result)

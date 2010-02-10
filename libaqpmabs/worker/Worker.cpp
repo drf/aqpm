@@ -22,7 +22,7 @@
 
 #include "aqpmabsworkeradaptor.h"
 #include <QDBusConnection>
-#include <polkit-qt/Auth>
+#include "AqpmAuthorization_p.h"
 
 namespace Aqpm
 {
@@ -60,14 +60,7 @@ void Worker::update(const QStringList &targets, bool tarball)
 {
     stopTemporizing();
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updateabs",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.updateabs", message().service())) {
         emit absUpdated(false);
         startTemporizing();
         return;
@@ -90,14 +83,7 @@ void Worker::updateAll(bool tarball)
 {
     stopTemporizing();
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.updateabs",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.updateabs", message().service())) {
         emit absUpdated(false);
         startTemporizing();
         return;
@@ -120,14 +106,7 @@ bool Worker::prepareBuildEnvironment(const QString &from, const QString &to) con
 {
     stopTemporizing();
 
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.preparebuildenvironment",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.preparebuildenvironment", message().service())) {
         startTemporizing();
         return false;
     }

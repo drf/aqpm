@@ -22,7 +22,7 @@ target_link_libraries(aqpmworker
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${ALPM_LIBS}
-    ${POLKITQT_CORE_LIBRARY}
+    ${POLKITQT-1_CORE_LIBRARY}
     aqpm
 )
 

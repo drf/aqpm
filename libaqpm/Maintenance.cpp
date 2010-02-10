@@ -28,8 +28,6 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusConnectionInterface>
 
-#include <polkit-qt/Auth>
-
 namespace Aqpm
 {
 
@@ -96,14 +94,6 @@ void Maintenance::performAction(Action type)
         qWarning() << "Message did not receive a reply (timeout by message bus)";
         d->__k__workerResult(false);
         return;
-    }
-
-    if (Backend::instance()->shouldHandleAuthorization()) {
-        if (!PolkitQt::Auth::computeAndObtainAuth("org.chakraproject.aqpm.performmaintenance")) {
-            qDebug() << "User unauthorized";
-            d->__k__workerResult(false);
-            return;
-        }
     }
 
     QDBusConnection::systemBus().connect("org.chakraproject.aqpmworker", "/Worker", "org.chakraproject.aqpmworker",

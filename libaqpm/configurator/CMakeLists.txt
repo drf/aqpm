@@ -21,7 +21,7 @@ automoc4_add_executable(aqpmconfigurator
 target_link_libraries(aqpmconfigurator
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
-    ${POLKITQT_CORE_LIBRARY}
+    ${POLKITQT-1_CORE_LIBRARY}
 )
 
 install(CODE "message(STATUS \"Installing Aqpm configurator...\")")

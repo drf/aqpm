@@ -485,19 +485,6 @@ Package::List Backend::searchPackages(const QStringList& targets, const Aqpm::Da
     return s.result()["retvalue"].value<Package::List>();
 }
 
-void Backend::setShouldHandleAuthorization(bool should)
-{
-    QVariantMap args;
-    args["should"] = QVariant::fromValue(should);
-    SynchronousLoop s(SetShouldHandleAuthorization, args);
-}
-
-bool Backend::shouldHandleAuthorization() const
-{
-    SynchronousLoop s(ShouldHandleAuthorization, QVariantMap());
-    return s.result()["retvalue"].toBool();
-}
-
 void Backend::setAnswer(int answer)
 {
     QVariantMap args;

@@ -48,7 +48,6 @@ target_link_libraries(aqpm
     ${QT_QTCORE_LIBRARY}
     ${QT_QTDBUS_LIBRARY}
     ${ALPM_LIBS}
-    ${POLKITQT_CORE_LIBRARY}
 )
 
 if (KDE4_INTEGRATION)

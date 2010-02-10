@@ -25,7 +25,6 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusMessage>
-#include <polkit-qt/auth.h>
 
 namespace Aqpm
 {
@@ -109,13 +108,6 @@ QString Backend::Private::absPath(const QString& package) const
 
 bool Backend::Private::initWorker(const QString &polkitAction)
 {
-    if (handleAuth) {
-        if (!PolkitQt::Auth::computeAndObtainAuth(polkitAction)) {
-            qDebug() << "User unauthorized";
-            return false;
-        }
-    }
-
     if (!QDBusConnection::systemBus().interface()->isServiceRegistered("org.chakraproject.aqpmabsworker")) {
         qDebug() << "Requesting service start";
         QDBusConnection::systemBus().interface()->startService("org.chakraproject.aqpmabsworker");

@@ -1,7 +1,6 @@
-// This is an example not a library
 /***************************************************************************
- *   Copyright (C) 2009 by Dario Freddi                                    *
- *   drf@kde.org                                                           *
+ *   Copyright (C) 2010 by Dario Freddi                                    *
+ *   drf@chakra-project.org                                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -16,40 +15,36 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA .        *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include <QApplication>
-#include <QEventLoop>
-#include <QDebug>
+#ifndef AQPMAUTHORIZATION_P_H
+#define AQPMAUTHORIZATION_P_H
 
-#include "../Backend.h"
-#include "../Database.h"
+#include <PolkitQt1/Authority>
+#include <PolkitQt1/Subject>
 
-int main(int argc, char *argv[])
+namespace Aqpm {
+namespace Auth {
+
+bool authorize(const QString &action, const QString &service)
 {
-    QCoreApplication app(argc, argv);
+    PolkitQt1::SystemBusNameSubject subject(service);
+    PolkitQt1::Authority *authority = PolkitQt1::Authority::instance();
 
-    QEventLoop e;
-
-    Aqpm::Backend::instance()->safeInitialization();
-
-    // Load twice
-    Aqpm::Backend::instance()->reloadPacmanConfiguration();
-
-    foreach(Aqpm::Database *db, Aqpm::Backend::instance()->availableDatabases()) {
-        qDebug() << db->name();
+    switch (authority->checkAuthorizationSync(action, &subject, PolkitQt1::Authority::AllowUserInteraction)) {
+    case PolkitQt1::Authority::Yes:
+        qDebug() << service << QString(" authorized");
+        return true;
+    default:
+        qDebug() << QString("Not authorized");
+        return false;
     }
 
-    qDebug() << "Now updating databases...";
-    Aqpm::Backend::instance()->updateDatabase();
-
-    e.connect(Aqpm::Backend::instance(), SIGNAL(operationFinished(bool)), &e, SLOT(quit()));
-    e.connect(Aqpm::Backend::instance(), SIGNAL(errorOccurred(Aqpm::Globals::Errors, QVariantMap)),
-              QCoreApplication::instance(), SLOT(quit()));
-    e.exec();
-
-    qDebug() << "Done";
-
-    return 0;
+    return false;
 }
+
+}
+}
+
+#endif

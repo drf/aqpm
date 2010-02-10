@@ -32,7 +32,7 @@
 #include "../Globals.h"
 #include "../Configuration.h"
 
-#include <polkit-qt/Auth>
+#include "misc/AqpmAuthorization_p.h"
 
 namespace AqpmConfigurator
 {
@@ -74,20 +74,13 @@ Configurator::~Configurator()
 
 void Configurator::saveConfiguration(const QString& conf, const QString& filename)
 {
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.saveconfiguration",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    stopTemporizing();
+
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.saveconfiguration", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
         operationPerformed(false);
         return;
     }
-
-    stopTemporizing();
 
     qDebug() << "About to write:" << conf;
 
@@ -110,20 +103,13 @@ void Configurator::saveConfiguration(const QString& conf, const QString& filenam
 
 void Configurator::setMirrorList(const QString &mirror, int type)
 {
-    PolkitQt::Auth::Result result;
-    result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.setmirrorlist",
-             message().service(),
-             true);
-    if (result == PolkitQt::Auth::Yes) {
-        qDebug() << message().service() << QString(" authorized");
-    } else {
-        qDebug() << QString("Not authorized");
+    stopTemporizing();
+
+    if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.setmirrorlist", message().service())) {
         emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
         operationPerformed(false);
         return;
     }
-
-    stopTemporizing();
 
     QFile file;
 
@@ -215,15 +201,10 @@ QString Configurator::pacmanConfToAqpmConf(bool writeconf, const QString& filena
 {
     qDebug() << "IN da call";
 
+    stopTemporizing();
+
     if (writeconf) {
-        PolkitQt::Auth::Result result;
-        result = PolkitQt::Auth::isCallerAuthorized("org.chakraproject.aqpm.convertconfiguration",
-                 message().service(),
-                 true);
-        if (result == PolkitQt::Auth::Yes) {
-            qDebug() << message().service() << QString(" authorized");
-        } else {
-            qDebug() << QString("Not authorized");
+        if (!Aqpm::Auth::authorize("org.chakraproject.aqpm.convertconfiguration", message().service())) {
             emit errorOccurred((int) Aqpm::Globals::AuthorizationNotGranted, QVariantMap());
             operationPerformed(false);
             return QString();
