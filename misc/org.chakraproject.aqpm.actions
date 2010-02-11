@@ -5,7 +5,7 @@ Icon=chakra-shiny
 [org.chakraproject.aqpm.updatedatabase]
 Name=Update Database
 Description=Prevents the Package Manager from updating the Database
-Policy=auth_admin
+Policy=yes
 
 [org.chakraproject.aqpm.systemupgrade]
 Name=System Upgrade
