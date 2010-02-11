@@ -1,0 +1,66 @@
+[Domain]
+Name=Chakra Package Management
+Icon=chakra-shiny
+
+[org.chakraproject.aqpm.updatedatabase]
+Name=Update Database
+Description=Prevents the Package Manager from updating the Database
+Policy=auth_admin
+
+[org.chakraproject.aqpm.systemupgrade]
+Name=System Upgrade
+Description=Prevents the Package Manager from upgrading the system
+Policy=auth_admin
+Persistence=session
+
+[org.chakraproject.aqpm.processqueue]
+Name=Process queue
+Description=Prevents the Package Manager from processing a package queue
+Policy=auth_admin
+
+[org.chakraproject.aqpm.downloadqueue]
+Name=Process queue
+Description=Prevents the Package Manager from downloading a package queue
+Policy=yes
+
+[org.chakraproject.aqpm.saveconfiguration]
+Name=Save pacman configuration
+Description=Prevents the Package Manager from saving the configuration
+Policy=auth_admin
+
+[org.chakraproject.aqpm.convertconfiguration]
+Name=Convert pacman configuration
+Description=Prevents the Package Manager from converting Pacman configuration to Aqpm
+Policy=yes
+
+[org.chakraproject.aqpm.setmirrorlist]
+Name=Sets Aqpm mirrors
+Description=Prevents the Package Manager from modifying the mirrors
+Policy=auth_admin
+Persistence=always
+
+[org.chakraproject.aqpm.performmaintenance]
+Name=Performs a maintenance operation on the package system
+Description=Prevents the Package Manager from performing a maintenance action
+Policy=auth_admin
+
+[org.chakraproject.aqpm.setaqpmroot]
+Name=Changes the root directory for package management
+Description=Prevents the Package Manager from changing the root directory for package management
+Policy=yes
+
+[org.chakraproject.aqpm.retrievetargetsforqueue]
+Name=Retrieves additional targets for a queue
+Description=Prevents the Package Manager from retrieving additional targets for the current queue
+Policy=yes
+
+[org.chakraproject.aqpm.updateabs]
+Name=Updates the Abs tree
+Description=Prevents the Package Manager from updating the Abs tree
+Policy=auth_admin
+Persistence=session 
+
+[org.chakraproject.aqpm.preparebuildenvironment]
+Name=Prepares a build environment in a privileged location
+Description=Prevents the Package Manager from preparing a build environment in a privileged location
+Policy=auth_admin

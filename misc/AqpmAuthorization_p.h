@@ -27,17 +27,18 @@
 namespace Aqpm {
 namespace Auth {
 
-bool authorize(const QString &action, const QString &service)
+inline bool authorize(const QString &action, const QString &service)
 {
-    PolkitQt1::SystemBusNameSubject subject(service);
-    PolkitQt1::Authority *authority = PolkitQt1::Authority::instance();
+    PolkitQt1::SystemBusNameSubject *subject = new PolkitQt1::SystemBusNameSubject(service);
 
-    switch (authority->checkAuthorizationSync(action, &subject, PolkitQt1::Authority::AllowUserInteraction)) {
+    switch (PolkitQt1::Authority::instance()->checkAuthorizationSync(action, subject,
+                                              PolkitQt1::Authority::AllowUserInteraction)) {
     case PolkitQt1::Authority::Yes:
-        qDebug() << service << QString(" authorized");
+        qDebug() << service << " authorized for " << action;
         return true;
     default:
-        qDebug() << QString("Not authorized");
+        qDebug() << subject->toString() << "Not authorized for " << action;
+        qDebug() << "Last error: " <<  PolkitQt1::Authority::instance()->lastError();
         return false;
     }
 
