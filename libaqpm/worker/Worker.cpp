@@ -214,7 +214,7 @@ void Worker::updateDatabase()
         return;
     }
 
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_ALLDEPS, AqpmWorker::cb_trans_evt,
+    if (alpm_trans_init(PM_TRANS_FLAG_ALLDEPS, AqpmWorker::cb_trans_evt,
                         AqpmWorker::cb_trans_conv, AqpmWorker::cb_trans_progress) == -1) {
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());
@@ -335,7 +335,7 @@ void Worker::processQueue(const QVariantList &packages, int flags)
     }
 
     if (remove) {
-        if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, alpmflags,
+        if (alpm_trans_init(alpmflags,
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
@@ -364,7 +364,7 @@ void Worker::processQueue(const QVariantList &packages, int flags)
     }
 
     if (sync) {
-        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+        if (alpm_trans_init(alpmflags,
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
@@ -394,7 +394,7 @@ void Worker::processQueue(const QVariantList &packages, int flags)
     }
 
     if (file) {
-        if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
+        if (alpm_trans_init(alpmflags,
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
@@ -456,7 +456,7 @@ void Worker::downloadQueue(const QVariantList &packages)
 
     qDebug() << "Packages appended, starting evaluation";
 
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+    if (alpm_trans_init(alpmflags,
                         AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                         AqpmWorker::cb_trans_progress) == -1) {
         QVariantMap args;
@@ -470,7 +470,7 @@ void Worker::downloadQueue(const QVariantList &packages)
 
     foreach(const Aqpm::QueueItem &itm, queue) {
         if (itm.action_id == Aqpm::QueueItem::FullUpgrade) {
-            if (alpm_trans_sysupgrade(0) == -1) {
+            if (alpm_sync_sysupgrade(0) == -1) {
                 qDebug() << "Creating a sysupgrade transaction failed!!";
                 QVariantMap args;
                 args["ErrorString"] = QString(alpm_strerrorlast());
@@ -564,7 +564,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
     }
 
     if (remove) {
-        if (alpm_trans_init(PM_TRANS_TYPE_REMOVE, alpmflags,
+        if (alpm_trans_init(alpmflags,
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
@@ -595,7 +595,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
             return;
         }
 
-        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Remove);
+        retlist += targets(alpm_trans_get_remove(), Aqpm::QueueItem::Remove);
 
         if(data) {
             FREELIST(data);
@@ -605,7 +605,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
     }
 
     if (sync) {
-        if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+        if (alpm_trans_init(alpmflags,
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
@@ -638,7 +638,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
             return;
         }
 
-        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Sync);
+        retlist += targets(alpm_trans_get_add(), Aqpm::QueueItem::Sync);
 
         if(data) {
             FREELIST(data);
@@ -648,7 +648,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
     }
 
     if (file) {
-        if (alpm_trans_init(PM_TRANS_TYPE_UPGRADE, alpmflags,
+        if (alpm_trans_init(alpmflags,
                             AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                             AqpmWorker::cb_trans_progress) == -1) {
             QVariantMap args;
@@ -679,7 +679,7 @@ void Worker::retrieveTargetsForQueue(const QVariantList &packages, int flags)
             return;
         }
 
-        retlist += targets(alpm_trans_get_pkgs(), Aqpm::QueueItem::Sync);
+        retlist += targets(alpm_trans_get_add(), Aqpm::QueueItem::Sync);
 
         if(data) {
             FREELIST(data);
@@ -719,7 +719,7 @@ void Worker::systemUpgrade(int flags, bool downgrade)
 
     qDebug() << alpmflags;
 
-    if (alpm_trans_init(PM_TRANS_TYPE_SYNC, alpmflags,
+    if (alpm_trans_init(alpmflags,
                         AqpmWorker::cb_trans_evt, AqpmWorker::cb_trans_conv,
                         AqpmWorker::cb_trans_progress) == -1) {
         QVariantMap args;
@@ -731,7 +731,7 @@ void Worker::systemUpgrade(int flags, bool downgrade)
 
     int dwng = downgrade ? 1 : 0;
 
-    if (alpm_trans_sysupgrade(dwng) == -1) {
+    if (alpm_sync_sysupgrade(dwng) == -1) {
         qDebug() << "Creating a sysupgrade transaction failed!!";
         QVariantMap args;
         args["ErrorString"] = QString(alpm_strerrorlast());
@@ -906,7 +906,7 @@ bool Worker::commitTransaction(alpm_list_t *data)
 
 bool Worker::addTransTarget(const QString &target)
 {
-    int res = alpm_trans_addtarget(qstrdup(target.toUtf8()));
+    int res = alpm_sync_target(qstrdup(target.toUtf8()));
 
     if (res == -1) {
         if (pm_errno == PM_ERR_TRANS_DUP_TARGET) {

@@ -322,7 +322,7 @@ void CallBacks::cb_trans_conv(pmtransconv_t event, void *data1, void *data2,
 
 }
 
-int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew)
+int CallBacks::cb_fetch(const char *url, const char *localpath, int force)
 {
     Q_D(CallBacks);
 
@@ -350,7 +350,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     qDebug() << "The file is " << d->currentFile;
 
     // Let's check if the modification times collide. If so, there's no need to download the file
-
+/*
     time_t newtime = mreply.arguments().first().toInt();
     qDebug() << "Header says" << newtime;
     qDebug() << "Old file says" << mtimeold;
@@ -364,7 +364,7 @@ int CallBacks::cb_fetch(const char *url, const char *localpath, time_t mtimeold,
     }
 
     qDebug() << "Compare successful";
-
+*/
     // If we got here, it's time to download the file.
 
     ReturnStringConditionalEventLoop e(url);
@@ -453,9 +453,9 @@ void cb_dl_total(off_t total)
     CallBacks::instance()->cb_dl_total(total);
 }
 
-int cb_fetch(const char *url, const char *localpath, time_t mtimeold, time_t *mtimenew)
+int cb_fetch(const char *url, const char *localpath, int force)
 {
-    return CallBacks::instance()->cb_fetch(url, localpath, mtimeold, mtimenew);
+    return CallBacks::instance()->cb_fetch(url, localpath, force);
 }
 
 void cb_trans_progress(pmtransprog_t event, const char *pkgname, int percent,
